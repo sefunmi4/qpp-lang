@@ -41,115 +41,39 @@ Our MVP focuses on delivering core functionality to early adopters including dev
 Below is our staged roadmap for delivering the MVP. Each stage represents actionable tasks that will guide the development process.
 
 ### Stage 1: Planning and Research
-
 - **Define MVP Goals & Scope**
-  - Document the MVP's essential features:
-    - Core classical (C/C++–like) constructs.
-    - Basic quantum operations (a minimal set of gates, measurements, and wave function manipulation).
-    - Initial noise modeling for simulating realistic behavior.
-    - Minimal gesture/VR input (support for one or two common gestures mapped to quantum operations).
-  - Identify key target audiences (developers, startups, public quantum hardware companies).
-  - Create a brief Goals & Scope document focused on MVP requirements.
-  
 - **Research Existing Ecosystems**
-  - Analyze key quantum platforms (e.g., Qiskit, Cirq) for minimal IR and backend interactions.
-  - Explore essential Rust libraries for parsing, compiler construction, and gesture recognition.
-  - Summarize findings in a research document highlighting critical MVP aspects.
 
 ### Stage 2: Language Specification and Design
-
 - **Draft MVP Language Specification Document**
-  - Define the minimal syntax and semantics:
-    - Basic classical control structures.
-    - Minimal quantum operations (e.g., Hadamard, Pauli-X, measurement).
-  - Specify how a small subset of gesture inputs (e.g., a swipe or circle) map to quantum operations.
-  - Create an initial draft of the specification focusing on MVP features.
-  
 - **Design a Simplified Hardware-Agnostic IR**
-  - Develop a lightweight IR that represents essential classical and quantum constructs.
-  - Plan for simple adapters to output one target format (e.g., QASM) for the initial MVP.
-  - Document the MVP IR design.
 
 ### Stage 3: Compiler Frontend Development
-
 - **Set Up Parsing and Lexing**
-  - Choose and integrate a Rust parsing library (e.g., [pest](https://pest.rs) or [nom](https://github.com/Geal/nom)).
-  - Implement a basic grammar covering MVP syntax.
-  - Write initial tests to validate the parser.
-  
 - **Build the Core Abstract Syntax Tree (AST)**
-  - Design an AST structure for the MVP language features.
-  - Integrate support for minimal gesture input markers in the AST.
-  - Develop unit tests for AST generation.
 
 ### Stage 4: Intermediate Representation and Optimization
-
 - **Implement a Basic IR**
-  - Translate the MVP AST into a simple IR.
-  - Ensure the IR supports core classical and quantum operations.
-  - Document the translation process and IR structure.
-  
 - **Minimal Optimization Passes**
-  - Implement basic optimization routines (e.g., inlining simple functions, gate sequence cleanup).
-  - Keep noise modeling integration straightforward for MVP.
-  - Write tests to validate IR transformations.
 
 ### Stage 5: Compiler Backend Development
-
 - **MVP Code Generation**
-  - Develop a module to translate the IR into a single target format (e.g., QASM).
-  - Implement minimal adapters for a selected quantum hardware backend.
-  - Write integration tests for the backend.
-  
 - **Integrate Basic Noise Modeling**
-  - Create a simple noise simulation function that maps ideal operations to noisy counterparts.
-  - Validate noise modeling with simulation tests.
-  - Document the noise modeling approach.
 
 ### Stage 6: Gesture/VR Input Integration
-
 - **MVP Gesture Recognition**
-  - Research and choose a lightweight Rust library or API for basic gesture recognition.
-  - Implement support for one or two gestures (e.g., swipe up for Hadamard, circle for measurement).
-  - Develop a minimal mapping module that translates these gestures into corresponding AST nodes or commands.
-  - Prototype visual feedback for gesture recognition in a simple UI or command-line tool.
-  - Test gesture integration with sample inputs.
 
 ### Stage 7: Testing and Simulation
-
 - **Develop MVP Unit and Integration Tests**
-  - Write unit tests for lexer, parser, AST, IR, and backend modules.
-  - Develop integration tests covering the end-to-end compilation process.
-  - Create tests for the gesture recognition and mapping functionality.
-  
 - **Quantum Circuit Simulation**
-  - Set up a basic simulation environment to run quantum circuits.
-  - Incorporate minimal noise modeling into the simulation.
-  - Iterate on the simulation based on test results.
 
 ### Stage 8: Documentation and Community Engagement
-
 - **Develop MVP Documentation**
-  - Write guides on language syntax and core quantum operations.
-  - Create quick-start tutorials and sample projects demonstrating MVP functionality.
-  - Set up a simple documentation site (e.g., GitHub Pages).
-  
 - **Community Outreach for MVP**
-  - Prepare a public announcement and release notes for the MVP.
-  - Establish communication channels (GitHub Discussions, Discord) for early adopters.
-  - Schedule regular updates and collect feedback.
 
 ### Stage 9: Iterative Improvement and Deployment
-
 - **Release MVP (Alpha/Beta)**
-  - Package the MVP with core language features and gesture support.
-  - Release the MVP to early adopters and key stakeholders.
-  - Collect feedback and log issues for further iterations.
-  
 - **Plan Post-MVP Iterative Enhancements**
-  - Prioritize feedback-driven improvements.
-  - Expand gesture support and additional quantum operations.
-  - Iterate on IR, backend support, and noise modeling for broader hardware compatibility.
 
 ## How to Contribute
 
