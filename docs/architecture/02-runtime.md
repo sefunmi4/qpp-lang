@@ -7,9 +7,9 @@ This document outlines the architecture and expected behavior of the runtime lay
 
 ---
 
-## 🎮 Execution Model
+## 🎮 Execution Model 
 
-### Task Execution Contexts [Issue #2](https://github.com/sefunmi4/qpp-lang/issues/2#issue-3006612364)
+### Task Execution Contexts [Issue #3](https://github.com/sefunmi4/qpp-lang/issues/3#issue-3006616767)
 Q++ defines three runtime task contexts:
 - `task<CPU>` → Runs directly on CPU
 - `task<QPU>` → Delegated to quantum processing unit
