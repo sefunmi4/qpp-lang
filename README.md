@@ -56,7 +56,7 @@ Found in `/src`. Help us:
 
 ## 🤝 Want to Contribute?
 
-Open an issue or pick a task from `/docs/migration/`.
+Open an issue or pick a task from `/docs`.
 
 Built with ❤️ by @sefunmi4 and collaborators.
 
