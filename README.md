@@ -60,17 +60,4 @@ Open an issue or pick a task from `/docs/migration/`.
 
 Built with ❤️ by @sefunmi4 and collaborators.
 
-```
-qpp-lang/
-├── frontend/          # Lexer, parser, translator
-├── qpp/               # Core headers and stdlib (qalloc, task, types)
-├── backend/           # IR emitter, simulator, hardware adapters
-├── runtime/           # Scheduler, memory, engine
-├── tools/             # CLI compilers and runners
-├── docs/              # Migration, philosophy, examples
-├── tests/             # Unit + regression
-├── examples/          # Teleport, chatbot, migration demos
-├── CMakeLists.txt
-└── README.md
-```
 
