@@ -45,9 +45,10 @@ Found in `/src`. Help us:
 
 ## ✨ Philosophy
 
-> Death to coders' pride:
+> RIP coders' pride:
+> 
 > It's C++ but with some patches under the hood to describe quantum bits and their logic where necessary.
-> This provides a shared perspective for code on computers with CPUs, GPUs, TPUs, and QPUs attached to them.
+> This provides a shared perspective for coding on computers with CPUs and QPUs attached to them.
 >
 > Q++ assumes all bits are quantum (qbits) or classical (cbits) information unless specified.  
 > It treats classical logic as a special case of general information.
