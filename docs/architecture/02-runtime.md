@@ -17,7 +17,7 @@ Q++ defines three runtime task contexts:
 
 Runtime determines target execution via scope analysis, bit type resolution, and probabilistic annotations.
 
-### Probabilistic Tagging
+### Probabilistic Tagging [Issue #5](https://github.com/sefunmi4/qpp-lang/issues/5#issue-3006630677) 
 Scopes with quantum conditionals (e.g., `if (q[0])`) are tagged as probabilistic. These scopes:
 - Cannot be resolved until measurement or simulation
 - Must be tracked by the runtime for quantum resolution
