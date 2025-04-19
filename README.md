@@ -57,6 +57,7 @@ Found in `/src`. Help us:
 ## 🤝 Want to Contribute?
 
 Open an issue or pick a task from `/docs/migration/`.
+Built with ❤️ by @sefunmi4 and collaborators.
 
 ```
 qpp-lang/
@@ -87,7 +88,7 @@ qpp-lang/
 │   ├── 00-overview.md        # Your core design doc w/ links to issues
 │   ├── 01-frontend.md        # Syntax support + grammar changes
 │   ├── 02-runtime.md         # Quantum runtime layers
-│   └── 03-hardware-api.md    # IBM/Google API integration plan
+│   └── 03-hardware-api.md    # API integration plan to third-party processor
 │
 ├── examples/                 # test programs and future demos
 │   ├── teleport.qpp
@@ -109,4 +110,3 @@ qpp-lang/
 └── README.md
 ```
 
-Built with ❤️ by @sefunmi4 and collaborators.
