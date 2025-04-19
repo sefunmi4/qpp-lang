@@ -58,6 +58,7 @@ Found in `/src`. Help us:
 
 Open an issue or pick a task from `/docs/migration/`.
 
+```
 qpp-lang/
 ├── frontend/                  # Lexer, parser, grammar rules
 │   ├── grammar/              # DSL: PEG/ANTLR/Bison rules
@@ -106,5 +107,6 @@ qpp-lang/
 │
 ├── CMakeLists.txt
 └── README.md
+```
 
 Built with ❤️ by @sefunmi4 and collaborators.
