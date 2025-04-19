@@ -28,7 +28,7 @@ task<CPU> classical_logic() {}
 - Defines hardware execution target
 - Compiler infers best match under `AUTO`
 
-### Conditional Expressions 
+### Conditional Expressions [Issue #4](https://github.com/sefunmi4/qpp-lang/issues/4#issue-3006629338) 
 ```cpp
 if (q[0]) {
     // Marks surrounding scope as probabilistic
