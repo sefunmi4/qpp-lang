@@ -1,40 +1,57 @@
-# Q++ (QPP)
+# Q++: The Quantum-Classical Successor to C++
 
-**Q++** is a new programming language designed for the hybrid era of quantum and classical computing. Inspired by C++ and built for the future, Q++ provides native syntax and runtime support for quantum-classical task orchestration, gesture-driven command execution, and spatial computing.
-
-> 🧠 Built in C++. Powered by LLVM. Optimized for QPU + CPU.
-
----
-
-## 🚀 Vision
-
-Q++ (pronounced "Q plus plus") is for developers who want to:
-
-- Write quantum and classical logic side by side
-- Target real QPUs, simulated QPUs, or fallback CPUs
-- Develop VR-native OS systems, like [EtherOS](https://github.com/shefashiru/qpp-etheros)
-- Map gestures and symbols to code logic with [SymbolCast](https://github.com/shefashiru/qpp-symbolcast)
+**Q++** is a modern programming language built to extend C++ into the quantum era.  
+Inspired by how C++ evolved from C, Q++ introduces just enough new logic to support quantum-classical hybrid computing — while keeping everything great about systems-level development.
 
 ---
 
-## 📦 Project Structure
+## 📌 Main Goals
 
-This repo contains the **core Q++ compiler**, including:
-
-- `src/` – Lexer, parser, AST builder, LLVM IR generator
-- `include/` – Q++ headers and macros
-- `tests/` – Q++ syntax and IR tests
-- `examples/` – Sample `.qpp` programs
-- `docs/` – Language spec, grammar, and IR model
+- Build Q++ using C and C++ the way C++ was built from C
+- Document how to migrate from C++ to Q++ with minimal cognitive overhead
+- Let quantum logic flow naturally through familiar constructs like `struct`, `register`, `bool`, and `function`
 
 ---
 
-## 💻 Example Code
+## 🔧 What Q++ Adds
 
-```qpp
-qtask<QPU> teleport(qreg<2> q) {
-    h(q[0]);
-    cx(q[0], q[1]);
-    measure(q);
-}
-```
+| Feature | Q++ Evolution |
+|--------|----------------|
+| `struct`, `class` | `qstruct`, `qclass`, `cstruct`, `cclass` for hybrid modeling |
+| `bool` | Automatically probabilistic if linked to quantum memory |
+| Bitwise Ops | Become quantum gate macros (`^` → `CX`, `&` → `Toffoli`) |
+| `register` | Extended as `qregister`, `cregister`, or left as `auto` |
+| `task<T>` | `task<QPU>`, `task<CPU>`, `task<AUTO>` target hardware like GPU kernels |
+| `__qasm` | Inject raw gate-level code (like inline asm) |
+| LLVM IR | Enhanced with QIR, collapse metadata, and probabilistic flags |
+
+---
+
+## 📘 Two Main Project Areas
+
+### 📚 1. Developer Docs
+Found in `/docs`. Help us:
+- Translate C++ constructs into Q++ logic
+- Define rules for probabilistic branching and hybrid task types
+- Help classical devs think in quantum terms
+
+### 🛠️ 2. Compiler Development
+Found in `/src`. Help us:
+- Parse new `qstruct`, `task<CPU>` and `qregister` keywords
+- Build IR with gate macros, entanglement tracking, and auto-collapse
+- Simulate CPU/QPU behavior in a fallback runtime
+
+---
+
+## ✨ Philosophy
+
+> Q++ assumes all bits are quantum unless told otherwise.  
+> It treats classical logic as a special case of general information.
+
+---
+
+## 🤝 Want to Contribute?
+
+Open an issue or pick a task from `/docs/migration/` or `/src/irgen/`.
+
+Built with ❤️ by @ShefAshiru and collaborators.
