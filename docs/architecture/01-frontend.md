@@ -28,7 +28,7 @@ task<CPU> classical_logic() {}
 - Defines hardware execution target
 - Compiler infers best match under `AUTO`
 
-### Conditional Expressions [Issue #102](https://github.com/qpp-lang/qpp/issues/102)
+### Conditional Expressions 
 ```cpp
 if (q[0]) {
     // Marks surrounding scope as probabilistic
@@ -37,7 +37,7 @@ if (q[0]) {
 - Propagates probabilistic behavior to enclosing task
 - Impacts scheduling and resolution at runtime
 
-### Memory Allocation [Issue #103](https://github.com/qpp-lang/qpp/issues/103)
+### Memory Allocation 
 ```cpp
 qalloc int qarray[4];         // Quantum-backed array
 qregister int reg1;           // Quantum bit register
@@ -46,7 +46,7 @@ register int r2;              // Inferred register
 - `register` can default to CPU or QPU context
 - Use `qregister` or `cregister` for explicit targeting
 
-### Quantum-Aware Types [Issue #104](https://github.com/qpp-lang/qpp/issues/104)
+### Quantum-Aware Types 
 ```cpp
 qstruct Token {
     qbit state;
@@ -55,7 +55,7 @@ qstruct Token {
 ```
 - Any structure with quantum members inherits probabilistic behavior
 
-### Boolean and Bitwise Behavior [Issue #105](https://github.com/qpp-lang/qpp/issues/105)
+### Boolean and Bitwise Behavior 
 ```cpp
 bool flag = q[0];             // Probabilistic boolean
 int x = a & b;                // May map to Toffoli gate if quantum
@@ -63,7 +63,7 @@ int x = a & b;                // May map to Toffoli gate if quantum
 - Boolean logic collapses under measurement
 - Bitwise operators compile to classical or quantum gate macros based on scope
 
-### Inline Assembly [Issue #106](https://github.com/qpp-lang/qpp/issues/106)
+### Inline Assembly 
 ```cpp
 asm volatile("movl $1, %eax");
 ```
@@ -74,17 +74,17 @@ asm volatile("movl $1, %eax");
 
 ## 🛠 Compilation and Debugging Hints
 
-### Collapse Markers [Issue #107](https://github.com/qpp-lang/qpp/issues/107)
+### Collapse Markers 
 - Probabilistic expressions trigger metadata emission in IR
 - Useful for simulation and QPU hardware binding
 
-### Measurement Behavior [Issue #108](https://github.com/qpp-lang/qpp/issues/108)
+### Measurement Behavior
 ```cpp
 measure(q[1]); // collapses q[1] and upstream scope
 ```
 - Measurement finalizes quantum state
 
-### Scope Mapping [Issue #109](https://github.com/qpp-lang/qpp/issues/109)
+### Scope Mapping
 - Compiler emits visual map of probabilistic flow for debugging
 
 ---
