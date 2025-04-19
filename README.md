@@ -37,7 +37,7 @@ Found in `/docs`. Help us:
 
 ### 🛠️ 2. Compiler Development
 Found in `/src`. Help us:
-- Parse new `qstruct`, `task<CPU>` and `qregister` keywords
+- Parse new `qstruct`, `task<CPU>`, and `qregister` keywords
 - Build IR with gate macros, entanglement tracking, and auto-collapse
 - Simulate CPU/QPU behavior in a fallback runtime
 
@@ -45,7 +45,11 @@ Found in `/src`. Help us:
 
 ## ✨ Philosophy
 
-> Q++ assumes all bits are quantum unless told otherwise.  
+> Death to coders' pride:
+> It's C++ but with some patches under the hood to describe quantum bits and their logic where necessary.
+> This provides a shared perspective for code on computers with CPUs, GPUs, TPUs, and QPUs attached to them.
+>
+> Q++ assumes all bits are quantum (qbits) or classical (cbits) information unless specified.  
 > It treats classical logic as a special case of general information.
 
 ---
@@ -54,4 +58,4 @@ Found in `/src`. Help us:
 
 Open an issue or pick a task from `/docs/migration/` or `/src/irgen/`.
 
-Built with ❤️ by @ShefAshiru and collaborators.
+Built with ❤️ by @sefunmi4 and collaborators.
