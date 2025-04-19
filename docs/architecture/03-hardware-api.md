@@ -7,17 +7,17 @@ The Q++ Hardware API defines how compiled programs are dispatched to real quantu
 
 ## 🔌 QPU Integration Targets
 
-### IBM Q Integration [Issue #301](https://github.com/qpp-lang/qpp/issues/301)
+### IBM Q Integration 
 - Use IBM Qiskit backend APIs
 - Translate IR to OpenQASM-compatible format
 - Handle authentication and queueing
 
-### Google Sycamore Integration [Issue #302](https://github.com/qpp-lang/qpp/issues/302)
+### Google Sycamore Integration 
 - Use Cirq as target for gate translation
 - Handle device connectivity maps and constraints
 - Optimize for gate depth and decoherence
 
-### Simulated Hardware [Issue #303](https://github.com/qpp-lang/qpp/issues/303)
+### Simulated Hardware
 - Wavefunction backend for testing
 - Mirror same API calls as real hardware
 
@@ -25,12 +25,12 @@ The Q++ Hardware API defines how compiled programs are dispatched to real quantu
 
 ## 🧠 Register and Memory Abstractions
 
-### Register Mapping Layer [Issue #304](https://github.com/qpp-lang/qpp/issues/304)
+### Register Mapping Layer
 - `qregister`, `cregister`, and generic `register` resolve at compile-time
 - Hardware mapping respects QPU register limits
 - Emit errors if over-allocated
 
-### Collapse Marker Emission [Issue #305](https://github.com/qpp-lang/qpp/issues/305)
+### Collapse Marker Emission
 - QIR or LLVM IR extended with `@collapse_marker`
 - Used to denote measurement boundaries
 - Allows QPU API to resolve conditional branches
@@ -39,7 +39,7 @@ The Q++ Hardware API defines how compiled programs are dispatched to real quantu
 
 ## 🧭 Device Capability Mapping
 
-### Hardware Profile Format [Issue #306](https://github.com/qpp-lang/qpp/issues/306)
+### Hardware Profile Format
 ```json
 {
   "device_id": "ibmq_tokyo",
@@ -52,7 +52,7 @@ The Q++ Hardware API defines how compiled programs are dispatched to real quantu
 - Defines compile-time target constraints
 - Used by Q++ optimizer and scheduler
 
-### Target Selection [Issue #307](https://github.com/qpp-lang/qpp/issues/307)
+### Target Selection
 - Runtime selects best-fit device based on:
   - Number of qubits
   - Gate availability
@@ -62,14 +62,14 @@ The Q++ Hardware API defines how compiled programs are dispatched to real quantu
 
 ## ⚡ API Dispatch Flow
 
-### Dispatch Function [Issue #308](https://github.com/qpp-lang/qpp/issues/308)
+### Dispatch Function
 ```cpp
 send_to_qpu(TaskIR task, HardwareProfile profile);
 ```
 - Translates internal IR to QPU-specific job format
 - Waits for result or error callback
 
-### Return Types and Collapse [Issue #309](https://github.com/qpp-lang/qpp/issues/309)
+### Return Types and Collapse
 - QPU response includes:
   - Final bitstring or collapsed state
   - Error rate or confidence range
@@ -79,11 +79,11 @@ send_to_qpu(TaskIR task, HardwareProfile profile);
 
 ## 🔐 Authentication and Rate Limits
 
-### QPU API Credentials [Issue #310](https://github.com/qpp-lang/qpp/issues/310)
+### QPU API Credentials
 - Allow token/secret registration via `.qppconfig`
 - Support scoped access for testing vs production
 
-### Rate Limit Detection [Issue #311](https://github.com/qpp-lang/qpp/issues/311)
+### Rate Limit Detection
 - Automatically fallback to simulator when:
   - QPU is overloaded
   - Exceeds monthly quota
@@ -92,7 +92,7 @@ send_to_qpu(TaskIR task, HardwareProfile profile);
 
 ## 🧪 Testing with Emulated Hardware
 
-### Emulated Backend Harness [Issue #312](https://github.com/qpp-lang/qpp/issues/312)
+### Emulated Backend Harness
 - Implements same API as real devices
 - Logs full collapse paths and amplitude histories
 - Can replay jobs and visualize interference
