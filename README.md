@@ -1,4 +1,4 @@
-# Q++: The Quantum-Classical Successor to C++
+# Q++
 
 **Q++** is a modern programming language built to extend C++ into the quantum era.  
 Inspired by how C++ evolved from C, Q++ introduces just enough new logic to support quantum-classical hybrid computing — while keeping everything great about systems-level development.
