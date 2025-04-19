@@ -56,7 +56,7 @@ Found in `/src`. Help us:
 
 ## 🤝 Want to Contribute?
 
-Open an issue or pick a task from `/docs`.
+Open an issue or pick a task from the [docs folder](https://github.com/sefunmi4/qpp-lang/blob/main/docs/00-overview.md#q-docs-overview).
 
 Built with ❤️ by @sefunmi4 and collaborators.
 
