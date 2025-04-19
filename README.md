@@ -58,4 +58,53 @@ Found in `/src`. Help us:
 
 Open an issue or pick a task from `/docs/migration/`.
 
+qpp-lang/
+├── frontend/                  # Lexer, parser, grammar rules
+│   ├── grammar/              # DSL: PEG/ANTLR/Bison rules
+│   ├── lexer/                # Tokenizer
+│   ├── parser/               # AST builder
+│   └── translator/           # Q++ → C++ translator for bootstrapping
+│
+├── qpp/                      # Q++ headers + standard definitions
+│   ├── core/                 # qalloc, qguard, task<>
+│   ├── runtime/              # runtime hooks (scheduler, gates, collapse)
+│   ├── macros/               # task_macros.h, shorthand templates
+│   ├── types/                # bit abstractions, qbit/cbit structs
+│   └── stdlib/               # math, gates, bitops, etc.
+│
+├── backend/                  # IR generation and target-specific logic
+│   ├── irgen/                # LLVM IR / QIR emitter
+│   ├── qsim/                 # Ideal simulator using your wavefunction math
+│   └── codegen/              # Output C++/LLVM/QIR, or wasm later
+│
+├── runtime/                  # Runtime engine (external to stdlib)
+│   ├── scheduler.cpp         # Handles task<> scheduling
+│   ├── memory.cpp            # Handles qbit/cbit allocation
+│   └── engine.cpp            # Wavefunction core / backend switch
+│
+├── migration/                # Migration + design docs
+│   ├── 00-overview.md        # Your core design doc w/ links to issues
+│   ├── 01-frontend.md        # Syntax support + grammar changes
+│   ├── 02-runtime.md         # Quantum runtime layers
+│   └── 03-hardware-api.md    # IBM/Google API integration plan
+│
+├── examples/                 # test programs and future demos
+│   ├── teleport.qpp
+│   ├── hello_world.qpp
+│   └── adaptive_task.qpp
+│
+├── tests/                    # Unit tests and regression coverage
+│   ├── regression/
+│   └── unit/
+│
+├── tools/                    # CLI tools, helper scripts, migration utilities
+│   ├── qppc.cpp              # Compiler entrypoint
+│   └── qpp-run.cpp           # For simulation + execution
+│
+├── include/                  # Legacy compatibility, eventually deprecated
+│   └── qpp_legacy.h
+│
+├── CMakeLists.txt
+└── README.md
+
 Built with ❤️ by @sefunmi4 and collaborators.
