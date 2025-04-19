@@ -19,7 +19,7 @@ Q++ enables programmers to write code that "just runs" on classical or quantum h
 
 ## ✨ Frontend Language Features
 
-### `task<>` Declarations [Issue #101](https://github.com/qpp-lang/qpp/issues/101)
+### `task<>` Declarations [Issue #2](https://github.com/sefunmi4/qpp-lang/issues/2#issue-3006612364)
 ```cpp
 task<AUTO> hybrid_logic() {}
 task<QPU> quantum_logic() {}
