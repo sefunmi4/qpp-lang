@@ -42,7 +42,7 @@ Use these to test local builds or see practical use cases of language features.
 
 ---
 
-## 💡 Developer Workflow #14
+## 💡 Developer Workflow [#14](https://github.com/sefunmi4/qpp-lang/issues/14#issue-3006787636)
 
 - **New Developers** → Start with `./migration/` and `./intro/` to understand Q++ philosophy.
   - Check `./examples/` to see how it looks in code.
