@@ -45,7 +45,7 @@ Found in `/src`. Help us:
 
 ## ✨ Philosophy
 
-> RIP coders' pride:
+> No coders' pride just scribes:
 > 
 > It's C++ but with some patches under the hood to describe quantum bits and their logic where necessary.
 > This provides a shared perspective for coding on computers with CPUs and QPUs attached to them.
