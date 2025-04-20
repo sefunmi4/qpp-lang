@@ -7,16 +7,6 @@ The Q++ Hardware API defines how compiled programs are dispatched to real quantu
 
 ## 🔌 QPU Integration Targets
 
-### IBM Q Integration 
-- Use IBM Qiskit backend APIs
-- Translate IR to OpenQASM-compatible format
-- Handle authentication and queueing
-
-### Google Sycamore Integration 
-- Use Cirq as target for gate translation
-- Handle device connectivity maps and constraints
-- Optimize for gate depth and decoherence
-
 ### Simulated Hardware
 - Wavefunction backend for testing
 - Mirror same API calls as real hardware
