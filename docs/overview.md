@@ -12,7 +12,7 @@ This documentation is split into **three major sections**:
 Detailed planning documents for core system features:
 - [`01-frontend.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/01-frontend.md#q-frontend-specification) – Grammar, syntax, and parser expectations
 - [`02-runtime.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/02-runtime.md) – Runtime architecture: `qalloc`, `task<>`, `qguard`
-- [`03-hardware-api.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/03-hardware-api.md) – Planned integration with IBM Q, Google QCS, and others
+- [`03-hardware-api.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/03-hardware-api.md) – Planned integration with QPUs
 
 Each file links directly to GitHub issues and project boards. These are meant for experienced contributors focused on design, implementation details, or tracking bugs.
 
