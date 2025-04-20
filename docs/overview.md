@@ -18,7 +18,7 @@ Each file links directly to GitHub issues and project boards. These are meant fo
 
 ---
 
-### 🧠 `./migration/` – Language Design Concepts #12
+### 🧠 `./migration/` – Language Design Concepts [#12](https://github.com/sefunmi4/qpp-lang/issues/12#issue-3006787399)
 Documents explaining how Q++ departs from or builds on traditional C++:
 - `struct_vs_qstruct.md` – Modeling quantum structures
 - `bool_logic.md` – Probabilistic truth vs binary logic
