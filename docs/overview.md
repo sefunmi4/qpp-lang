@@ -8,7 +8,7 @@ Welcome to the Q++ documentation system. This folder is organized to help both n
 
 This documentation is split into **three major sections**:
 
-### 📐 `./architecture/` – Implementation Plans #11
+### 📐 `./architecture/` – Implementation Plans [#11](https://github.com/sefunmi4/qpp-lang/issues/11#issue-3006787260)
 Detailed planning documents for core system features:
 - [`01-frontend.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/01-frontend.md#q-frontend-specification) – Grammar, syntax, and parser expectations
 - [`02-runtime.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/02-runtime.md) – Runtime architecture: `qalloc`, `task<>`, `qguard`
