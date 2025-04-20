@@ -1,4 +1,4 @@
-# Q++ Docs Overview #7
+# Q++ Docs Overview [#7](https://github.com/sefunmi4/qpp-lang/issues/7#issue-3006702643)
 
 Welcome to the Q++ documentation system. This folder is organized to help both new and experienced developers contribute effectively, understand core concepts, and track the evolution of Q++ as a hybrid quantum-classical programming language.
 
