@@ -8,7 +8,7 @@ Welcome to the Q++ documentation system. This folder is organized to help both n
 
 This documentation is split into **three major sections**:
 
-### 📐 `./architecture/` – Implementation Plans
+### 📐 `./architecture/` – Implementation Plans #11
 Detailed planning documents for core system features:
 - [`01-frontend.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/01-frontend.md#q-frontend-specification) – Grammar, syntax, and parser expectations
 - [`02-runtime.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/02-runtime.md) – Runtime architecture: `qalloc`, `task<>`, `qguard`
@@ -18,7 +18,7 @@ Each file links directly to GitHub issues and project boards. These are meant fo
 
 ---
 
-### 🧠 `./migration/` – Language Design Concepts
+### 🧠 `./migration/` – Language Design Concepts #12
 Documents explaining how Q++ departs from or builds on traditional C++:
 - `struct_vs_qstruct.md` – Modeling quantum structures
 - `bool_logic.md` – Probabilistic truth vs binary logic
@@ -32,7 +32,7 @@ These docs are ideal for new contributors and those trying to understand Q++'s p
 
 ---
 
-### 🧪 `./examples/` – Playable Q++ Code
+### 🧪 `./examples/` – Playable Q++ Code #13
 Reference `.qpp` files that demonstrate working language features:
 - `adaptive_task.qpp` – Conditional branching and task adaptation
 - `hello_world.qpp` – Minimal task and print interaction
@@ -42,7 +42,7 @@ Use these to test local builds or see practical use cases of language features.
 
 ---
 
-## 💡 Developer Workflow
+## 💡 Developer Workflow #14
 
 - **New Developers** → Start with `./migration/` and `./intro/` to understand Q++ philosophy.
   - Check `./examples/` to see how it looks in code.
@@ -55,7 +55,7 @@ Use these to test local builds or see practical use cases of language features.
 
 ---
 
-## 🔗 GitHub Integration
+## 🔗 GitHub Integration #15
 
 Each doc in `/architecture/` links to its tracked issues. We recommend:
 - Using GitHub Issue IDs in doc comments
