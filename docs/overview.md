@@ -55,7 +55,7 @@ Use these to test local builds or see practical use cases of language features.
 
 ---
 
-## 🔗 GitHub Integration #15
+## 🔗 GitHub Integration [#15](https://github.com/sefunmi4/qpp-lang/issues/15#issue-3006787689)
 
 Each doc in `/architecture/` links to its tracked issues. We recommend:
 - Using GitHub Issue IDs in doc comments
