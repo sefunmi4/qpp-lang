@@ -59,4 +59,17 @@ Found in `/src`. Help us:
 
 Open an issue or pick a task from the [docs folder](https://github.com/sefunmi4/qpp-lang/blob/main/docs/overview.md#q-docs-overview).
 
+### 🧪 Wavefunction Prime Demo
+
+We now include `tools/wave_primes.py`, a short Python script that explores
+finding primes via interference patterns. Use it to plot the composite wave for
+the first few primes:
+
+```bash
+python tools/wave_primes.py --plot --method square -n 50
+```
+
+The demo is purely experimental but serves as a playground for ideas inspired by
+quantum Fourier transforms.
+
 
