@@ -24,6 +24,7 @@ struct QRegister {
 // TODO(good-first-issue): enhance QRegister with save/load helpers and
 // optional lazy allocation of the underlying Wavefunction
 
+
 struct CRegister {
     std::vector<int> bits;
     explicit CRegister(size_t n) : bits(n, 0) {}
