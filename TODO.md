@@ -17,8 +17,10 @@ The following larger tasks are required before Q++ reaches feature parity with e
 
 - Compiler front-end parses simple control flow and emits an intermediate representation used by `qpp-run`.
 - `qpp-run` now executes that IR via the scheduler and wavefunction backend, supporting conditional gates.
+
 - ~~Expand the runtime scheduler with task priorities and asynchronous execution, allowing CPU hooks for hybrid workflows.~~ *(done)*
 - ~~Extend the `Wavefunction` library with additional gates and utilities for multi-qubit operations and state management.~~ *(done)*
+
 - Connect the Hardware API to real QPU backends and generate LLVM/QIR for interoperability.
 - Continue documenting migration guides such as `bitwise_to_gate.md` and `bool_logic.md`.
 - Grow the test suite to cover more runtime paths and edge cases.

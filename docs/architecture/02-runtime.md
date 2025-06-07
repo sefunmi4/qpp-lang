@@ -109,5 +109,6 @@ managed by `MemoryManager` and can apply gates through the `QRegister`
 interface. CPU tasks run standard C++ code and may interact with classical
 registers, enabling hybrid workflows.
 
+
 *End of Runtime Spec v0.1*
 

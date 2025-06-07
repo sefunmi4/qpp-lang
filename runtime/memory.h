@@ -16,12 +16,14 @@ struct QRegister {
     void cnot(std::size_t c, std::size_t t) { wf.apply_cnot(c, t); }
     void cz(std::size_t c, std::size_t t) { wf.apply_cz(c, t); }
     void ccnot(std::size_t c1, std::size_t c2, std::size_t t) { wf.apply_ccnot(c1, c2, t); }
+
     void s(std::size_t q) { wf.apply_s(q); }
     void t(std::size_t q) { wf.apply_t(q); }
     void swap(std::size_t a, std::size_t b) { wf.apply_swap(a, b); }
     int measure(std::size_t q) { return wf.measure(q); }
     void reset() { wf.reset(); }
     std::complex<double> amp(std::size_t idx) const { return wf.amplitude(idx); }
+
     void resize(std::size_t n) { wf = Wavefunction(n); }
 };
 

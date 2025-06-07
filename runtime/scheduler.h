@@ -4,6 +4,7 @@
 #include <mutex>
 #include <queue>
 #include <thread>
+
 #include <string>
 
 namespace qpp {
@@ -13,6 +14,7 @@ struct Task {
     std::string name;
     Target target;
     int priority{0};
+
     std::function<void()> handler;
 };
 
@@ -33,6 +35,7 @@ private:
     std::condition_variable cv;
     bool running = false;
     std::thread worker;
+
 };
 
 // TODO(good-first-issue): extend Scheduler with task priorities and optional

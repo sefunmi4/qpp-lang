@@ -14,12 +14,14 @@ void Scheduler::add_task(const Task& t) {
 
 void Scheduler::run() {
     running = true;
+
     for (;;) {
         Task t;
         {
             std::lock_guard<std::mutex> lock(mtx);
             if (tasks.empty()) break;
             t = tasks.top();
+
             tasks.pop();
         }
         std::cout << "Running task '" << t.name << "' on ";
@@ -87,5 +89,6 @@ void Scheduler::wait() {
 
 Scheduler scheduler;
 // TODO(good-first-issue): provide scheduler stop/pause controls
+
 } // namespace qpp
 
