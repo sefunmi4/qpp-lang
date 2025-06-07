@@ -4,6 +4,7 @@
 
 namespace qpp {
 // TODO(good-first-issue): track register usage statistics for debugging
+
 int MemoryManager::create_qregister(size_t n) {
     std::lock_guard<std::mutex> lock(mtx);
     qregs.push_back(std::make_unique<QRegister>(n));
@@ -49,4 +50,5 @@ CRegister& MemoryManager::creg(int id) {
 MemoryManager memory;
 // TODO(good-first-issue): expose import/export of register states for persistence
 } // namespace qpp
+
 
