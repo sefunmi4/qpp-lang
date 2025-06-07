@@ -3,30 +3,81 @@
 #include <random>
 
 namespace qpp {
-Wavefunction::Wavefunction() {
+
+Wavefunction::Wavefunction(std::size_t qubits)
+    : state(1ULL << qubits, {0.0, 0.0}), num_qubits(qubits) {
     state[0] = 1.0;
-    state[1] = 0.0;
 }
 
-void Wavefunction::apply_h() {
-    auto s0 = state[0];
-    auto s1 = state[1];
-    constexpr double factor = 1.0 / std::sqrt(2.0);
-    state[0] = (s0 + s1) * factor;
-    state[1] = (s0 - s1) * factor;
+static void apply_single_qubit_gate(std::vector<std::complex<double>>& st,
+                                    std::size_t target,
+                                    const std::complex<double> mat[2][2]) {
+    std::size_t step = 1ULL << target;
+    for (std::size_t i = 0; i < st.size(); i += 2 * step) {
+        for (std::size_t j = 0; j < step; ++j) {
+            auto a = st[i + j];
+            auto b = st[i + j + step];
+            st[i + j] = mat[0][0] * a + mat[0][1] * b;
+            st[i + j + step] = mat[1][0] * a + mat[1][1] * b;
+        }
+    }
 }
 
-void Wavefunction::apply_x() {
-    auto tmp = state[0];
-    state[0] = state[1];
-    state[1] = tmp;
+void Wavefunction::apply_h(std::size_t qubit) {
+    const double f = 1.0 / std::sqrt(2.0);
+    const std::complex<double> mat[2][2] = {{f, f}, {f, -f}};
+    apply_single_qubit_gate(state, qubit, mat);
 }
 
-int Wavefunction::measure() const {
-    double p0 = std::norm(state[0]);
+void Wavefunction::apply_x(std::size_t qubit) {
+    const std::complex<double> mat[2][2] = {{0, 1}, {1, 0}};
+    apply_single_qubit_gate(state, qubit, mat);
+}
+
+void Wavefunction::apply_y(std::size_t qubit) {
+    const std::complex<double> mat[2][2] = {
+        {0.0, std::complex<double>(0, -1)},
+        {std::complex<double>(0, 1), 0.0}
+    };
+    apply_single_qubit_gate(state, qubit, mat);
+}
+
+void Wavefunction::apply_z(std::size_t qubit) {
+    const std::complex<double> mat[2][2] = {{1, 0}, {0, -1}};
+    apply_single_qubit_gate(state, qubit, mat);
+}
+
+void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
+    std::size_t cbit = 1ULL << control;
+    std::size_t tbit = 1ULL << target;
+    for (std::size_t i = 0; i < state.size(); ++i) {
+        if ((i & cbit) && !(i & tbit)) {
+            std::size_t j = i | tbit;
+            std::swap(state[i], state[j]);
+        }
+    }
+}
+
+int Wavefunction::measure(std::size_t qubit) {
+    std::size_t bit = 1ULL << qubit;
+    double p1 = 0.0;
+    for (std::size_t i = 0; i < state.size(); ++i) {
+        if (i & bit)
+            p1 += std::norm(state[i]);
+    }
     std::random_device rd;
     std::mt19937 gen(rd());
-    std::bernoulli_distribution d(1.0 - p0);
-    return d(gen); // returns 0 or 1
+    std::bernoulli_distribution dist(p1);
+    int result = dist(gen);
+    double norm_factor = std::sqrt(result ? p1 : 1.0 - p1);
+    for (std::size_t i = 0; i < state.size(); ++i) {
+        if (((i & bit) != 0) != static_cast<bool>(result))
+            state[i] = 0;
+        else
+            state[i] /= norm_factor;
+    }
+    return result;
 }
+
 } // namespace qpp
+
