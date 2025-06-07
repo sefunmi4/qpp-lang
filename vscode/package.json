@@ -1,0 +1,32 @@
+{
+  "name": "qpp-syntax",
+  "displayName": "Q++ Language Support",
+  "description": "Syntax highlighting for Q++ files",
+  "version": "0.0.1",
+  "publisher": "qpp",
+  "engines": {
+    "vscode": "^1.74.0"
+  },
+  "contributes": {
+    "languages": [
+      {
+        "id": "qpp",
+        "aliases": ["Q++", "qpp"],
+        "extensions": [".qpp"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "qpp",
+        "scopeName": "source.qpp",
+        "path": "./syntaxes/qpp.tmLanguage.json"
+      }
+    ]
+  },
+  "categories": ["Programming Languages"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/sefunmi4/qpp-lang"
+  }
+}
