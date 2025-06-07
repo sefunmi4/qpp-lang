@@ -100,5 +100,12 @@ Defines available QPUs, simulators, and constraints like:
 
 ---
 
+### Scheduler Overview
+The reference runtime ships with a simple FIFO scheduler. Tasks added via
+`scheduler.add_task` are executed sequentially. When a `task<QPU>` handler is
+invoked, it operates on registers managed by `MemoryManager` and can apply gates
+through the `QRegister` interface. CPU tasks run regular C++ functions and may
+interact with classical registers.
+
 *End of Runtime Spec v0.1*
 

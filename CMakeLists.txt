@@ -25,4 +25,16 @@ if(BUILD_TESTING)
     add_executable(wavefunction_test tests/wavefunction_test.cpp)
     target_link_libraries(wavefunction_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_test COMMAND wavefunction_test)
+
+    add_executable(wavefunction_extra_test tests/wavefunction_extra_test.cpp)
+    target_link_libraries(wavefunction_extra_test PRIVATE qpp_runtime)
+    add_test(NAME wavefunction_extra_test COMMAND wavefunction_extra_test)
+
+    add_executable(scheduler_test tests/scheduler_test.cpp)
+    target_link_libraries(scheduler_test PRIVATE qpp_runtime)
+    add_test(NAME scheduler_test COMMAND scheduler_test)
+
+    add_executable(memory_test tests/memory_test.cpp)
+    target_link_libraries(memory_test PRIVATE qpp_runtime)
+    add_test(NAME memory_test COMMAND memory_test)
 endif()

@@ -1,0 +1,49 @@
+#pragma once
+#include <memory>
+#include <mutex>
+#include <vector>
+#include "wavefunction.h"
+
+namespace qpp {
+struct QRegister {
+    Wavefunction wf;
+    explicit QRegister(size_t n) : wf(n) {}
+
+    void h(std::size_t q) { wf.apply_h(q); }
+    void x(std::size_t q) { wf.apply_x(q); }
+    void y(std::size_t q) { wf.apply_y(q); }
+    void z(std::size_t q) { wf.apply_z(q); }
+    void cnot(std::size_t c, std::size_t t) { wf.apply_cnot(c, t); }
+    void s(std::size_t q) { wf.apply_s(q); }
+    void t(std::size_t q) { wf.apply_t(q); }
+    void swap(std::size_t a, std::size_t b) { wf.apply_swap(a, b); }
+    int measure(std::size_t q) { return wf.measure(q); }
+    void resize(std::size_t n) { wf = Wavefunction(n); }
+};
+
+// TODO: enhance QRegister to support saving/loading state and lazy allocation
+
+struct CRegister {
+    std::vector<int> bits;
+    explicit CRegister(size_t n) : bits(n, 0) {}
+};
+
+class MemoryManager {
+public:
+    int create_qregister(size_t n);
+    bool release_qregister(int id);
+    int create_cregister(size_t n);
+    bool release_cregister(int id);
+    QRegister& qreg(int id);
+    CRegister& creg(int id);
+private:
+    std::vector<std::unique_ptr<QRegister>> qregs;
+    std::vector<std::unique_ptr<CRegister>> cregs;
+    std::mutex mtx;
+};
+
+// TODO: support register reuse and bulk operations
+
+extern MemoryManager memory;
+}
+
