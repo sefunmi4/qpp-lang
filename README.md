@@ -96,6 +96,17 @@ pip install -r requirements.txt
 
 For contribution guidelines see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+### Quick Start Example
+
+Compile and run the sample program in `docs/examples/demo.qpp` with:
+
+```bash
+qppc docs/examples/demo.qpp demo.ir
+qpp-run demo.ir
+```
+
+This demonstrates the toy toolchain using the runtime scheduler and wavefunction simulator.
+
 ### Open Tasks
 
 See [TODO.md](TODO.md) for current areas where help is welcome. Items marked

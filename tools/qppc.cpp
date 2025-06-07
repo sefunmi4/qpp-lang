@@ -7,7 +7,6 @@
 // TODO(good-first-issue): replace with a proper frontend when the language
 // design stabilises.
 
-
 int main(int argc, char** argv) {
     if (argc < 3) {
         std::cerr << "Usage: qppc <source.qpp> <output.ir>\n";

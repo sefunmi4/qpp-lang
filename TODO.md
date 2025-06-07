@@ -23,3 +23,4 @@ are relatively self-contained and ideal for newcomers.
   external simulators.
 - Improve diagnostics throughout `qppc` and `qpp-run`, surfacing clearer error
   messages.
+

@@ -19,12 +19,15 @@ public:
     void apply_t(std::size_t qubit);
     void apply_swap(std::size_t q1, std::size_t q2);
 
-
     int measure(std::size_t qubit);
 
     std::vector<std::complex<double>> state;
     std::size_t num_qubits;
 };
+
+// TODO(good-first-issue): add more multi-qubit gates and state vector utilities
+} // namespace qpp
+
 
 // TODO(good-first-issue): add more multi-qubit gates and state vector utilities
 } // namespace qpp
