@@ -7,7 +7,6 @@
 int main() {
     using namespace qpp;
     Wavefunction wf(3);
-
     wf.apply_x(0);
     wf.apply_y(1);
     wf.apply_s(0);

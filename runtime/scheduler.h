@@ -4,7 +4,6 @@
 #include <mutex>
 #include <queue>
 #include <thread>
-
 #include <string>
 
 namespace qpp {
@@ -14,7 +13,6 @@ struct Task {
     std::string name;
     Target target;
     int priority{0};
-
     std::function<void()> handler;
 };
 
@@ -24,6 +22,9 @@ public:
     void run();
     void run_async();
     void wait();
+    void stop();
+    void pause();
+    void resume();
 private:
     struct Compare {
         bool operator()(const Task& a, const Task& b) const {
@@ -34,8 +35,8 @@ private:
     std::mutex mtx;
     std::condition_variable cv;
     bool running = false;
+    bool paused = false;
     std::thread worker;
-
 };
 
 // TODO(good-first-issue): extend Scheduler with task priorities and optional

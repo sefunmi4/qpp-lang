@@ -2,6 +2,7 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <complex>
 #include "wavefunction.h"
 
 namespace qpp {
@@ -43,9 +44,18 @@ public:
     bool release_cregister(int id);
     QRegister& qreg(int id);
     CRegister& creg(int id);
+    // statistics helpers
+    size_t qreg_allocs(int id);
+    size_t creg_allocs(int id);
+
+    // state import/export
+    std::vector<std::complex<double>> export_state(int id);
+    bool import_state(int id, const std::vector<std::complex<double>>& st);
 private:
     std::vector<std::unique_ptr<QRegister>> qregs;
     std::vector<std::unique_ptr<CRegister>> cregs;
+    std::vector<size_t> qalloc_count;
+    std::vector<size_t> calloc_count;
     std::mutex mtx;
 };
 

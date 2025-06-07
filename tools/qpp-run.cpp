@@ -1,5 +1,6 @@
 #include "../runtime/scheduler.h"
 #include "../runtime/memory.h"
+#include "../runtime/hardware_api.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -23,13 +24,18 @@ int main(int argc, char** argv) {
     std::string current_name;
     Target current_target = Target::AUTO;
     std::vector<std::vector<std::string>> ops;
+    std::vector<std::string> logs;
 
     auto add_current_task = [&]() {
         if (current_name.empty()) return;
         auto instrs = ops;
         auto name = current_name;
         auto target = current_target;
-        scheduler.add_task({name, target, 0, [instrs]() {
+        scheduler.add_task({name, target, 0, [instrs,&logs,name,target]() {
+            if (target == Target::QPU && qpu_backend()) {
+                auto qir = emit_qir(instrs);
+                qpu_backend()->execute_qir(qir);
+            }
             std::unordered_map<std::string,int> qmap;
             std::unordered_map<std::string,int> cmap;
             std::unordered_map<std::string,int> vars;
@@ -80,10 +86,11 @@ int main(int argc, char** argv) {
                 } else if (ins[0] == "MEASURE") {
                     int qid = qmap.at(ins[1]);
                     std::size_t qidx = std::stoul(ins[2]);
-                    int result = memory.qreg(qid).measure(qidx);
-                    if (ins.size() == 6 && ins[3] == "->") {
-                        if (ins[4] == "VAR") {
-                            vars[ins[5]] = result;
+                int result = memory.qreg(qid).measure(qidx);
+                logs.push_back(name + ": measured " + ins[1] + "[" + ins[2] + "] = " + std::to_string(result));
+                if (ins.size() == 6 && ins[3] == "->") {
+                    if (ins[4] == "VAR") {
+                        vars[ins[5]] = result;
                         } else {
                             int cid = cmap.at(ins[4]);
                             std::size_t cidx = std::stoul(ins[5]);
@@ -138,6 +145,7 @@ int main(int argc, char** argv) {
     }
     add_current_task();
     scheduler.run();
-    // TODO(good-first-issue): surface execution stats and measurement results
+    for (const auto& l : logs) std::cout << l << std::endl;
+    std::cout << "Executed " << logs.size() << " measurements." << std::endl;
     return 0;
 }

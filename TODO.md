@@ -20,8 +20,7 @@ The following larger tasks are required before Q++ reaches feature parity with e
 
 - ~~Expand the runtime scheduler with task priorities and asynchronous execution, allowing CPU hooks for hybrid workflows.~~ *(done)*
 - ~~Extend the `Wavefunction` library with additional gates and utilities for multi-qubit operations and state management.~~ *(done)*
-
-- Connect the Hardware API to real QPU backends and generate LLVM/QIR for interoperability.
+- **Partial** Hardware API skeleton added with QIR generation stubs. Next step is connecting to vendor SDKs and executing on real QPUs.
 - Continue documenting migration guides such as `bitwise_to_gate.md` and `bool_logic.md`.
 - Grow the test suite to cover more runtime paths and edge cases.
 
@@ -33,8 +32,9 @@ are relatively self-contained and ideal for newcomers.
 - `good-first-issue` Extend `Scheduler` with task priorities and async execution.
 - `good-first-issue` Add register reuse logic to `MemoryManager` to avoid excess
   allocations.
-- Add support for saving/loading `QRegister` state for interoperability with
-  external simulators.
+- ~~Add support for saving/loading `QRegister` state for interoperability with
+  external simulators.~~ *(done)*
+
 - Improve diagnostics throughout `qppc` and `qpp-run`, surfacing clearer error
   messages.
 

@@ -96,5 +96,9 @@ send_to_qpu(TaskIR task, HardwareProfile profile);
 
 ---
 
+The current codebase includes a small runtime skeleton in `hardware_api.h/cpp`
+which can emit QIR strings and pass them to a pluggable backend. Real QPU
+integration is not implemented yet.
+
 *End of Hardware API Spec v0.1*
 

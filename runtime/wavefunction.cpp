@@ -105,7 +105,6 @@ void Wavefunction::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t targe
     std::size_t tbit = 1ULL << target;
     for (std::size_t i = 0; i < state.size(); ++i) {
         if ((i & b1) && (i & b2) && !(i & tbit)) {
-
             std::size_t j = i | tbit;
             std::swap(state[i], state[j]);
         }
@@ -132,6 +131,7 @@ int Wavefunction::measure(std::size_t qubit) {
     }
     return result;
 }
+
 void Wavefunction::reset() {
     state.assign(state.size(), {0.0,0.0});
     if (!state.empty()) state[0] = 1.0;

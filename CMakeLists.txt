@@ -9,6 +9,7 @@ add_library(qpp_runtime
     runtime/engine.cpp
     runtime/memory.cpp
     runtime/scheduler.cpp
+    runtime/hardware_api.cpp
     runtime/wavefunction.cpp
 )
 
@@ -37,6 +38,18 @@ if(BUILD_TESTING)
     add_executable(memory_test tests/memory_test.cpp)
     target_link_libraries(memory_test PRIVATE qpp_runtime)
     add_test(NAME memory_test COMMAND memory_test)
+
+    add_executable(memory_import_test tests/memory_import_test.cpp)
+    target_link_libraries(memory_import_test PRIVATE qpp_runtime)
+    add_test(NAME memory_import_test COMMAND memory_import_test)
+
+    add_executable(scheduler_pause_test tests/scheduler_pause_test.cpp)
+    target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
+    add_test(NAME scheduler_pause_test COMMAND scheduler_pause_test)
+
+    add_executable(hardware_api_test tests/hardware_api_test.cpp)
+    target_link_libraries(hardware_api_test PRIVATE qpp_runtime)
+    add_test(NAME hardware_api_test COMMAND hardware_api_test)
 
     add_test(NAME demo_integration
         COMMAND ${CMAKE_SOURCE_DIR}/tests/demo_integration.sh)

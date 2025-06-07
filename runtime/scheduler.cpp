@@ -14,14 +14,13 @@ void Scheduler::add_task(const Task& t) {
 
 void Scheduler::run() {
     running = true;
-
     for (;;) {
         Task t;
         {
             std::lock_guard<std::mutex> lock(mtx);
-            if (tasks.empty()) break;
+            if (tasks.empty() || !running) break;
+            if (paused) { continue; }
             t = tasks.top();
-
             tasks.pop();
         }
         std::cout << "Running task '" << t.name << "' on ";
@@ -55,6 +54,9 @@ void Scheduler::run_async() {
                 cv.wait(lk, [this]() { return !tasks.empty() || !running; });
                 if (!running && tasks.empty())
                     break;
+                if (paused) {
+                    continue;
+                }
                 t = tasks.top();
                 tasks.pop();
             }
@@ -87,8 +89,30 @@ void Scheduler::wait() {
         worker.join();
 }
 
-Scheduler scheduler;
-// TODO(good-first-issue): provide scheduler stop/pause controls
+void Scheduler::stop() {
+    {
+        std::lock_guard<std::mutex> lock(mtx);
+        running = false;
+        cv.notify_all();
+    }
+    if (worker.joinable())
+        worker.join();
+}
 
+void Scheduler::pause() {
+    std::lock_guard<std::mutex> lock(mtx);
+    paused = true;
+}
+
+void Scheduler::resume() {
+    {
+        std::lock_guard<std::mutex> lock(mtx);
+        paused = false;
+    }
+    cv.notify_all();
+}
+
+Scheduler scheduler;
+// pause/stop controls implemented
 } // namespace qpp
 
