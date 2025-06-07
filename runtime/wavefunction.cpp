@@ -3,6 +3,7 @@
 #include <random>
 
 namespace qpp {
+// TODO: consolidate random engine usage across the runtime
 
 Wavefunction::Wavefunction(std::size_t qubits)
     : state(1ULL << qubits, {0.0, 0.0}), num_qubits(qubits) {
@@ -47,6 +48,36 @@ void Wavefunction::apply_z(std::size_t qubit) {
     apply_single_qubit_gate(state, qubit, mat);
 }
 
+void Wavefunction::apply_s(std::size_t qubit) {
+    const std::complex<double> mat[2][2] = {
+        {1, 0},
+        {0, std::complex<double>(0, 1)}
+    };
+    apply_single_qubit_gate(state, qubit, mat);
+}
+
+void Wavefunction::apply_t(std::size_t qubit) {
+    const std::complex<double> mat[2][2] = {
+        {1, 0},
+        {0, std::exp(std::complex<double>(0, M_PI / 4))}
+    };
+    apply_single_qubit_gate(state, qubit, mat);
+}
+
+void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
+    if (q1 == q2) return;
+    std::size_t bit1 = 1ULL << q1;
+    std::size_t bit2 = 1ULL << q2;
+    for (std::size_t i = 0; i < state.size(); ++i) {
+        bool b1 = i & bit1;
+        bool b2 = i & bit2;
+        if (b1 != b2) {
+            std::size_t j = (i ^ bit1 ^ bit2);
+            if (i < j) std::swap(state[i], state[j]);
+        }
+    }
+}
+
 void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
@@ -79,5 +110,6 @@ int Wavefunction::measure(std::size_t qubit) {
     return result;
 }
 
+// TODO: implement full state collapse for multi-qubit measurements
 } // namespace qpp
 

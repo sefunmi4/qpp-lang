@@ -1,5 +1,6 @@
 #pragma once
 #include <functional>
+#include <mutex>
 #include <queue>
 #include <string>
 
@@ -18,8 +19,10 @@ public:
     void run();
 private:
     std::queue<Task> tasks;
+    std::mutex mtx;
 };
 
+// TODO: extend Scheduler with priorities and asynchronous execution
 extern Scheduler scheduler;
 } // namespace qpp
 

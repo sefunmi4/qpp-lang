@@ -15,12 +15,19 @@ public:
     void apply_y(std::size_t qubit);
     void apply_z(std::size_t qubit);
     void apply_cnot(std::size_t control, std::size_t target);
+    void apply_s(std::size_t qubit);
+    void apply_t(std::size_t qubit);
+    void apply_swap(std::size_t q1, std::size_t q2);
+
 
     int measure(std::size_t qubit);
 
     std::vector<std::complex<double>> state;
     std::size_t num_qubits;
 };
+
+// TODO: add more multi-qubit gates and state vector utilities
+
 } // namespace qpp
 
 #endif // QPP_WAVEFUNCTION_H
