@@ -89,6 +89,29 @@ void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
     }
 }
 
+void Wavefunction::apply_cz(std::size_t control, std::size_t target) {
+    std::size_t cbit = 1ULL << control;
+    std::size_t tbit = 1ULL << target;
+    for (std::size_t i = 0; i < state.size(); ++i) {
+        if ((i & cbit) && (i & tbit)) {
+            state[i] = -state[i];
+        }
+    }
+}
+
+void Wavefunction::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target) {
+    std::size_t b1 = 1ULL << c1;
+    std::size_t b2 = 1ULL << c2;
+    std::size_t tbit = 1ULL << target;
+    for (std::size_t i = 0; i < state.size(); ++i) {
+        if ((i & b1) && (i & b2) && !(i & tbit)) {
+
+            std::size_t j = i | tbit;
+            std::swap(state[i], state[j]);
+        }
+    }
+}
+
 int Wavefunction::measure(std::size_t qubit) {
     std::size_t bit = 1ULL << qubit;
     double p1 = 0.0;
@@ -108,6 +131,15 @@ int Wavefunction::measure(std::size_t qubit) {
             state[i] /= norm_factor;
     }
     return result;
+}
+void Wavefunction::reset() {
+    state.assign(state.size(), {0.0,0.0});
+    if (!state.empty()) state[0] = 1.0;
+}
+
+std::complex<double> Wavefunction::amplitude(std::size_t index) const {
+    if (index >= state.size()) return {0.0,0.0};
+    return state[index];
 }
 
 // TODO: implement full state collapse for multi-qubit measurements

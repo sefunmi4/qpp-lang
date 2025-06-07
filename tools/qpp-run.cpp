@@ -29,7 +29,7 @@ int main(int argc, char** argv) {
         auto instrs = ops;
         auto name = current_name;
         auto target = current_target;
-        scheduler.add_task({name, target, [instrs]() {
+        scheduler.add_task({name, target, 0, [instrs]() {
             std::unordered_map<std::string,int> qmap;
             std::unordered_map<std::string,int> cmap;
             std::unordered_map<std::string,int> vars;
@@ -67,6 +67,16 @@ int main(int argc, char** argv) {
                     int c = qmap.at(ins[1]);
                     int t = qmap.at(ins[3]);
                     memory.qreg(c).cnot(std::stoul(ins[2]), std::stoul(ins[4]));
+                } else if (ins[0] == "CZ" && ins.size() == 5) {
+                    int c = qmap.at(ins[1]);
+                    int t = qmap.at(ins[3]);
+                    memory.qreg(c).cz(std::stoul(ins[2]), std::stoul(ins[4]));
+                } else if (ins[0] == "CCX" && ins.size() == 7) {
+                    int c1 = qmap.at(ins[1]);
+                    int c2 = qmap.at(ins[3]);
+                    int targ = qmap.at(ins[5]); // ensure register exists
+                    (void)targ;
+                    memory.qreg(c1).ccnot(std::stoul(ins[2]), std::stoul(ins[4]), std::stoul(ins[6]));
                 } else if (ins[0] == "MEASURE") {
                     int qid = qmap.at(ins[1]);
                     std::size_t qidx = std::stoul(ins[2]);

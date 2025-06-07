@@ -39,7 +39,8 @@ Found in `/docs`. Help us:
 Found in `/src`. Help us:
 - Parse new `qstruct`, `task<CPU>`, and `qregister` keywords
 - Build IR with gate macros, entanglement tracking, and auto-collapse
-- Simulate CPU/QPU behavior in a fallback runtime
+- Simulate CPU/QPU behavior in a fallback runtime with a prioritized
+  asynchronous scheduler
 
 ---
 
@@ -71,7 +72,6 @@ python tools/wave_primes.py --plot --method square -n 50
 
 The demo is purely experimental but serves as a playground for ideas inspired by
 quantum Fourier transforms.
-
 
 ## Building and Testing
 

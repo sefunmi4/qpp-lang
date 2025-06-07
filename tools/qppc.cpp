@@ -28,6 +28,8 @@ int main(int argc, char** argv) {
     std::regex qalloc_regex(R"(qalloc\s+\w+\s+(\w+)\[(\d+)\];)");
     std::regex creg_regex(R"(cregister\s+\w+\s+(\w+)\[(\d+)\];)");
     std::regex gate_regex(R"((H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);)");
+    std::regex cz_regex(R"(CZ\((\w+)\[(\d+)\],\s*(\w+)\[(\d+)\]\);)");
+    std::regex ccx_regex(R"(CCX\((\w+)\[(\d+)\],\s*(\w+)\[(\d+)\],\s*(\w+)\[(\d+)\]\);)");
     std::regex swap_regex(R"(SWAP\((\w+)\[(\d+)\],\s*(\w+)\[(\d+)\]\);)");
     std::regex cnot_regex(R"(CX\((\w+)\[(\d+)\],\s*(\w+)\[(\d+)\]\);)");
     std::regex meas_assign_regex(R"((\w+)\[(\d+)\]\s*=\s*measure\((\w+)\[(\d+)\]\);)");
@@ -161,6 +163,10 @@ int main(int argc, char** argv) {
             out << "SWAP " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
         } else if (std::regex_search(line, m, cnot_regex)) {
             out << "CNOT " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+        } else if (std::regex_search(line, m, cz_regex)) {
+            out << "CZ " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+        } else if (std::regex_search(line, m, ccx_regex)) {
+            out << "CCX " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << " " << m[5] << " " << m[6] << "\n";
         } else if (std::regex_search(line, m, meas_assign_regex)) {
             out << "MEASURE " << m[3] << " " << m[4] << " -> " << m[1] << " " << m[2] << "\n";
         } else if (std::regex_search(line, m, measure_regex)) {
