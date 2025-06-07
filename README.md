@@ -110,7 +110,10 @@ This demonstrates the toy toolchain using the runtime scheduler and wavefunction
 ### Open Tasks
 
 See [TODO.md](TODO.md) for current areas where help is welcome. Items marked
-`good-first-issue` are ideal starting points for new contributors.
+`good-first-issue` are ideal starting points for new contributors. The file also
+contains a **Longer Term Roadmap** describing features like a full compiler,
+advanced scheduler, and hardware API integration that would move Q++ toward
+production readiness.
 
 ### Editor Support
 
