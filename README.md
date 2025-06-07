@@ -73,7 +73,6 @@ The demo is purely experimental but serves as a playground for ideas inspired by
 quantum Fourier transforms.
 
 
-
 ## Building and Testing
 
 The project uses CMake. A typical build workflow is:
