@@ -37,4 +37,5 @@ if(BUILD_TESTING)
     add_executable(memory_test tests/memory_test.cpp)
     target_link_libraries(memory_test PRIVATE qpp_runtime)
     add_test(NAME memory_test COMMAND memory_test)
+
 endif()

@@ -23,7 +23,6 @@ private:
 };
 
 // TODO: extend Scheduler with priorities and asynchronous execution
-
 extern Scheduler scheduler;
 } // namespace qpp
 

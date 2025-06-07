@@ -111,6 +111,5 @@ int Wavefunction::measure(std::size_t qubit) {
 }
 
 // TODO: implement full state collapse for multi-qubit measurements
-
 } // namespace qpp
 
