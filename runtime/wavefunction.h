@@ -28,4 +28,19 @@ public:
 // TODO(good-first-issue): add more multi-qubit gates and state vector utilities
 } // namespace qpp
 
+// TODO(good-first-issue): add more multi-qubit gates and state vector utilities
+} // namespace qpp
+
+
+// TODO(good-first-issue): add more multi-qubit gates and state vector utilities
+// namespace qpp
+
+
+// TODO(good-first-issue): add more multi-qubit gates and state vector utilities
+// namespace qpp
+
+
+}// TODO: add more multi-qubit gates and state vector utilities
+
+// namespace qpp
 #endif // QPP_WAVEFUNCTION_H

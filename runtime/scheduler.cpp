@@ -4,6 +4,7 @@
 
 namespace qpp {
 // TODO(good-first-issue): hook Scheduler into a real QPU execution engine
+
 void Scheduler::add_task(const Task& t) {
     std::lock_guard<std::mutex> lock(mtx);
     tasks.push(t);
@@ -38,5 +39,6 @@ void Scheduler::run() {
 
 Scheduler scheduler;
 // TODO(good-first-issue): provide scheduler stop/pause controls
+
 } // namespace qpp
 
