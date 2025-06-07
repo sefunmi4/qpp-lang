@@ -24,7 +24,6 @@ int main(int argc, char** argv) {
     std::string current_name;
     Target current_target = Target::AUTO;
     std::vector<std::vector<std::string>> ops;
-
     std::vector<std::string> logs;
 
     auto add_current_task = [&]() {
