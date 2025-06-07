@@ -15,6 +15,9 @@ int main() {
     wf.apply_y(0);
     wf.apply_z(0);
 
+    int m = wf.measure(0);
+    assert(m == 0 || m == 1);
+
     // two qubit entanglement
     Wavefunction ent(2);
     ent.apply_h(0);
