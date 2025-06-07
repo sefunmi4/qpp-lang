@@ -73,3 +73,27 @@ The demo is purely experimental but serves as a playground for ideas inspired by
 quantum Fourier transforms.
 
 
+## Building and Testing
+
+The project uses CMake. A typical build workflow is:
+
+```bash
+mkdir build && cd build
+cmake ..
+make
+ctest
+```
+
+`ctest` executes the small wavefunction simulator tests.
+
+### Python Requirements
+
+To run the demo in `tools/wave_primes.py` install dependencies via:
+
+```bash
+pip install -r requirements.txt
+```
+
+For contribution guidelines see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+
