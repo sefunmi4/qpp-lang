@@ -3,6 +3,7 @@
 #include <random>
 
 namespace qpp {
+// TODO: consolidate random engine usage across the runtime
 
 Wavefunction::Wavefunction(std::size_t qubits)
     : state(1ULL << qubits, {0.0, 0.0}), num_qubits(qubits) {
@@ -78,6 +79,8 @@ int Wavefunction::measure(std::size_t qubit) {
     }
     return result;
 }
+
+// TODO: implement full state collapse for multi-qubit measurements
 
 } // namespace qpp
 

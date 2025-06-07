@@ -1,6 +1,10 @@
 #pragma once
 #include <memory>
 
+// TODO: enhance QRegister to support saving/loading state and lazy allocation
+
+// TODO: make MemoryManager thread-safe and support register reuse
+
 #include <vector>
 #include "wavefunction.h"
 

@@ -3,6 +3,8 @@
 #include <regex>
 #include <string>
 
+// TODO: replace this stub with a real parser and IR generator
+
 int main(int argc, char** argv) {
     if (argc < 3) {
         std::cerr << "Usage: qppc <source.qpp> <output.ir>\n";
@@ -27,5 +29,6 @@ int main(int argc, char** argv) {
         }
     }
     std::cout << "Compilation complete." << std::endl;
+    // TODO: output intermediate representation once IR design is finalized
     return 0;
 }

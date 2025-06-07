@@ -2,6 +2,7 @@
 #include <stdexcept>
 
 namespace qpp {
+// TODO: track register usage statistics for debugging
 int MemoryManager::create_qregister(size_t n) {
     qregs.push_back(std::make_unique<QRegister>(n));
     return static_cast<int>(qregs.size() - 1);
@@ -37,6 +38,7 @@ CRegister& MemoryManager::creg(int id) {
         throw std::out_of_range("invalid cregister id");
     return *cregs[id];
 
+// TODO: expose import/export of register states for persistence
 }
 
 MemoryManager memory;

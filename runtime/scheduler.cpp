@@ -2,6 +2,7 @@
 #include <iostream>
 
 namespace qpp {
+// TODO: hook into real QPU execution engines
 void Scheduler::add_task(const Task& t) {
     tasks.push(t);
 }
@@ -29,5 +30,6 @@ void Scheduler::run() {
 }
 
 Scheduler scheduler;
+// TODO: provide scheduler stop/pause controls
 } // namespace qpp
 

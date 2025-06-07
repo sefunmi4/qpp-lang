@@ -21,6 +21,8 @@ public:
     std::vector<std::complex<double>> state;
     std::size_t num_qubits;
 };
+
+// TODO: add more gates (S, T, SWAP) and state vector utilities
 } // namespace qpp
 
 #endif // QPP_WAVEFUNCTION_H

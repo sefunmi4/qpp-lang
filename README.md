@@ -95,3 +95,5 @@ To run the demo in `tools/wave_primes.py` install dependencies via:
 pip install -r requirements.txt
 ```
 
+<!-- TODO: add contributor guidelines and code of conduct -->
+

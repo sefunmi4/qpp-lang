@@ -3,6 +3,8 @@
 #include <iostream>
 #include <sstream>
 
+// TODO: interpret real IR and invoke CPU/QPU handlers
+
 using namespace qpp;
 
 int main(int argc, char** argv) {
@@ -27,5 +29,6 @@ int main(int argc, char** argv) {
         scheduler.add_task({name, t, []{}});
     }
     scheduler.run();
+    // TODO: surface execution stats and measurement results
     return 0;
 }
