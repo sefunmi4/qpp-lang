@@ -37,4 +37,8 @@ if(BUILD_TESTING)
     add_executable(memory_test tests/memory_test.cpp)
     target_link_libraries(memory_test PRIVATE qpp_runtime)
     add_test(NAME memory_test COMMAND memory_test)
+
+    add_test(NAME demo_integration
+        COMMAND ${CMAKE_SOURCE_DIR}/tests/demo_integration.sh)
+
 endif()

@@ -15,8 +15,9 @@ Further work is needed to refine the IR format, improve error diagnostics, and f
 
 The following larger tasks are required before Q++ reaches feature parity with existing quantum frameworks:
 
-- Complete compiler front-end so `qppc` parses real syntax and emits an intermediate representation.
-- Improve `qpp-run` to execute that IR through the scheduler and wavefunction backend.
+- Compiler front-end parses simple control flow and emits an intermediate representation used by `qpp-run`.
+- `qpp-run` now executes that IR via the scheduler and wavefunction backend, supporting conditional gates.
+
 - Expand the runtime scheduler with task priorities and asynchronous execution, allowing CPU hooks for hybrid workflows.
 - Extend the `Wavefunction` library with additional gates and utilities for multi-qubit operations and state management.
 - Connect the Hardware API to real QPU backends and generate LLVM/QIR for interoperability.

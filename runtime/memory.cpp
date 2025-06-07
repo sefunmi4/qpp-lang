@@ -51,4 +51,3 @@ MemoryManager memory;
 // TODO(good-first-issue): expose import/export of register states for persistence
 } // namespace qpp
 
-

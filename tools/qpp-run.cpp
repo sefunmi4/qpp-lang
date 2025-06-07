@@ -32,6 +32,21 @@ int main(int argc, char** argv) {
         scheduler.add_task({name, target, [instrs]() {
             std::unordered_map<std::string,int> qmap;
             std::unordered_map<std::string,int> cmap;
+            std::unordered_map<std::string,int> vars;
+
+            auto apply_gate = [&](const std::string& g,
+                                  const std::string& qname,
+                                  const std::string& qidx) {
+                int id = qmap.at(qname);
+                std::size_t q = std::stoul(qidx);
+                if (g == "H") memory.qreg(id).h(q);
+                else if (g == "X") memory.qreg(id).x(q);
+                else if (g == "Y") memory.qreg(id).y(q);
+                else if (g == "Z") memory.qreg(id).z(q);
+                else if (g == "S") memory.qreg(id).s(q);
+                else if (g == "T") memory.qreg(id).t(q);
+            };
+
             for (const auto& ins : instrs) {
                 if (ins.empty()) continue;
                 if (ins[0] == "QALLOC" && ins.size() == 3) {
@@ -40,15 +55,10 @@ int main(int argc, char** argv) {
                 } else if (ins[0] == "CALLOC" && ins.size() == 3) {
                     int id = memory.create_cregister(std::stoi(ins[2]));
                     cmap[ins[1]] = id;
+                } else if (ins[0] == "VAR" && ins.size() == 2) {
+                    vars[ins[1]] = 0;
                 } else if (ins[0] == "H" || ins[0] == "X" || ins[0] == "Y" || ins[0] == "Z" || ins[0] == "S" || ins[0] == "T") {
-                    int id = qmap.at(ins[1]);
-                    std::size_t q = std::stoul(ins[2]);
-                    if (ins[0] == "H") memory.qreg(id).h(q);
-                    else if (ins[0] == "X") memory.qreg(id).x(q);
-                    else if (ins[0] == "Y") memory.qreg(id).y(q);
-                    else if (ins[0] == "Z") memory.qreg(id).z(q);
-                    else if (ins[0] == "S") memory.qreg(id).s(q);
-                    else if (ins[0] == "T") memory.qreg(id).t(q);
+                    apply_gate(ins[0], ins[1], ins[2]);
                 } else if (ins[0] == "SWAP" && ins.size() == 5) {
                     int id1 = qmap.at(ins[1]);
                     int id2 = qmap.at(ins[3]);
@@ -62,11 +72,31 @@ int main(int argc, char** argv) {
                     std::size_t qidx = std::stoul(ins[2]);
                     int result = memory.qreg(qid).measure(qidx);
                     if (ins.size() == 6 && ins[3] == "->") {
-                        int cid = cmap.at(ins[4]);
-                        std::size_t cidx = std::stoul(ins[5]);
-                        if (cidx < memory.creg(cid).bits.size())
-                            memory.creg(cid).bits[cidx] = result;
+                        if (ins[4] == "VAR") {
+                            vars[ins[5]] = result;
+                        } else {
+                            int cid = cmap.at(ins[4]);
+                            std::size_t cidx = std::stoul(ins[5]);
+                            if (cidx < memory.creg(cid).bits.size())
+                                memory.creg(cid).bits[cidx] = result;
+                        }
                     }
+                } else if (ins[0] == "IFVAR" && ins.size() == 5) {
+                    if (vars[ins[1]])
+                        apply_gate(ins[2], ins[3], ins[4]);
+                } else if (ins[0] == "IFNVAR" && ins.size() == 5) {
+                    if (!vars[ins[1]])
+                        apply_gate(ins[2], ins[3], ins[4]);
+                } else if (ins[0] == "IFC" && ins.size() == 6) {
+                    int cid = cmap.at(ins[1]);
+                    std::size_t idx = std::stoul(ins[2]);
+                    if (memory.creg(cid).bits[idx])
+                        apply_gate(ins[3], ins[4], ins[5]);
+                } else if (ins[0] == "IFNC" && ins.size() == 6) {
+                    int cid = cmap.at(ins[1]);
+                    std::size_t idx = std::stoul(ins[2]);
+                    if (!memory.creg(cid).bits[idx])
+                        apply_gate(ins[3], ins[4], ins[5]);
                 }
             }
             for (auto& [name, id] : qmap) memory.release_qregister(id);
