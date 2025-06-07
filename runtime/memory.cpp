@@ -36,6 +36,7 @@ CRegister& MemoryManager::creg(int id) {
     if (id < 0 || id >= static_cast<int>(cregs.size()) || !cregs[id])
         throw std::out_of_range("invalid cregister id");
     return *cregs[id];
+
 }
 
 MemoryManager memory;
