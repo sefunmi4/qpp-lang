@@ -49,5 +49,6 @@ CRegister& MemoryManager::creg(int id) {
 
 MemoryManager memory;
 // TODO(good-first-issue): expose import/export of register states for persistence
-// namespace qpp
-}
+} // namespace qpp
+
+

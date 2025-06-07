@@ -11,6 +11,18 @@ The following tasks were outlined before open-sourcing and are now mostly addres
 
 Further work is needed to refine the IR format, improve error diagnostics, and flesh out compiler backends.
 
+### Longer Term Roadmap
+
+The following larger tasks are required before Q++ reaches feature parity with existing quantum frameworks:
+
+- Complete compiler front-end so `qppc` parses real syntax and emits an intermediate representation.
+- Improve `qpp-run` to execute that IR through the scheduler and wavefunction backend.
+- Expand the runtime scheduler with task priorities and asynchronous execution, allowing CPU hooks for hybrid workflows.
+- Extend the `Wavefunction` library with additional gates and utilities for multi-qubit operations and state management.
+- Connect the Hardware API to real QPU backends and generate LLVM/QIR for interoperability.
+- Continue documenting migration guides such as `bitwise_to_gate.md` and `bool_logic.md`.
+- Grow the test suite to cover more runtime paths and edge cases.
+
 ## Help Wanted
 
 The following items could use community help. Tasks tagged `good-first-issue`

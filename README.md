@@ -110,5 +110,20 @@ This demonstrates the toy toolchain using the runtime scheduler and wavefunction
 ### Open Tasks
 
 See [TODO.md](TODO.md) for current areas where help is welcome. Items marked
-`good-first-issue` are ideal starting points for new contributors.
+`good-first-issue` are ideal starting points for new contributors. The file also
+contains a **Longer Term Roadmap** describing features like a full compiler,
+advanced scheduler, and hardware API integration that would move Q++ toward
+production readiness.
+
+### Editor Support
+
+For syntax highlighting in VS Code, a minimal extension is provided under
+`/vscode`. Launch VS Code with the extension enabled using:
+
+```bash
+code --extensionDevelopmentPath=vscode .
+```
+
+This registers the `.qpp` extension with basic grammar definitions so Q++
+files render cleanly without C++ template errors.
 
