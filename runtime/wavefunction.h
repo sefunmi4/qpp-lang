@@ -26,6 +26,10 @@ public:
     std::size_t num_qubits;
 };
 
+// TODO(good-first-issue): add more multi-qubit gates and state vector utilities
+} // namespace qpp
+
+
 // TODO: add more multi-qubit gates and state vector utilities
 
 } // namespace qpp

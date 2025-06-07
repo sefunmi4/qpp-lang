@@ -1,7 +1,6 @@
 #pragma once
 #include <memory>
 #include <mutex>
-
 #include <vector>
 #include "wavefunction.h"
 
@@ -22,7 +21,9 @@ struct QRegister {
     void resize(std::size_t n) { wf = Wavefunction(n); }
 };
 
-// TODO: enhance QRegister to support saving/loading state and lazy allocation
+// TODO(good-first-issue): enhance QRegister with save/load helpers and
+// optional lazy allocation of the underlying Wavefunction
+
 
 struct CRegister {
     std::vector<int> bits;
@@ -43,7 +44,7 @@ private:
     std::mutex mtx;
 };
 
-// TODO: support register reuse and bulk operations
+// TODO(good-first-issue): implement register reuse and bulk operations
 
 extern MemoryManager memory;
 }

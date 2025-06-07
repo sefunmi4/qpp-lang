@@ -8,7 +8,6 @@
 
 // Simple interpreter for the toy IR emitted by qppc.
 
-
 using namespace qpp;
 
 int main(int argc, char** argv) {
@@ -100,6 +99,6 @@ int main(int argc, char** argv) {
     }
     add_current_task();
     scheduler.run();
-    // TODO: surface execution stats and measurement results
+    // TODO(good-first-issue): surface execution stats and measurement results
     return 0;
 }

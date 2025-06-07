@@ -22,7 +22,9 @@ private:
     std::mutex mtx;
 };
 
-// TODO: extend Scheduler with priorities and asynchronous execution
+// TODO(good-first-issue): extend Scheduler with task priorities and optional
+// asynchronous execution support
+
 extern Scheduler scheduler;
 } // namespace qpp
 

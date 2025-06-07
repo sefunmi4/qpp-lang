@@ -96,4 +96,8 @@ pip install -r requirements.txt
 
 For contribution guidelines see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+### Open Tasks
+
+See [TODO.md](TODO.md) for current areas where help is welcome. Items marked
+`good-first-issue` are ideal starting points for new contributors.
 

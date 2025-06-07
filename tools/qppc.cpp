@@ -1,11 +1,12 @@
-
 #include <fstream>
 #include <iostream>
 #include <regex>
 #include <string>
 
 // Very small parser generating a trivial IR used by qpp-run.
-// TODO: replace with a proper frontend when language design stabilises.
+// TODO(good-first-issue): replace with a proper frontend when the language
+// design stabilises.
+
 
 int main(int argc, char** argv) {
     if (argc < 3) {
@@ -17,7 +18,6 @@ int main(int argc, char** argv) {
         std::cerr << "Failed to open " << argv[1] << "\n";
         return 1;
     }
-   
     std::ofstream out(argv[2]);
     if (!out.is_open()) {
         std::cerr << "Failed to create " << argv[2] << "\n";
