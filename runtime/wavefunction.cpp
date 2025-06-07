@@ -3,6 +3,7 @@
 #include <random>
 
 namespace qpp {
+
 // TODO: consolidate random engine usage across the runtime
 
 Wavefunction::Wavefunction(std::size_t qubits)

@@ -1,3 +1,4 @@
+
 #include <fstream>
 #include <iostream>
 #include <regex>
@@ -16,6 +17,7 @@ int main(int argc, char** argv) {
         std::cerr << "Failed to open " << argv[1] << "\n";
         return 1;
     }
+   
     std::ofstream out(argv[2]);
     if (!out.is_open()) {
         std::cerr << "Failed to create " << argv[2] << "\n";
