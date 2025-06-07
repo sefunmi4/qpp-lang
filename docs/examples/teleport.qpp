@@ -1,0 +1,20 @@
+// Simple quantum teleportation example
+
+task<QPU> teleport() {
+    qalloc qbit q[3];
+    cregister int c[2];
+
+    // Create Bell pair between qubit1 and qubit2
+    H(q[1]);
+    CX(q[1], q[2]);
+
+    // Entangle message qubit0 with qubit1
+    CX(q[0], q[1]);
+    H(q[0]);
+
+    c[0] = measure(q[0]);
+    c[1] = measure(q[1]);
+
+    if (c[1]) { X(q[2]); }
+    if (c[0]) { Z(q[2]); }
+}
