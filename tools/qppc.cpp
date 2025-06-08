@@ -2,6 +2,7 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <vector>
 
 // Very small parser generating a trivial IR used by qpp-run.
 // TODO(good-first-issue): replace with a proper frontend when the language
@@ -17,11 +18,14 @@ int main(int argc, char** argv) {
         std::cerr << "Failed to open " << argv[1] << "\n";
         return 1;
     }
-    std::ofstream out(argv[2]);
-    if (!out.is_open()) {
-        std::cerr << "Failed to create " << argv[2] << "\n";
-        return 1;
-    }
+    std::vector<std::string> ir_lines;
+    auto emit = [&](const std::string& s) { ir_lines.push_back(s); };
+    bool clifford_only = true;
+    auto mark_gate = [&](const std::string& g) {
+        if (g != "H" && g != "X" && g != "Y" && g != "Z" && g != "S" &&
+            g != "CNOT" && g != "CZ" && g != "SWAP")
+            clifford_only = false;
+    };
     std::regex task_regex(R"(task<\s*(CPU|QPU|AUTO)\s*>\s*(\w+)\s*\()") ;
     std::regex param_qreg(R"(qregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
     std::regex param_creg(R"(cregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
@@ -62,7 +66,7 @@ int main(int argc, char** argv) {
         auto pos = line.find("//");
         if (pos != std::string::npos) line = line.substr(0, pos);
         if (std::regex_search(line, m, task_regex)) {
-            out << "TASK " << m[2] << " " << m[1] << "\n";
+            emit("TASK " + std::string(m[2]) + " " + std::string(m[1]));
             std::size_t start = line.find('(', m.position(0));
             std::size_t end = line.find(')', start);
             if (start != std::string::npos && end != std::string::npos) {
@@ -71,11 +75,11 @@ int main(int argc, char** argv) {
                 auto begin = std::sregex_iterator(params.begin(), params.end(), param_qreg);
                 auto endit = std::sregex_iterator();
                 for (auto it = begin; it != endit; ++it) {
-                    out << "QALLOC " << (*it)[1] << " " << (*it)[2] << "\n";
+                    emit("QALLOC " + std::string((*it)[1]) + " " + std::string((*it)[2]));
                 }
                 begin = std::sregex_iterator(params.begin(), params.end(), param_creg);
                 for (auto it = begin; it != endit; ++it) {
-                    out << "CALLOC " << (*it)[1] << " " << (*it)[2] << "\n";
+                    emit("CALLOC " + std::string((*it)[1]) + " " + std::string((*it)[2]));
                 }
             }
             in_task = true;
@@ -85,7 +89,7 @@ int main(int argc, char** argv) {
         trimmed.erase(0, trimmed.find_first_not_of(" \t"));
         trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
         if (in_task && trimmed == "}" && !cond_active) {
-            out << "ENDTASK\n";
+            emit("ENDTASK");
             in_task = false;
             continue;
         }
@@ -93,13 +97,13 @@ int main(int argc, char** argv) {
 
         if (cond_active) {
             if (std::regex_search(line, m, gate_regex)) {
+                mark_gate(std::string(m[1]));
                 if (cond_type == "var") {
-                    out << (cond_else ? "IFNVAR " : "IFVAR ") << cond_name << " "
-                        << m[1] << " " << m[2] << " " << m[3] << "\n";
+                    emit(std::string(cond_else ? "IFNVAR " : "IFVAR ") + cond_name +
+                         " " + std::string(m[1]) + " " + std::string(m[2]) + " " + std::string(m[3]));
                 } else if (cond_type == "creg") {
-                    out << (cond_else ? "IFNC " : "IFC ") << cond_name << " "
-                        << cond_index << " " << m[1] << " " << m[2] << " " << m[3]
-                        << "\n";
+                    emit(std::string(cond_else ? "IFNC " : "IFC ") + cond_name + " " + cond_index +
+                         " " + std::string(m[1]) + " " + std::string(m[2]) + " " + std::string(m[3]));
                 }
                 continue;
             }
@@ -130,11 +134,13 @@ int main(int argc, char** argv) {
         }
 
         if (std::regex_search(line, m, if_var_gate_single)) {
-            out << "IFVAR " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            mark_gate(std::string(m[2]));
+            emit("IFVAR " + std::string(m[1]) + " " + std::string(m[2]) + " " + std::string(m[3]) + " " + std::string(m[4]));
             continue;
         }
         if (std::regex_search(line, m, if_creg_gate_single)) {
-        out << "IFC " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << " " << m[5] << "\n";
+            mark_gate(std::string(m[3]));
+            emit("IFC " + std::string(m[1]) + " " + std::string(m[2]) + " " + std::string(m[3]) + " " + std::string(m[4]) + " " + std::string(m[5]));
             continue;
         }
 
@@ -154,32 +160,45 @@ int main(int argc, char** argv) {
             continue;
         }
         if (std::regex_search(line, m, qalloc_regex)) {
-            out << "QALLOC " << m[1] << " " << m[2] << "\n";
+            emit("QALLOC " + std::string(m[1]) + " " + std::string(m[2]));
         } else if (std::regex_search(line, m, creg_regex)) {
-            out << "CALLOC " << m[1] << " " << m[2] << "\n";
+            emit("CALLOC " + std::string(m[1]) + " " + std::string(m[2]));
         } else if (std::regex_search(line, m, meas_var_regex)) {
-            out << "VAR " << m[1] << "\n";
-            out << "MEASURE " << m[2] << " " << m[3] << " -> VAR " << m[1] << "\n";
+            emit("VAR " + std::string(m[1]));
+            emit("MEASURE " + std::string(m[2]) + " " + std::string(m[3]) + " -> VAR " + std::string(m[1]));
         } else if (std::regex_search(line, m, gate_regex)) {
-            out << m[1] << " " << m[2] << " " << m[3] << "\n";
+            mark_gate(std::string(m[1]));
+            emit(std::string(m[1]) + " " + std::string(m[2]) + " " + std::string(m[3]));
         } else if (std::regex_search(line, m, swap_regex)) {
-            out << "SWAP " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            mark_gate("SWAP");
+            emit("SWAP " + std::string(m[1]) + " " + std::string(m[2]) + " " + std::string(m[3]) + " " + std::string(m[4]));
         } else if (std::regex_search(line, m, cnot_regex)) {
-            out << "CNOT " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            mark_gate("CNOT");
+            emit("CNOT " + std::string(m[1]) + " " + std::string(m[2]) + " " + std::string(m[3]) + " " + std::string(m[4]));
         } else if (std::regex_search(line, m, cz_regex)) {
-            out << "CZ " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            mark_gate("CZ");
+            emit("CZ " + std::string(m[1]) + " " + std::string(m[2]) + " " + std::string(m[3]) + " " + std::string(m[4]));
         } else if (std::regex_search(line, m, ccx_regex)) {
-            out << "CCX " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << " " << m[5] << " " << m[6] << "\n";
+            mark_gate("CCX");
+            emit("CCX " + std::string(m[1]) + " " + std::string(m[2]) + " " + std::string(m[3]) + " " + std::string(m[4]) + " " + std::string(m[5]) + " " + std::string(m[6]));
         } else if (std::regex_search(line, m, xor_assign_regex)) {
-            out << "CNOT " << m[3] << " " << m[4] << " " << m[1] << " " << m[2] << "\n";
+            mark_gate("CNOT");
+            emit("CNOT " + std::string(m[3]) + " " + std::string(m[4]) + " " + std::string(m[1]) + " " + std::string(m[2]));
         } else if (std::regex_search(line, m, meas_assign_regex)) {
-            out << "MEASURE " << m[3] << " " << m[4] << " -> " << m[1] << " " << m[2] << "\n";
+            emit("MEASURE " + std::string(m[3]) + " " + std::string(m[4]) + " -> " + std::string(m[1]) + " " + std::string(m[2]));
         } else if (std::regex_search(line, m, measure_regex)) {
-            out << "MEASURE " << m[1] << " " << m[2] << "\n";
+            emit("MEASURE " + std::string(m[1]) + " " + std::string(m[2]));
         } else if (trimmed.size() > 0) {
             std::cerr << "Unrecognized syntax on line " << line_no << ": " << trimmed << "\n";
         }
     }
+    std::ofstream out(argv[2]);
+    if (!out.is_open()) {
+        std::cerr << "Failed to create " << argv[2] << "\n";
+        return 1;
+    }
+    out << "CLIFFORD " << (clifford_only ? 1 : 0) << "\n";
+    for (const auto& l : ir_lines) out << l << "\n";
     std::cout << "Compilation complete." << std::endl;
     return 0;
 }
