@@ -21,3 +21,4 @@ if (b && other) {
 ```
 
 In loops the measurement result is cached so subsequent evaluations of the same variable use the measured value. Developers should consider resetting qubits or re-preparing the state if multiple passes are needed.
+

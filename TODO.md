@@ -23,6 +23,7 @@ The following larger tasks are required before Q++ reaches feature parity with e
 - Continue documenting migration guides such as `bitwise_to_gate.md` and `bool_logic.md`.
 - Grow the test suite to cover more runtime paths and edge cases. *(ongoing)*
 
+
 ## Help Wanted
 
 The following items could use community help. Tasks tagged `good-first-issue`
@@ -33,6 +34,7 @@ are relatively self-contained and ideal for newcomers.
   allocations.~~ *(done)*
 - ~~Add support for saving/loading `QRegister` state for interoperability with
   external simulators.~~ *(done)*
+
 - Improve diagnostics throughout `qppc` and `qpp-run`, surfacing clearer error
   messages.
 

@@ -22,6 +22,9 @@ int MemoryManager::create_qregister(size_t n) {
         qalloc_count.push_back(1);
     }
     return id;
+    qregs.push_back(std::make_unique<QRegister>(n));
+    qalloc_count.push_back(1);
+    return static_cast<int>(qregs.size() - 1);
 }
 
 bool MemoryManager::release_qregister(int id) {
@@ -32,6 +35,7 @@ bool MemoryManager::release_qregister(int id) {
     if (id < static_cast<int>(qalloc_count.size()))
         ++qalloc_count[id];
     free_qids.push_back(id);
+
     return true;
 }
 
