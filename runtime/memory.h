@@ -7,7 +7,7 @@
 
 namespace qpp {
 struct QRegister {
-    Wavefunction wf;
+    Wavefunction<> wf;
     explicit QRegister(size_t n) : wf(n) {}
 
     void h(std::size_t q) { wf.apply_h(q); }

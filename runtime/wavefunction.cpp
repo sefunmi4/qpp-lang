@@ -8,31 +8,16 @@
 namespace qpp {
 // TODO(good-first-issue): consolidate random engine usage across the runtime
 
-namespace {
-// Simple RAII timer used to profile individual gate applications
-class GateTimer {
-public:
-    explicit GateTimer(const char* n)
-        : name(n), start(std::chrono::high_resolution_clock::now()) {}
-    ~GateTimer() {
-        auto end = std::chrono::high_resolution_clock::now();
-        auto dur = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
-        std::cout << "[gate timing] " << name << " took " << dur.count() << " ns" << std::endl;
-    }
-private:
-    const char* name;
-    std::chrono::high_resolution_clock::time_point start;
-};
-} // namespace
-
-Wavefunction::Wavefunction(std::size_t qubits)
+template<typename Real>
+Wavefunction<Real>::Wavefunction(std::size_t qubits)
     : state(1ULL << qubits, {0.0, 0.0}), num_qubits(qubits) {
-    state[0] = 1.0;
+    state[0] = Real(1.0);
 }
 
-static void apply_single_qubit_gate(std::vector<std::complex<double>>& st,
+template<typename Real>
+static void apply_single_qubit_gate(std::vector<std::complex<Real>>& st,
                                     std::size_t target,
-                                    const std::complex<double> mat[2][2]) {
+                                    const std::complex<Real> mat[2][2]) {
     std::size_t step = 1ULL << target;
 #pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < st.size(); i += 2 * step) {
@@ -46,54 +31,54 @@ static void apply_single_qubit_gate(std::vector<std::complex<double>>& st,
     }
 }
 
-void Wavefunction::apply_h(std::size_t qubit) {
-    decompress();
-    const double f = 1.0 / std::sqrt(2.0);
-    const std::complex<double> mat[2][2] = {{f, f}, {f, -f}};
-    apply_single_qubit_gate(state, qubit, mat);
+template<typename Real>
+void Wavefunction<Real>::apply_h(std::size_t qubit) {
+    const Real f = Real(1.0) / std::sqrt(Real(2.0));
+    const std::complex<Real> mat[2][2] = {{f, f}, {f, -f}};
+    apply_single_qubit_gate<Real>(state, qubit, mat);
 }
 
-void Wavefunction::apply_x(std::size_t qubit) {
-    decompress();
-    const std::complex<double> mat[2][2] = {{0, 1}, {1, 0}};
-    apply_single_qubit_gate(state, qubit, mat);
+template<typename Real>
+void Wavefunction<Real>::apply_x(std::size_t qubit) {
+    const std::complex<Real> mat[2][2] = {{0, 1}, {1, 0}};
+    apply_single_qubit_gate<Real>(state, qubit, mat);
 }
 
-void Wavefunction::apply_y(std::size_t qubit) {
-    decompress();
-    const std::complex<double> mat[2][2] = {
-        {0.0, std::complex<double>(0, -1)},
-        {std::complex<double>(0, 1), 0.0}
+template<typename Real>
+void Wavefunction<Real>::apply_y(std::size_t qubit) {
+    const std::complex<Real> mat[2][2] = {
+        {Real(0.0), std::complex<Real>(0, -1)},
+        {std::complex<Real>(0, 1), Real(0.0)}
     };
-    apply_single_qubit_gate(state, qubit, mat);
+    apply_single_qubit_gate<Real>(state, qubit, mat);
 }
 
-void Wavefunction::apply_z(std::size_t qubit) {
-    decompress();
-    const std::complex<double> mat[2][2] = {{1, 0}, {0, -1}};
-    apply_single_qubit_gate(state, qubit, mat);
+template<typename Real>
+void Wavefunction<Real>::apply_z(std::size_t qubit) {
+    const std::complex<Real> mat[2][2] = {{1, 0}, {0, -1}};
+    apply_single_qubit_gate<Real>(state, qubit, mat);
 }
 
-void Wavefunction::apply_s(std::size_t qubit) {
-    decompress();
-    const std::complex<double> mat[2][2] = {
+template<typename Real>
+void Wavefunction<Real>::apply_s(std::size_t qubit) {
+    const std::complex<Real> mat[2][2] = {
         {1, 0},
-        {0, std::complex<double>(0, 1)}
+        {0, std::complex<Real>(0, 1)}
     };
-    apply_single_qubit_gate(state, qubit, mat);
+    apply_single_qubit_gate<Real>(state, qubit, mat);
 }
 
-void Wavefunction::apply_t(std::size_t qubit) {
-    decompress();
-    const std::complex<double> mat[2][2] = {
+template<typename Real>
+void Wavefunction<Real>::apply_t(std::size_t qubit) {
+    const std::complex<Real> mat[2][2] = {
         {1, 0},
-        {0, std::exp(std::complex<double>(0, M_PI / 4))}
+        {0, std::exp(std::complex<Real>(0, M_PI / 4))}
     };
-    apply_single_qubit_gate(state, qubit, mat);
+    apply_single_qubit_gate<Real>(state, qubit, mat);
 }
 
-void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
-    decompress();
+template<typename Real>
+void Wavefunction<Real>::apply_swap(std::size_t q1, std::size_t q2) {
     if (q1 == q2) return;
     std::size_t bit1 = 1ULL << q1;
     std::size_t bit2 = 1ULL << q2;
@@ -108,8 +93,8 @@ void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
     }
 }
 
-void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
-    decompress();
+template<typename Real>
+void Wavefunction<Real>::apply_cnot(std::size_t control, std::size_t target) {
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
 #pragma omp parallel for schedule(static)
@@ -121,8 +106,8 @@ void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
     }
 }
 
-void Wavefunction::apply_cz(std::size_t control, std::size_t target) {
-    decompress();
+template<typename Real>
+void Wavefunction<Real>::apply_cz(std::size_t control, std::size_t target) {
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
 #pragma omp parallel for schedule(static)
@@ -133,8 +118,8 @@ void Wavefunction::apply_cz(std::size_t control, std::size_t target) {
     }
 }
 
-void Wavefunction::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target) {
-    decompress();
+template<typename Real>
+void Wavefunction<Real>::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target) {
     std::size_t b1 = 1ULL << c1;
     std::size_t b2 = 1ULL << c2;
     std::size_t tbit = 1ULL << target;
@@ -147,8 +132,8 @@ void Wavefunction::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t targe
     }
 }
 
-int Wavefunction::measure(std::size_t qubit) {
-    decompress();
+template<typename Real>
+int Wavefunction<Real>::measure(std::size_t qubit) {
     std::size_t bit = 1ULL << qubit;
     double p1 = 0.0;
 #pragma omp parallel for reduction(+:p1) schedule(static)
@@ -171,7 +156,8 @@ int Wavefunction::measure(std::size_t qubit) {
     return result;
 }
 
-std::size_t Wavefunction::measure(const std::vector<std::size_t>& qubits) {
+template<typename Real>
+std::size_t Wavefunction<Real>::measure(const std::vector<std::size_t>& qubits) {
     if (qubits.empty()) return 0;
     decompress();
     // compute probabilities for all outcomes
@@ -213,19 +199,14 @@ std::size_t Wavefunction::measure(const std::vector<std::size_t>& qubits) {
     return result;
 }
 
-void Wavefunction::reset() {
-    decompress();
+template<typename Real>
+void Wavefunction<Real>::reset() {
     state.assign(state.size(), {0.0,0.0});
-    if (!state.empty()) state[0] = 1.0;
-    is_sparse = false;
+    if (!state.empty()) state[0] = Real(1.0);
 }
 
-std::complex<double> Wavefunction::amplitude(std::size_t index) const {
-    if (is_sparse) {
-        auto it = sparse_state.find(index);
-        if (it == sparse_state.end()) return {0.0,0.0};
-        return it->second;
-    }
+template<typename Real>
+std::complex<Real> Wavefunction<Real>::amplitude(std::size_t index) const {
     if (index >= state.size()) return {0.0,0.0};
     return state[index];
 }
@@ -260,6 +241,9 @@ std::size_t Wavefunction::nnz() const {
 }
 
 // TODO: implement full state collapse for multi-qubit measurements
+
+template class Wavefunction<double>;
+template class Wavefunction<float>;
 
 } // namespace qpp
 

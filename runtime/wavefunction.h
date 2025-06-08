@@ -7,6 +7,7 @@
 #include <unordered_map>
 
 namespace qpp {
+template<typename Real = double>
 class Wavefunction {
 public:
     explicit Wavefunction(std::size_t qubits = 1);
@@ -22,27 +23,19 @@ public:
     void apply_t(std::size_t qubit);
     void apply_swap(std::size_t q1, std::size_t q2);
 
+    using complex_t = std::complex<Real>;
+
     void reset();
-    std::complex<double> amplitude(std::size_t index) const;
+    complex_t amplitude(std::size_t index) const;
 
     int measure(std::size_t qubit);
     std::size_t measure(const std::vector<std::size_t>& qubits);
 
-    void compress();
-    void decompress();
-    bool using_sparse() const { return is_sparse; }
-    std::size_t nnz() const;
-
-    std::vector<std::complex<double>> state;
-    std::unordered_map<std::size_t, std::complex<double>> sparse_state;
-    bool is_sparse{false};
-    std::size_t num_qubits;
+  std::vector<complex_t> state;
+  std::size_t num_qubits;
 };
 
-// Analyze amplitude magnitudes using a ripple-based Fourier model.
-// Returns the dominant period length if detected, otherwise 0.
-std::size_t detect_periodicity_ripple(const Wavefunction& wf,
-                                      double threshold = 0.1);
+using WavefunctionF = Wavefunction<float>;
 
 // TODO(good-first-issue): extend with parameterized rotations and register
 // import/export helpers
