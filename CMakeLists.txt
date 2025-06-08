@@ -12,6 +12,7 @@ add_library(qpp_runtime
     runtime/memory.cpp
     runtime/scheduler.cpp
     runtime/hardware_api.cpp
+    runtime/hardware_profile.cpp
     runtime/wavefunction.cpp
     runtime/sparse_wavefunction.cpp
     runtime/disk_pager.cpp

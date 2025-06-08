@@ -2,6 +2,7 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include "hardware_profile.h"
 #include <vector>
 
 // Very small parser generating a trivial IR used by qpp-run.
@@ -10,7 +11,7 @@
 
 int main(int argc, char** argv) {
     if (argc < 3) {
-        std::cerr << "Usage: qppc <source.qpp> <output.ir>\n";
+        std::cerr << "Usage: qppc <source.qpp> <output.ir> [--profile file.json]\n";
         return 1;
     }
     std::ifstream input(argv[1]);
@@ -24,6 +25,20 @@ int main(int argc, char** argv) {
         return 1;
     }
 
+    qpp::HardwareProfile profile;
+    bool have_profile = false;
+    for (int i = 3; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--profile" && i + 1 < argc) {
+            if (!qpp::load_hardware_profile(argv[i + 1], profile)) {
+                std::cerr << "Failed to load hardware profile " << argv[i + 1] << "\n";
+            } else {
+                have_profile = true;
+            }
+            ++i;
+        }
+    }
+    
     struct Instr {
         std::string op;
         std::vector<std::string> args;
@@ -71,6 +86,7 @@ int main(int argc, char** argv) {
             }
         }
     };
+    
     std::regex task_regex(R"(task<\s*(CPU|QPU|AUTO)\s*>\s*(\w+)\s*\()") ;
     std::regex hint_regex(R"(@(dense|clifford))", std::regex::icase);
     std::regex param_qreg(R"(qregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
