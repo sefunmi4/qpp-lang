@@ -47,6 +47,9 @@ public:
     size_t qreg_allocs(int id);
     size_t creg_allocs(int id);
 
+    // live memory statistics
+    size_t memory_usage();
+
     // state import/export
     std::vector<std::complex<double>> export_state(int id);
     bool import_state(int id, const std::vector<std::complex<double>>& st);

@@ -55,6 +55,10 @@ if(BUILD_TESTING)
     target_link_libraries(memory_reuse_test PRIVATE qpp_runtime)
     add_test(NAME memory_reuse_test COMMAND memory_reuse_test)
 
+    add_executable(memory_usage_test tests/memory_usage_test.cpp)
+    target_link_libraries(memory_usage_test PRIVATE qpp_runtime)
+    add_test(NAME memory_usage_test COMMAND memory_usage_test)
+
     add_executable(scheduler_pause_test tests/scheduler_pause_test.cpp)
     target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
     add_test(NAME scheduler_pause_test COMMAND scheduler_pause_test)
