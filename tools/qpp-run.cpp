@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
     std::string line;
     std::string current_name;
     Target current_target = Target::AUTO;
+    ExecHint current_hint = ExecHint::NONE;
     std::vector<std::vector<std::string>> ops;
 
     std::vector<std::string> logs;
@@ -52,7 +53,12 @@ int main(int argc, char** argv) {
         auto instrs = ops;
         auto name = current_name;
         auto target = current_target;
-        scheduler.add_task({name, target, 0, [instrs,&logs,name,target]() {
+        auto hint = current_hint;
+        scheduler.add_task({name, target, hint, 0, [instrs,&logs,name,target,hint]() {
+            if (hint == ExecHint::CLIFFORD)
+                std::cout << "[runtime] hint CLIFFORD - using stabilizer path" << std::endl;
+            else if (hint == ExecHint::DENSE)
+                std::cout << "[runtime] hint DENSE - using dense path" << std::endl;
             if (target == Target::QPU && qpu_backend()) {
                 auto qir = emit_qir(instrs);
                 qpu_backend()->execute_qir(qir);
@@ -156,6 +162,14 @@ int main(int argc, char** argv) {
             if (tok == "CPU") current_target = Target::CPU;
             else if (tok == "QPU") current_target = Target::QPU;
             else current_target = Target::AUTO;
+            std::string hintTok;
+            if (iss >> hintTok) {
+                if (hintTok == "DENSE") current_hint = ExecHint::DENSE;
+                else if (hintTok == "CLIFFORD") current_hint = ExecHint::CLIFFORD;
+                else current_hint = ExecHint::NONE;
+            } else {
+                current_hint = ExecHint::NONE;
+            }
         } else if (tok == "ENDTASK") {
             add_current_task();
         } else if (!tok.empty()) {

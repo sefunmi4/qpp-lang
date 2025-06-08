@@ -23,6 +23,7 @@ int main(int argc, char** argv) {
         return 1;
     }
     std::regex task_regex(R"(task<\s*(CPU|QPU|AUTO)\s*>\s*(\w+)\s*\()") ;
+    std::regex hint_regex(R"(@(dense|clifford))", std::regex::icase);
     std::regex param_qreg(R"(qregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
     std::regex param_creg(R"(cregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
     std::regex qalloc_regex(R"(qalloc\s+\w+\s+(\w+)\[(\d+)\];)");
@@ -35,6 +36,7 @@ int main(int argc, char** argv) {
     std::regex meas_assign_regex(R"((\w+)\[(\d+)\]\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex meas_var_regex(R"(int\s+(\w+)\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex measure_regex(R"(measure\((\w+)\[(\d+)\]\);)");
+    std::regex call_regex(R"(\b\w+\s*\([^)]*\);)");
     std::regex xor_assign_regex(R"((\w+)\[(\d+)\]\s*\^=\s*(\w+)\[(\d+)\];)");
     std::regex if_var_regex(R"(if\s*\(\s*(\w+)\s*\)\s*\{)");
     std::regex if_creg_regex(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{)");
@@ -62,12 +64,19 @@ int main(int argc, char** argv) {
         auto pos = line.find("//");
         if (pos != std::string::npos) line = line.substr(0, pos);
         if (std::regex_search(line, m, task_regex)) {
-            out << "TASK " << m[2] << " " << m[1] << "\n";
             std::size_t start = line.find('(', m.position(0));
             std::size_t end = line.find(')', start);
+            std::string hint;
+            std::smatch hm;
+            if (end != std::string::npos && std::regex_search(line.cbegin()+end, line.cend(), hm, hint_regex))
+                hint = hm[1];
+            std::string hint_up;
+            if (!hint.empty()) { hint_up = hint; for (auto& c : hint_up) c = toupper(c); }
+            out << "TASK " << m[2] << " " << m[1];
+            if (!hint_up.empty()) out << " " << hint_up;
+            out << "\n";
             if (start != std::string::npos && end != std::string::npos) {
                 std::string params = line.substr(start + 1, end - start - 1);
-                std::smatch pm;
                 auto begin = std::sregex_iterator(params.begin(), params.end(), param_qreg);
                 auto endit = std::sregex_iterator();
                 for (auto it = begin; it != endit; ++it) {
@@ -176,6 +185,8 @@ int main(int argc, char** argv) {
             out << "MEASURE " << m[3] << " " << m[4] << " -> " << m[1] << " " << m[2] << "\n";
         } else if (std::regex_search(line, m, measure_regex)) {
             out << "MEASURE " << m[1] << " " << m[2] << "\n";
+        } else if (std::regex_search(line, m, call_regex)) {
+            // function call - no-op in toy compiler
         } else if (trimmed.size() > 0) {
             std::cerr << "Unrecognized syntax on line " << line_no << ": " << trimmed << "\n";
         }

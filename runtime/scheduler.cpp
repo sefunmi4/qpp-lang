@@ -35,6 +35,10 @@ void Scheduler::run() {
             std::cout << "AUTO";
             break;
         }
+        if (t.hint == ExecHint::CLIFFORD)
+            std::cout << " [CLIFFORD]";
+        else if (t.hint == ExecHint::DENSE)
+            std::cout << " [DENSE]";
         std::cout << std::endl;
         if (t.handler)
             t.handler();
@@ -72,6 +76,10 @@ void Scheduler::run_async() {
                 std::cout << "AUTO";
                 break;
             }
+            if (t.hint == ExecHint::CLIFFORD)
+                std::cout << " [CLIFFORD]";
+            else if (t.hint == ExecHint::DENSE)
+                std::cout << " [DENSE]";
             std::cout << std::endl;
             if (t.handler)
                 t.handler();
