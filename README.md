@@ -104,6 +104,10 @@ For contribution guidelines see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Quick Start Example
 
+`qppc` currently supports a restricted subset of the language focused on
+applying gates and performing measurements. Control-flow constructs and
+other features are not yet implemented.
+
 Compile and run the sample program in `docs/examples/demo.qpp` with:
 
 ```bash
@@ -113,7 +117,9 @@ qpp-run demo.ir
 
 This demonstrates the toy toolchain using the runtime scheduler and wavefunction simulator.
 
-For a more thorough test of the simulator, try `docs/examples/wavefunction_demo.qpp`:
+For a more thorough test of the simulator, try `docs/examples/wavefunction_demo.qpp`.
+This example has been simplified to use only gates and measurements so it
+builds cleanly with the current compiler:
 
 ```bash
 qppc docs/examples/wavefunction_demo.qpp wf.ir
