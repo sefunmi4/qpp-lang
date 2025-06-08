@@ -17,6 +17,7 @@ add_library(qpp_runtime
     runtime/sparse_wavefunction.cpp
     runtime/disk_pager.cpp
     runtime/runtime_config.cpp]
+    runtime/quidd.cpp
 )
 
 if(OpenMP_CXX_FOUND)
@@ -30,6 +31,9 @@ target_link_libraries(qppc PRIVATE qpp_runtime)
 
 add_executable(qpp-run tools/qpp-run.cpp)
 target_link_libraries(qpp-run PRIVATE qpp_runtime)
+
+add_executable(quidd_benchmark tools/quidd_benchmark.cpp)
+target_link_libraries(quidd_benchmark PRIVATE qpp_runtime)
 
 if(BUILD_TESTING)
     enable_testing()
@@ -69,6 +73,10 @@ if(BUILD_TESTING)
     add_executable(memory_reuse_test tests/memory_reuse_test.cpp)
     target_link_libraries(memory_reuse_test PRIVATE qpp_runtime)
     add_test(NAME memory_reuse_test COMMAND memory_reuse_test)
+
+    add_executable(quidd_conversion_test tests/quidd_conversion_test.cpp)
+    target_link_libraries(quidd_conversion_test PRIVATE qpp_runtime)
+    add_test(NAME quidd_conversion_test COMMAND quidd_conversion_test)
 
     add_executable(checkpoint_test tests/checkpoint_test.cpp)
     target_link_libraries(checkpoint_test PRIVATE qpp_runtime)

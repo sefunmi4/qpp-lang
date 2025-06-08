@@ -147,6 +147,14 @@ qppc docs/examples/wavefunction_demo.qpp wf.ir
 qpp-run wf.ir
 ```
 
+The decision diagram implementation can be benchmarked using:
+
+```bash
+quidd_benchmark 8
+```
+
+This compares memory usage of the dense wavefunction against the QuIDD form.
+
 To see how bitwise operators map to quantum gates, compile `docs/examples/bitwise_demo.qpp`:
 
 ```bash
