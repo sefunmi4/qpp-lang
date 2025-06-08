@@ -81,6 +81,5 @@ bool MemoryManager::import_state(int id, const std::vector<std::complex<double>>
 
 MemoryManager memory;
 // Register import/export implemented above
-
 } // namespace qpp
 
