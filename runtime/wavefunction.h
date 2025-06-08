@@ -4,6 +4,7 @@
 #include <complex>
 #include <vector>
 #include <cstddef>
+#include <unordered_map>
 
 namespace qpp {
 class Wavefunction {
@@ -27,7 +28,14 @@ public:
     int measure(std::size_t qubit);
     std::size_t measure(const std::vector<std::size_t>& qubits);
 
+    void compress();
+    void decompress();
+    bool using_sparse() const { return is_sparse; }
+    std::size_t nnz() const;
+
     std::vector<std::complex<double>> state;
+    std::unordered_map<std::size_t, std::complex<double>> sparse_state;
+    bool is_sparse{false};
     std::size_t num_qubits;
 };
 

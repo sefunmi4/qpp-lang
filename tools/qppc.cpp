@@ -47,6 +47,7 @@ int main(int argc, char** argv) {
     std::regex if_var_gate_single(R"(if\s*\(\s*(\w+)\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex if_creg_gate_single(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex else_regex(R"(\}\s*else\s*\{)");
+    std::regex call_regex(R"((\w+)\s*\(.*\);)");
 
     std::string line;
     int line_no = 0;
@@ -196,7 +197,9 @@ int main(int argc, char** argv) {
         } else if (std::regex_search(line, m, meas_assign_regex)) {
             emit("MEASURE " + std::string(m[3]) + " " + std::string(m[4]) + " -> " + std::string(m[1]) + " " + std::string(m[2]));
         } else if (std::regex_search(line, m, measure_regex)) {
-            emit("MEASURE " + std::string(m[1]) + " " + std::string(m[2]));
+            out << "MEASURE " << m[1] << " " << m[2] << "\n";
+        } else if (std::regex_search(line, m, call_regex)) {
+            out << "CALL " << m[1] << "\n";
         } else if (trimmed.size() > 0) {
             std::cerr << "Unrecognized syntax on line " << line_no << ": " << trimmed << "\n";
         }

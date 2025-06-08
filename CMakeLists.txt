@@ -45,9 +45,10 @@ if(BUILD_TESTING)
     target_link_libraries(wavefunction_twoqubit_measure_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_twoqubit_measure_test COMMAND wavefunction_twoqubit_measure_test)
 
-    add_executable(wavefunction_periodicity_test tests/wavefunction_periodicity_test.cpp)
-    target_link_libraries(wavefunction_periodicity_test PRIVATE qpp_runtime)
-    add_test(NAME wavefunction_periodicity_test COMMAND wavefunction_periodicity_test)
+    add_executable(wavefunction_sparse_test tests/wavefunction_sparse_test.cpp)
+    target_link_libraries(wavefunction_sparse_test PRIVATE qpp_runtime)
+    add_test(NAME wavefunction_sparse_test COMMAND wavefunction_sparse_test)
+
 
     add_executable(scheduler_test tests/scheduler_test.cpp)
     target_link_libraries(scheduler_test PRIVATE qpp_runtime)
