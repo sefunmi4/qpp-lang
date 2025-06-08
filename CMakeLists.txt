@@ -11,6 +11,7 @@ add_library(qpp_runtime
     runtime/scheduler.cpp
     runtime/hardware_api.cpp
     runtime/wavefunction.cpp
+    runtime/sparse_wavefunction.cpp
 )
 
 target_include_directories(qpp_runtime PUBLIC include)
@@ -62,6 +63,10 @@ if(BUILD_TESTING)
     add_executable(hardware_api_test tests/hardware_api_test.cpp)
     target_link_libraries(hardware_api_test PRIVATE qpp_runtime)
     add_test(NAME hardware_api_test COMMAND hardware_api_test)
+
+    add_executable(sparse_wavefunction_test tests/sparse_wavefunction_test.cpp)
+    target_link_libraries(sparse_wavefunction_test PRIVATE qpp_runtime)
+    add_test(NAME sparse_wavefunction_test COMMAND sparse_wavefunction_test)
 
     add_test(NAME demo_integration
         COMMAND ${CMAKE_SOURCE_DIR}/tests/demo_integration.sh)
