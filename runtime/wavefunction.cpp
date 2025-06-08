@@ -1,6 +1,9 @@
 #include "wavefunction.h"
 #include <cmath>
 #include <random>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 namespace qpp {
 // TODO(good-first-issue): consolidate random engine usage across the runtime
@@ -14,7 +17,9 @@ static void apply_single_qubit_gate(std::vector<std::complex<double>>& st,
                                     std::size_t target,
                                     const std::complex<double> mat[2][2]) {
     std::size_t step = 1ULL << target;
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < st.size(); i += 2 * step) {
+#pragma omp simd
         for (std::size_t j = 0; j < step; ++j) {
             auto a = st[i + j];
             auto b = st[i + j + step];
@@ -68,6 +73,7 @@ void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
     if (q1 == q2) return;
     std::size_t bit1 = 1ULL << q1;
     std::size_t bit2 = 1ULL << q2;
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         bool b1 = i & bit1;
         bool b2 = i & bit2;
@@ -81,6 +87,7 @@ void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
 void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         if ((i & cbit) && !(i & tbit)) {
             std::size_t j = i | tbit;
@@ -92,6 +99,7 @@ void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
 void Wavefunction::apply_cz(std::size_t control, std::size_t target) {
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         if ((i & cbit) && (i & tbit)) {
             state[i] = -state[i];
@@ -103,6 +111,7 @@ void Wavefunction::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t targe
     std::size_t b1 = 1ULL << c1;
     std::size_t b2 = 1ULL << c2;
     std::size_t tbit = 1ULL << target;
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         if ((i & b1) && (i & b2) && !(i & tbit)) {
             std::size_t j = i | tbit;
@@ -114,6 +123,7 @@ void Wavefunction::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t targe
 int Wavefunction::measure(std::size_t qubit) {
     std::size_t bit = 1ULL << qubit;
     double p1 = 0.0;
+#pragma omp parallel for reduction(+:p1) schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         if (i & bit)
             p1 += std::norm(state[i]);
@@ -123,6 +133,7 @@ int Wavefunction::measure(std::size_t qubit) {
     std::bernoulli_distribution dist(p1);
     int result = dist(gen);
     double norm_factor = std::sqrt(result ? p1 : 1.0 - p1);
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         if (((i & bit) != 0) != static_cast<bool>(result))
             state[i] = 0;
@@ -137,18 +148,29 @@ std::size_t Wavefunction::measure(const std::vector<std::size_t>& qubits) {
     // compute probabilities for all outcomes
     std::size_t outcomes = 1ULL << qubits.size();
     std::vector<double> probs(outcomes, 0.0);
-    for (std::size_t i = 0; i < state.size(); ++i) {
-        std::size_t outcome = 0;
-        for (std::size_t q = 0; q < qubits.size(); ++q) {
-            if (i & (1ULL << qubits[q])) outcome |= 1ULL << q;
+#pragma omp parallel
+    {
+        std::vector<double> local(outcomes, 0.0);
+#pragma omp for schedule(static)
+        for (std::size_t i = 0; i < state.size(); ++i) {
+            std::size_t outcome = 0;
+            for (std::size_t q = 0; q < qubits.size(); ++q) {
+                if (i & (1ULL << qubits[q])) outcome |= 1ULL << q;
+            }
+            local[outcome] += std::norm(state[i]);
         }
-        probs[outcome] += std::norm(state[i]);
+#pragma omp critical
+        {
+            for (std::size_t o = 0; o < outcomes; ++o)
+                probs[o] += local[o];
+        }
     }
     std::random_device rd;
     std::mt19937 gen(rd());
     std::discrete_distribution<std::size_t> dist(probs.begin(), probs.end());
     std::size_t result = dist(gen);
     double norm_factor = std::sqrt(probs[result]);
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         std::size_t outcome = 0;
         for (std::size_t q = 0; q < qubits.size(); ++q) {
