@@ -67,4 +67,6 @@ if(BUILD_TESTING)
         COMMAND ${CMAKE_SOURCE_DIR}/tests/demo_integration.sh)
     add_test(NAME examples_compile_test
         COMMAND ${CMAKE_SOURCE_DIR}/tests/examples_compile_test.sh)
+    add_test(NAME engine_dispatch_test
+        COMMAND ${CMAKE_SOURCE_DIR}/tests/engine_dispatch_test.sh)
 endif()
