@@ -55,6 +55,10 @@ if(BUILD_TESTING)
     target_link_libraries(memory_reuse_test PRIVATE qpp_runtime)
     add_test(NAME memory_reuse_test COMMAND memory_reuse_test)
 
+    add_executable(low_rank_factorization_test tests/low_rank_factorization_test.cpp)
+    target_link_libraries(low_rank_factorization_test PRIVATE qpp_runtime)
+    add_test(NAME low_rank_factorization_test COMMAND low_rank_factorization_test)
+
     add_executable(scheduler_pause_test tests/scheduler_pause_test.cpp)
     target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
     add_test(NAME scheduler_pause_test COMMAND scheduler_pause_test)

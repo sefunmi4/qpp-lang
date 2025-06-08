@@ -3,6 +3,7 @@
 
 #include <complex>
 #include <vector>
+#include <array>
 #include <cstddef>
 
 namespace qpp {
@@ -26,6 +27,11 @@ public:
 
     int measure(std::size_t qubit);
     std::size_t measure(const std::vector<std::size_t>& qubits);
+
+    // Detect low entanglement for a single qubit and, when nearly separable,
+    // approximate the state via a rank-1 Schmidt decomposition. Returns true
+    // if the decomposition was applied.
+    bool schmidt_low_rank(std::size_t qubit, double threshold = 1e-6);
 
     std::vector<std::complex<double>> state;
     std::size_t num_qubits;
