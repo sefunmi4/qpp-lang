@@ -157,6 +157,8 @@ See [TODO.md](TODO.md) for current areas where help is welcome. Items marked
 contains a **Longer Term Roadmap** describing features like a full compiler,
 advanced scheduler, and hardware API integration that would move Q++ toward
 production readiness.
+For a complete list of proposed features and their implementation tasks,
+refer to [features.yaml](features.yaml).
 
 ### Editor Support
 
