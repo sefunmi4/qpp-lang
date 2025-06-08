@@ -35,6 +35,10 @@ if(BUILD_TESTING)
     target_link_libraries(wavefunction_collapse_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_collapse_test COMMAND wavefunction_collapse_test)
 
+    add_executable(wavefunction_twoqubit_measure_test tests/wavefunction_twoqubit_measure_test.cpp)
+    target_link_libraries(wavefunction_twoqubit_measure_test PRIVATE qpp_runtime)
+    add_test(NAME wavefunction_twoqubit_measure_test COMMAND wavefunction_twoqubit_measure_test)
+
     add_executable(scheduler_test tests/scheduler_test.cpp)
     target_link_libraries(scheduler_test PRIVATE qpp_runtime)
     add_test(NAME scheduler_test COMMAND scheduler_test)
