@@ -90,6 +90,7 @@ Use `--time` instead of `--animate` to view a single snapshot at a specific
 moment.
 
 
+
 ## Building and Testing
 
 The project uses CMake. A typical build workflow is:
@@ -102,6 +103,9 @@ ctest
 ```
 
 `ctest` executes the small wavefunction simulator tests.
+
+The wavefunction runtime now supports low-precision `float` amplitudes via a
+template parameter. All examples and unit tests build against this mode.
 
 ### Python Requirements
 
