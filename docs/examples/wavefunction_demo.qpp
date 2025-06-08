@@ -1,0 +1,44 @@
+// Wavefunction simulator demo covering all current gates.
+// Compile with:
+//   qppc docs/examples/wavefunction_demo.qpp wf.ir
+// Run with:
+//   qpp-run wf.ir
+// This program applies a series of single- and multi-qubit gates,
+// then performs conditional logic based on measurement results.
+
+task<QPU> wave_demo() {
+    qalloc qbit q[3];
+    cregister int c[1];
+    int m;
+
+    // prepare entangled state
+    H(q[0]);
+    CX(q[0], q[1]);
+    CX(q[0], q[2]);
+
+    // single qubit gates
+    X(q[1]);
+    Y(q[2]);
+    Z(q[2]);
+    S(q[1]);
+    T(q[0]);
+
+    // multi-qubit gates
+    CZ(q[1], q[2]);
+    CCX(q[0], q[1], q[2]);
+    SWAP(q[0], q[2]);
+
+    m = measure(q[0]);
+    if (m) {
+        X(q[1]);
+    } else {
+        Y(q[1]);
+    }
+
+    c[0] = measure(q[1]);
+    c[0] = measure(q[2]);
+}
+
+task<AUTO> main() {
+    wave_demo();
+}
