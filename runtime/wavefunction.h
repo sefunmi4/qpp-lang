@@ -25,6 +25,7 @@ public:
     std::complex<double> amplitude(std::size_t index) const;
 
     int measure(std::size_t qubit);
+    std::size_t measure(const std::vector<std::size_t>& qubits);
 
     std::vector<std::complex<double>> state;
     std::size_t num_qubits;

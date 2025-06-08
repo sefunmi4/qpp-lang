@@ -21,6 +21,7 @@ struct QRegister {
     void t(std::size_t q) { wf.apply_t(q); }
     void swap(std::size_t a, std::size_t b) { wf.apply_swap(a, b); }
     int measure(std::size_t q) { return wf.measure(q); }
+    std::size_t measure(const std::vector<std::size_t>& qs) { return wf.measure(qs); }
     void reset() { wf.reset(); }
     std::complex<double> amp(std::size_t idx) const { return wf.amplitude(idx); }
     void resize(std::size_t n) { wf = Wavefunction(n); }

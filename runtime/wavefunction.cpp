@@ -132,6 +132,36 @@ int Wavefunction::measure(std::size_t qubit) {
     return result;
 }
 
+std::size_t Wavefunction::measure(const std::vector<std::size_t>& qubits) {
+    if (qubits.empty()) return 0;
+    // compute probabilities for all outcomes
+    std::size_t outcomes = 1ULL << qubits.size();
+    std::vector<double> probs(outcomes, 0.0);
+    for (std::size_t i = 0; i < state.size(); ++i) {
+        std::size_t outcome = 0;
+        for (std::size_t q = 0; q < qubits.size(); ++q) {
+            if (i & (1ULL << qubits[q])) outcome |= 1ULL << q;
+        }
+        probs[outcome] += std::norm(state[i]);
+    }
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::discrete_distribution<std::size_t> dist(probs.begin(), probs.end());
+    std::size_t result = dist(gen);
+    double norm_factor = std::sqrt(probs[result]);
+    for (std::size_t i = 0; i < state.size(); ++i) {
+        std::size_t outcome = 0;
+        for (std::size_t q = 0; q < qubits.size(); ++q) {
+            if (i & (1ULL << qubits[q])) outcome |= 1ULL << q;
+        }
+        if (outcome != result)
+            state[i] = 0;
+        else
+            state[i] /= norm_factor;
+    }
+    return result;
+}
+
 void Wavefunction::reset() {
     state.assign(state.size(), {0.0,0.0});
     if (!state.empty()) state[0] = 1.0;
