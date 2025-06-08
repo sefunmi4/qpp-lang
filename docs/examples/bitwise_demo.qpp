@@ -1,0 +1,17 @@
+// Demo of bitwise operators mapping to gates
+// compile with:
+//   qppc docs/examples/bitwise_demo.qpp bitwise.ir
+// run with:
+//   qpp-run bitwise.ir
+
+task<QPU> demo() {
+    qalloc qbit q[2];
+    // XOR via bitwise operator
+    q[0] ^= q[1];
+    int m0 = measure(q[0]);
+    int m1 = measure(q[1]);
+}
+
+task<AUTO> main() {
+    demo();
+}

@@ -37,6 +37,10 @@ Reference `.qpp` files that demonstrate working language features:
 - `adaptive_task.qpp` – Conditional branching and task adaptation
 - `hello_world.qpp` – Minimal task and print interaction
 - `teleport.qpp` – Quantum teleportation and entanglement usage
+- `demo.qpp` – Quick demonstration to compile and run with `qppc` and `qpp-run`
+- `wavefunction_demo.qpp` – Exercises all built-in gates and conditional
+  measurement logic
+- `bitwise_demo.qpp` – Shows bitwise operators expanding to quantum gates
 
 Use these to test local builds or see practical use cases of language features.
 
