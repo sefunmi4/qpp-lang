@@ -34,6 +34,9 @@ void Scheduler::run() {
         case Target::AUTO:
             std::cout << "AUTO";
             break;
+        case Target::MIXED:
+            std::cout << "MIXED";
+            break;
         }
         std::cout << std::endl;
         if (t.handler)
@@ -70,6 +73,9 @@ void Scheduler::run_async() {
                 break;
             case Target::AUTO:
                 std::cout << "AUTO";
+                break;
+            case Target::MIXED:
+                std::cout << "MIXED";
                 break;
             }
             std::cout << std::endl;

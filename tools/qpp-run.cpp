@@ -155,6 +155,7 @@ int main(int argc, char** argv) {
             iss >> current_name >> tok; // tok is target
             if (tok == "CPU") current_target = Target::CPU;
             else if (tok == "QPU") current_target = Target::QPU;
+            else if (tok == "MIXED") current_target = Target::MIXED;
             else current_target = Target::AUTO;
         } else if (tok == "ENDTASK") {
             add_current_task();

@@ -22,7 +22,7 @@ int main(int argc, char** argv) {
         std::cerr << "Failed to create " << argv[2] << "\n";
         return 1;
     }
-    std::regex task_regex(R"(task<\s*(CPU|QPU|AUTO)\s*>\s*(\w+)\s*\()") ;
+    std::regex task_regex(R"(task<\s*(CPU|QPU|AUTO|MIXED)\s*>\s*(\w+)\s*\()") ;
     std::regex param_qreg(R"(qregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
     std::regex param_creg(R"(cregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
     std::regex qalloc_regex(R"(qalloc\s+\w+\s+(\w+)\[(\d+)\];)");
@@ -40,6 +40,7 @@ int main(int argc, char** argv) {
     std::regex if_creg_regex(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{)");
     std::regex if_var_gate_single(R"(if\s*\(\s*(\w+)\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex if_creg_gate_single(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
+    std::regex call_regex(R"(\w+\s*\(.*\);)" );
     std::regex else_regex(R"(\}\s*else\s*\{)");
 
     std::string line;
@@ -176,6 +177,8 @@ int main(int argc, char** argv) {
             out << "MEASURE " << m[3] << " " << m[4] << " -> " << m[1] << " " << m[2] << "\n";
         } else if (std::regex_search(line, m, measure_regex)) {
             out << "MEASURE " << m[1] << " " << m[2] << "\n";
+        } else if (std::regex_search(line, m, call_regex)) {
+            // ignore simple function calls like foo(); in this toy compiler
         } else if (trimmed.size() > 0) {
             std::cerr << "Unrecognized syntax on line " << line_no << ": " << trimmed << "\n";
         }

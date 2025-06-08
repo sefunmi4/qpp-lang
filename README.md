@@ -21,7 +21,7 @@ Inspired by how C++ evolved from C, Q++ introduces just enough new logic to supp
 | `bool` | Automatically probabilistic if linked to quantum memory |
 | Bitwise Ops | Become quantum gate macros (`^` → `CX`, `&` → `Toffoli`) |
 | `register` | Extended as `qregister`, `cregister`, or left as `auto` |
-| `task<T>` | `task<QPU>`, `task<CPU>`, `task<AUTO>` target hardware like GPU kernels |
+| `task<T>` | `task<QPU>`, `task<CPU>`, `task<AUTO>`, `task<MIXED>` target hardware or hybrid modes |
 | `__qasm` | Inject raw gate-level code (like inline asm) |
 | LLVM IR | Enhanced with QIR, collapse metadata, and probabilistic flags |
 | Import/Export | Save and restore `qregister` state for external simulators |

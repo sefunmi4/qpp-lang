@@ -7,7 +7,7 @@
 #include <string>
 
 namespace qpp {
-enum class Target { CPU, QPU, AUTO };
+enum class Target { CPU, QPU, AUTO, MIXED };
 
 struct Task {
     std::string name;
