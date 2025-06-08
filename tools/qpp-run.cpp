@@ -1,6 +1,7 @@
 #include "../runtime/scheduler.h"
 #include "../runtime/memory.h"
 #include "../runtime/hardware_api.h"
+#include "../runtime/patterns.h"
 #include <fstream>
 #include <iostream>
 #include <sstream>
@@ -50,6 +51,7 @@ int main(int argc, char** argv) {
     auto add_current_task = [&]() {
         if (current_name.empty()) return;
         auto instrs = ops;
+        optimize_patterns(instrs);
         auto name = current_name;
         auto target = current_target;
         scheduler.add_task({name, target, 0, [instrs,&logs,name,target]() {
@@ -104,6 +106,12 @@ int main(int argc, char** argv) {
                     int targ = qmap.at(ins[5]); // ensure register exists
                     (void)targ;
                     memory.qreg(c1).ccnot(std::stoul(ins[2]), std::stoul(ins[4]), std::stoul(ins[6]));
+                } else if (ins[0] == "QFT2" && ins.size() == 4) {
+                    int id = qmap.at(ins[1]);
+                    apply_qft2(memory.qreg(id), std::stoul(ins[2]), std::stoul(ins[3]));
+                } else if (ins[0] == "GROVER2" && ins.size() == 4) {
+                    int id = qmap.at(ins[1]);
+                    apply_grover2(memory.qreg(id), std::stoul(ins[2]), std::stoul(ins[3]));
                 } else if (ins[0] == "MEASURE") {
                     int qid = qmap.at(ins[1]);
                     std::size_t qidx = std::stoul(ins[2]);

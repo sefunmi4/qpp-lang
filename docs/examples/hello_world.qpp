@@ -1,6 +1,6 @@
 task<CPU> say_hello() {
     // classical print
-    printf("Hello, classical world!\n");
+    // printf("Hello, classical world!\n");
 }
 
 task<QPU> quantum_demo() {
@@ -9,6 +9,6 @@ task<QPU> quantum_demo() {
 }
 
 task<AUTO> main() {
-    say_hello();
-    quantum_demo();
+    // say_hello();
+    // quantum_demo();
 }
