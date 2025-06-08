@@ -8,6 +8,23 @@
 namespace qpp {
 // TODO(good-first-issue): consolidate random engine usage across the runtime
 
+namespace {
+// Simple RAII timer used to profile individual gate applications
+class GateTimer {
+public:
+    explicit GateTimer(const char* n)
+        : name(n), start(std::chrono::high_resolution_clock::now()) {}
+    ~GateTimer() {
+        auto end = std::chrono::high_resolution_clock::now();
+        auto dur = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start);
+        std::cout << "[gate timing] " << name << " took " << dur.count() << " ns" << std::endl;
+    }
+private:
+    const char* name;
+    std::chrono::high_resolution_clock::time_point start;
+};
+} // namespace
+
 Wavefunction::Wavefunction(std::size_t qubits)
     : state(1ULL << qubits, {0.0, 0.0}), num_qubits(qubits) {
     state[0] = 1.0;
@@ -30,17 +47,20 @@ static void apply_single_qubit_gate(std::vector<std::complex<double>>& st,
 }
 
 void Wavefunction::apply_h(std::size_t qubit) {
+    GateTimer timer("H");
     const double f = 1.0 / std::sqrt(2.0);
     const std::complex<double> mat[2][2] = {{f, f}, {f, -f}};
     apply_single_qubit_gate(state, qubit, mat);
 }
 
 void Wavefunction::apply_x(std::size_t qubit) {
+    GateTimer timer("X");
     const std::complex<double> mat[2][2] = {{0, 1}, {1, 0}};
     apply_single_qubit_gate(state, qubit, mat);
 }
 
 void Wavefunction::apply_y(std::size_t qubit) {
+    GateTimer timer("Y");
     const std::complex<double> mat[2][2] = {
         {0.0, std::complex<double>(0, -1)},
         {std::complex<double>(0, 1), 0.0}
@@ -49,11 +69,13 @@ void Wavefunction::apply_y(std::size_t qubit) {
 }
 
 void Wavefunction::apply_z(std::size_t qubit) {
+    GateTimer timer("Z");
     const std::complex<double> mat[2][2] = {{1, 0}, {0, -1}};
     apply_single_qubit_gate(state, qubit, mat);
 }
 
 void Wavefunction::apply_s(std::size_t qubit) {
+    GateTimer timer("S");
     const std::complex<double> mat[2][2] = {
         {1, 0},
         {0, std::complex<double>(0, 1)}
@@ -62,6 +84,7 @@ void Wavefunction::apply_s(std::size_t qubit) {
 }
 
 void Wavefunction::apply_t(std::size_t qubit) {
+    GateTimer timer("T");
     const std::complex<double> mat[2][2] = {
         {1, 0},
         {0, std::exp(std::complex<double>(0, M_PI / 4))}
@@ -70,6 +93,7 @@ void Wavefunction::apply_t(std::size_t qubit) {
 }
 
 void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
+    GateTimer timer("SWAP");
     if (q1 == q2) return;
     std::size_t bit1 = 1ULL << q1;
     std::size_t bit2 = 1ULL << q2;
@@ -85,6 +109,7 @@ void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
 }
 
 void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
+    GateTimer timer("CNOT");
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
 #pragma omp parallel for schedule(static)
@@ -97,6 +122,7 @@ void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
 }
 
 void Wavefunction::apply_cz(std::size_t control, std::size_t target) {
+    GateTimer timer("CZ");
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
 #pragma omp parallel for schedule(static)
@@ -108,6 +134,7 @@ void Wavefunction::apply_cz(std::size_t control, std::size_t target) {
 }
 
 void Wavefunction::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target) {
+    GateTimer timer("CCNOT");
     std::size_t b1 = 1ULL << c1;
     std::size_t b2 = 1ULL << c2;
     std::size_t tbit = 1ULL << target;
