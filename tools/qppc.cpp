@@ -36,6 +36,8 @@ int main(int argc, char** argv) {
     std::regex meas_var_regex(R"(int\s+(\w+)\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex measure_regex(R"(measure\((\w+)\[(\d+)\]\);)");
     std::regex xor_assign_regex(R"((\w+)\[(\d+)\]\s*\^=\s*(\w+)\[(\d+)\];)");
+    std::regex call_regex(R"(\s*(\w+)\s*\(\s*\)\s*;)");
+    std::regex printf_regex(R"(printf\(.*\);)");
     std::regex if_var_regex(R"(if\s*\(\s*(\w+)\s*\)\s*\{)");
     std::regex if_creg_regex(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{)");
     std::regex if_var_gate_single(R"(if\s*\(\s*(\w+)\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
@@ -172,6 +174,12 @@ int main(int argc, char** argv) {
             out << "CCX " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << " " << m[5] << " " << m[6] << "\n";
         } else if (std::regex_search(line, m, xor_assign_regex)) {
             out << "CNOT " << m[3] << " " << m[4] << " " << m[1] << " " << m[2] << "\n";
+        } else if (std::regex_search(line, m, call_regex)) {
+            // simple function call - no IR generated yet
+            (void)m; // suppress unused warning
+        } else if (std::regex_search(line, m, printf_regex)) {
+            // ignore printf statements in examples
+            (void)m;
         } else if (std::regex_search(line, m, meas_assign_regex)) {
             out << "MEASURE " << m[3] << " " << m[4] << " -> " << m[1] << " " << m[2] << "\n";
         } else if (std::regex_search(line, m, measure_regex)) {

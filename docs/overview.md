@@ -13,6 +13,7 @@ Detailed planning documents for core system features:
 - [`01-frontend.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/01-frontend.md#q-frontend-specification) – Grammar, syntax, and parser expectations
 - [`02-runtime.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/02-runtime.md) – Runtime architecture: `qalloc`, `task<>`, `qguard`
 - [`03-hardware-api.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/03-hardware-api.md) – Planned integration with QPUs
+- [`pde_state_evolution.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/pde_state_evolution.md) – Research notes on Dirac/Klein–Gordon based simulation
 
 Each file links directly to GitHub issues and project boards. These are meant for experienced contributors focused on design, implementation details, or tracking bugs.
 
