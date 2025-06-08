@@ -1,0 +1,11 @@
+// Adaptive task that branches based on measurement
+
+task<QPU> adaptive(qregister q[2]) {
+    H(q[0]);
+    int m = measure(q[0]);
+    if (m) {
+        X(q[1]);
+    } else {
+        Z(q[1]);
+    }
+}
