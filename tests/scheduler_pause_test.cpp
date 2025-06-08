@@ -8,8 +8,8 @@ using namespace qpp;
 
 int main() {
     std::atomic<int> count{0};
-    Task t1{"inc1", Target::CPU, 0, [&]() { count++; }};
-    Task t2{"inc2", Target::CPU, 0, [&]() { count++; }};
+    Task t1{"inc1", Target::CPU, ExecHint::NONE, 0, [&]() { count++; }};
+    Task t2{"inc2", Target::CPU, ExecHint::NONE, 0, [&]() { count++; }};
     scheduler.add_task(t1);
     scheduler.add_task(t2);
     scheduler.run_async();
