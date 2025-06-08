@@ -7,7 +7,7 @@
 
 namespace qpp {
 struct QRegister {
-    Wavefunction wf;
+    Wavefunction<> wf;
     explicit QRegister(size_t n) : wf(n) {}
 
     void h(std::size_t q) { wf.apply_h(q); }
@@ -25,6 +25,10 @@ struct QRegister {
     void reset() { wf.reset(); }
     std::complex<double> amp(std::size_t idx) const { return wf.amplitude(idx); }
     void resize(std::size_t n) { wf = Wavefunction(n); }
+    void compress() { wf.compress(); }
+    void decompress() { wf.decompress(); }
+    std::size_t nnz() const { return wf.nnz(); }
+    bool using_sparse() const { return wf.using_sparse(); }
 };
 
 // TODO(good-first-issue): enhance QRegister with save/load helpers and
@@ -46,6 +50,9 @@ public:
     // statistics helpers
     size_t qreg_allocs(int id);
     size_t creg_allocs(int id);
+
+    // live memory statistics
+    size_t memory_usage();
 
     // state import/export
     std::vector<std::complex<double>> export_state(int id);

@@ -1,4 +1,5 @@
 #include "scheduler.h"
+#include "memory.h"
 #include <iostream>
 #include <mutex>
 
@@ -42,6 +43,7 @@ void Scheduler::run() {
         std::cout << std::endl;
         if (t.handler)
             t.handler();
+        std::cout << "Memory in use: " << memory.memory_usage() << " bytes" << std::endl;
     }
     running = false;
 }
@@ -83,6 +85,7 @@ void Scheduler::run_async() {
             std::cout << std::endl;
             if (t.handler)
                 t.handler();
+            std::cout << "Memory in use: " << memory.memory_usage() << " bytes" << std::endl;
         }
     });
 }

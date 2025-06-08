@@ -32,11 +32,19 @@ Scopes with quantum conditionals (e.g., `if (q[0])`) are tagged as probabilistic
 
 ## 🔄 Simulation Layer
 
-### Wavefunction Simulator 
+### Wavefunction Simulator
 Used when real QPU is not available or during testing:
 - Tracks all quantum states
 - Resolves conditionals using amplitude sampling
 - Emits measurement collapse when required
+- Supports optional sparse storage via `compress()`/`decompress()` to keep only
+  non-zero amplitudes in memory
+
+### Ripple-Based Periodicity Analysis
+The simulator includes `detect_periodicity_ripple(wf)` which performs a simple
+Fourier scan of amplitude magnitudes. When a repeating interference pattern is
+detected above a threshold, the function returns the dominant period. Higher
+level passes can leverage this to compress redundant state segments.
 
 ### Collapse API
 ```cpp
