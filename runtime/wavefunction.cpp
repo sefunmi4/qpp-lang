@@ -8,6 +8,7 @@
 namespace qpp {
 // TODO(good-first-issue): consolidate random engine usage across the runtime
 
+
 template<typename Real>
 Wavefunction<Real>::Wavefunction(std::size_t qubits)
     : state(1ULL << qubits, {0.0, 0.0}), num_qubits(qubits) {
@@ -29,7 +30,9 @@ static void apply_single_qubit_gate(std::vector<std::complex<Real>>& st,
             st[i + j + step] = mat[1][0] * a + mat[1][1] * b;
         }
     }
+  }
 }
+
 
 template<typename Real>
 void Wavefunction<Real>::apply_h(std::size_t qubit) {
@@ -91,7 +94,9 @@ void Wavefunction<Real>::apply_swap(std::size_t q1, std::size_t q2) {
             if (i < j) std::swap(state[i], state[j]);
         }
     }
+  }
 }
+
 
 template<typename Real>
 void Wavefunction<Real>::apply_cnot(std::size_t control, std::size_t target) {
@@ -104,6 +109,7 @@ void Wavefunction<Real>::apply_cnot(std::size_t control, std::size_t target) {
             std::swap(state[i], state[j]);
         }
     }
+  }
 }
 
 template<typename Real>
@@ -130,7 +136,9 @@ void Wavefunction<Real>::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t
             std::swap(state[i], state[j]);
         }
     }
+  }
 }
+
 
 template<typename Real>
 int Wavefunction<Real>::measure(std::size_t qubit) {
@@ -246,4 +254,3 @@ template class Wavefunction<double>;
 template class Wavefunction<float>;
 
 } // namespace qpp
-

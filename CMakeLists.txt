@@ -14,6 +14,8 @@ add_library(qpp_runtime
     runtime/hardware_api.cpp
     runtime/wavefunction.cpp
     runtime/sparse_wavefunction.cpp
+    runtime/disk_pager.cpp
+    runtime/runtime_config.cpp]
 )
 
 if(OpenMP_CXX_FOUND)
@@ -67,9 +69,14 @@ if(BUILD_TESTING)
     target_link_libraries(memory_reuse_test PRIVATE qpp_runtime)
     add_test(NAME memory_reuse_test COMMAND memory_reuse_test)
 
+    add_executable(disk_paging_test tests/disk_paging_test.cpp)
+    target_link_libraries(disk_paging_test PRIVATE qpp_runtime)
+    add_test(NAME disk_paging_test COMMAND disk_paging_test)
+
     add_executable(memory_usage_test tests/memory_usage_test.cpp)
     target_link_libraries(memory_usage_test PRIVATE qpp_runtime)
     add_test(NAME memory_usage_test COMMAND memory_usage_test)
+
 
     add_executable(scheduler_pause_test tests/scheduler_pause_test.cpp)
     target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
