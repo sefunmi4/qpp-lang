@@ -9,6 +9,7 @@
 #include <vector>
 
 namespace qpp {
+template<typename Real = double>
 class Wavefunction {
 public:
   explicit Wavefunction(std::size_t qubits = 1);
@@ -40,6 +41,8 @@ public:
   bool disk_backed{false};
   std::size_t num_qubits;
 };
+
+using WavefunctionF = Wavefunction<float>;
 
 // TODO(good-first-issue): extend with parameterized rotations and register
 // import/export helpers
