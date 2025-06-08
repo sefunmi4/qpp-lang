@@ -84,6 +84,17 @@ measure(q[1]); // collapses q[1] and upstream scope
 ```
 - Measurement finalizes quantum state
 
+### Backend Hint Annotations
+Use `@dense` or `@clifford` after a `task<>` declaration to guide the runtime
+toward a specific simulation path.
+```cpp
+task<QPU> teleport() @clifford {
+    // ... Clifford-only gates ...
+}
+```
+Hints are optional but allow the runtime to choose optimized algorithms
+for dense state vectors or stabilizer circuits.
+
 ### Scope Mapping
 - Compiler emits visual map of probabilistic flow for debugging
 

@@ -12,7 +12,11 @@ add_library(qpp_runtime
     runtime/memory.cpp
     runtime/scheduler.cpp
     runtime/hardware_api.cpp
+    runtime/hardware_profile.cpp
     runtime/wavefunction.cpp
+    runtime/sparse_wavefunction.cpp
+    runtime/disk_pager.cpp
+    runtime/runtime_config.cpp]
 )
 
 if(OpenMP_CXX_FOUND)
@@ -45,6 +49,11 @@ if(BUILD_TESTING)
     target_link_libraries(wavefunction_twoqubit_measure_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_twoqubit_measure_test COMMAND wavefunction_twoqubit_measure_test)
 
+    add_executable(wavefunction_sparse_test tests/wavefunction_sparse_test.cpp)
+    target_link_libraries(wavefunction_sparse_test PRIVATE qpp_runtime)
+    add_test(NAME wavefunction_sparse_test COMMAND wavefunction_sparse_test)
+
+
     add_executable(scheduler_test tests/scheduler_test.cpp)
     target_link_libraries(scheduler_test PRIVATE qpp_runtime)
     add_test(NAME scheduler_test COMMAND scheduler_test)
@@ -64,6 +73,15 @@ if(BUILD_TESTING)
     add_executable(checkpoint_test tests/checkpoint_test.cpp)
     target_link_libraries(checkpoint_test PRIVATE qpp_runtime)
     add_test(NAME checkpoint_test COMMAND checkpoint_test)
+    
+    add_executable(disk_paging_test tests/disk_paging_test.cpp)
+    target_link_libraries(disk_paging_test PRIVATE qpp_runtime)
+    add_test(NAME disk_paging_test COMMAND disk_paging_test)
+
+    add_executable(memory_usage_test tests/memory_usage_test.cpp)
+    target_link_libraries(memory_usage_test PRIVATE qpp_runtime)
+    add_test(NAME memory_usage_test COMMAND memory_usage_test)
+
 
     add_executable(scheduler_pause_test tests/scheduler_pause_test.cpp)
     target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
@@ -73,10 +91,16 @@ if(BUILD_TESTING)
     target_link_libraries(hardware_api_test PRIVATE qpp_runtime)
     add_test(NAME hardware_api_test COMMAND hardware_api_test)
 
+    add_executable(sparse_wavefunction_test tests/sparse_wavefunction_test.cpp)
+    target_link_libraries(sparse_wavefunction_test PRIVATE qpp_runtime)
+    add_test(NAME sparse_wavefunction_test COMMAND sparse_wavefunction_test)
+
     add_test(NAME demo_integration
         COMMAND ${CMAKE_SOURCE_DIR}/tests/demo_integration.sh)
     add_test(NAME examples_compile_test
         COMMAND ${CMAKE_SOURCE_DIR}/tests/examples_compile_test.sh)
+    add_test(NAME compiler_opt_test
+        COMMAND ${CMAKE_SOURCE_DIR}/tests/compiler_opt_test.sh)
     add_test(NAME engine_dispatch_test
         COMMAND ${CMAKE_SOURCE_DIR}/tests/engine_dispatch_test.sh)
 endif()

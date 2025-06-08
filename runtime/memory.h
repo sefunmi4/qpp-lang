@@ -9,9 +9,8 @@
 
 namespace qpp {
 struct QRegister {
-    Wavefunction wf;
-    std::size_t op_count{0};
-    std::chrono::steady_clock::time_point start_time;
+    Wavefunction<> wf;
+    explicit QRegister(size_t n) : wf(n) {}
 
     explicit QRegister(size_t n)
         : wf(n), start_time(std::chrono::steady_clock::now()) {}
@@ -30,16 +29,11 @@ struct QRegister {
     std::size_t measure(const std::vector<std::size_t>& qs) { op_count += qs.size(); return wf.measure(qs); }
     void reset() { wf.reset(); reset_metrics(); }
     std::complex<double> amp(std::size_t idx) const { return wf.amplitude(idx); }
-    void resize(std::size_t n) { wf = Wavefunction(n); reset_metrics(); }
-
-    std::size_t ops() const { return op_count; }
-    double elapsed_seconds() const {
-        return std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
-    }
-    void reset_metrics() {
-        op_count = 0;
-        start_time = std::chrono::steady_clock::now();
-    }
+    void resize(std::size_t n) { wf = Wavefunction(n); }
+    void compress() { wf.compress(); }
+    void decompress() { wf.decompress(); }
+    std::size_t nnz() const { return wf.nnz(); }
+    bool using_sparse() const { return wf.using_sparse(); }
 };
 
 // TODO(good-first-issue): enhance QRegister with save/load helpers and
@@ -61,6 +55,9 @@ public:
     // statistics helpers
     size_t qreg_allocs(int id);
     size_t creg_allocs(int id);
+
+    // live memory statistics
+    size_t memory_usage();
 
     // state import/export
     std::vector<std::complex<double>> export_state(int id);
