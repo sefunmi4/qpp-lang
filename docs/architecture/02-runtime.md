@@ -97,6 +97,9 @@ Defines available QPUs, simulators, and constraints like:
 - Support backend-agnostic dispatch APIs
 - Emit IR with `@collapse_marker` or similar tags for QPU vendors
 - Final hardware support via IBM Q / Google Cirq APIs
+- Resonance zone caching via `memory.save_resonance_zone` and
+  `memory.load_resonance_zone` allows entangled subsystems to be stored and
+  restored across task steps.
 
 ---
 
