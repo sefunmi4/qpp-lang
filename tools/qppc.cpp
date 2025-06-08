@@ -42,7 +42,8 @@ int main(int argc, char** argv) {
     std::regex measure_regex(R"(measure\((\w+)\[(\d+)\]\);)");
     std::regex call_regex(R"(\b\w+\s*\([^)]*\);)");
     std::regex xor_assign_regex(R"((\w+)\[(\d+)\]\s*\^=\s*(\w+)\[(\d+)\];)");
-    std::regex call_regex(R"((\w+)\s*\([^;]*\);)");
+    std::regex simple_call_regex(R"(\w+\s*\(\s*\)\s*;)");
+    std::regex any_call_regex(R"(\w+\s*\([^)]*\)\s*;)");
     std::regex if_var_regex(R"(if\s*\(\s*(\w+)\s*\)\s*\{)");
     std::regex if_creg_regex(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{)");
     std::regex call_regex(R"(\w+\(.*\);)");
@@ -208,9 +209,10 @@ int main(int argc, char** argv) {
             emit("MEASURE " + std::string(m[3]) + " " + std::string(m[4]) + " -> " + std::string(m[1]) + " " + std::string(m[2]));
         } else if (std::regex_search(line, m, measure_regex)) {
             out << "MEASURE " << m[1] << " " << m[2] << "\n";
-        } else if (std::regex_search(line, m, call_regex)) {
-            // function call - no IR needed for simple driver
-            (void)m;
+        } else if (std::regex_search(line, m, simple_call_regex) ||
+                   std::regex_search(line, m, any_call_regex)) {
+            // ignore generic function calls
+            continue;
         } else if (trimmed.size() > 0) {
             std::cerr << "Unrecognized syntax on line " << line_no << ": " << trimmed << "\n";
         }
