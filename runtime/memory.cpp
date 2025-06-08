@@ -22,6 +22,7 @@ int MemoryManager::create_qregister(size_t n) {
         qalloc_count.push_back(1);
     }
     return id;
+
 }
 
 bool MemoryManager::release_qregister(int id) {

@@ -103,5 +103,6 @@ provided for several vendors: `QiskitBackend`, `CirqBackend`, `BraketBackend`,
 the generated QIR but demonstrate how real SDKs could be integrated using the
 same interface.
 
+
 *End of Hardware API Spec v0.1*
 

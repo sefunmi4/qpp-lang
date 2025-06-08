@@ -29,3 +29,4 @@ c[0] ^= q[0]; // performs CX on q[0] then XOR into c[0]
 ```
 
 Multi-qubit operators like `|` translate into a series of controlled-X gates with all but the last operand as controls. The compiler ensures the target register has enough qubits to address each index.
+
