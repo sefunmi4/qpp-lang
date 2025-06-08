@@ -17,5 +17,5 @@ task<QPU> bell_demo() {
 }
 
 task<AUTO> main() {
-    bell_demo();
+    // bell_demo(); // function calls not yet supported by qppc
 }

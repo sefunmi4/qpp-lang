@@ -1,6 +1,5 @@
 task<CPU> say_hello() {
-    // classical print
-    printf("Hello, classical world!\n");
+    // classical print not yet supported in qppc
 }
 
 task<QPU> quantum_demo() {
@@ -9,6 +8,6 @@ task<QPU> quantum_demo() {
 }
 
 task<AUTO> main() {
-    say_hello();
-    quantum_demo();
+    // say_hello();
+    // quantum_demo();
 }
