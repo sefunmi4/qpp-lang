@@ -3,6 +3,7 @@
 
 #include <complex>
 #include <vector>
+#include <string>
 #include <cstddef>
 
 namespace qpp {
@@ -20,6 +21,10 @@ public:
     void apply_s(std::size_t qubit);
     void apply_t(std::size_t qubit);
     void apply_swap(std::size_t q1, std::size_t q2);
+
+    // Apply a sequence of single qubit gates by fusing them into one matrix.
+    void apply_fused(const std::vector<std::string>& gates,
+                     std::size_t qubit);
 
     void reset();
     std::complex<double> amplitude(std::size_t index) const;

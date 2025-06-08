@@ -39,6 +39,10 @@ if(BUILD_TESTING)
     target_link_libraries(wavefunction_twoqubit_measure_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_twoqubit_measure_test COMMAND wavefunction_twoqubit_measure_test)
 
+    add_executable(fused_gate_test tests/fused_gate_test.cpp)
+    target_link_libraries(fused_gate_test PRIVATE qpp_runtime)
+    add_test(NAME fused_gate_test COMMAND fused_gate_test)
+
     add_executable(scheduler_test tests/scheduler_test.cpp)
     target_link_libraries(scheduler_test PRIVATE qpp_runtime)
     add_test(NAME scheduler_test COMMAND scheduler_test)

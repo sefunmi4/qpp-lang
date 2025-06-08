@@ -2,6 +2,7 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <string>
 #include <complex>
 #include "wavefunction.h"
 
@@ -20,6 +21,7 @@ struct QRegister {
     void s(std::size_t q) { wf.apply_s(q); }
     void t(std::size_t q) { wf.apply_t(q); }
     void swap(std::size_t a, std::size_t b) { wf.apply_swap(a, b); }
+    void fused(const std::vector<std::string>& gs, std::size_t q) { wf.apply_fused(gs, q); }
     int measure(std::size_t q) { return wf.measure(q); }
     std::size_t measure(const std::vector<std::size_t>& qs) { return wf.measure(qs); }
     void reset() { wf.reset(); }
