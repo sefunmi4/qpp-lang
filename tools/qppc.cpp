@@ -2,6 +2,7 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include "hardware_profile.h"
 
 // Very small parser generating a trivial IR used by qpp-run.
 // TODO(good-first-issue): replace with a proper frontend when the language
@@ -9,7 +10,7 @@
 
 int main(int argc, char** argv) {
     if (argc < 3) {
-        std::cerr << "Usage: qppc <source.qpp> <output.ir>\n";
+        std::cerr << "Usage: qppc <source.qpp> <output.ir> [--profile file.json]\n";
         return 1;
     }
     std::ifstream input(argv[1]);
@@ -21,6 +22,20 @@ int main(int argc, char** argv) {
     if (!out.is_open()) {
         std::cerr << "Failed to create " << argv[2] << "\n";
         return 1;
+    }
+
+    qpp::HardwareProfile profile;
+    bool have_profile = false;
+    for (int i = 3; i < argc; ++i) {
+        std::string arg = argv[i];
+        if (arg == "--profile" && i + 1 < argc) {
+            if (!qpp::load_hardware_profile(argv[i + 1], profile)) {
+                std::cerr << "Failed to load hardware profile " << argv[i + 1] << "\n";
+            } else {
+                have_profile = true;
+            }
+            ++i;
+        }
     }
     std::regex task_regex(R"(task<\s*(CPU|QPU|AUTO)\s*>\s*(\w+)\s*\()") ;
     std::regex param_qreg(R"(qregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
@@ -55,6 +70,10 @@ int main(int argc, char** argv) {
     std::string cond_name;
     std::string cond_index;
 
+    std::string current_task;
+    int task_qubits = 0;
+    int task_depth = 0;
+
     while (std::getline(input, line)) {
         ++line_no;
         std::smatch m;
@@ -62,6 +81,9 @@ int main(int argc, char** argv) {
         auto pos = line.find("//");
         if (pos != std::string::npos) line = line.substr(0, pos);
         if (std::regex_search(line, m, task_regex)) {
+            current_task = m[2];
+            task_qubits = 0;
+            task_depth = 0;
             out << "TASK " << m[2] << " " << m[1] << "\n";
             std::size_t start = line.find('(', m.position(0));
             std::size_t end = line.find(')', start);
@@ -72,6 +94,7 @@ int main(int argc, char** argv) {
                 auto endit = std::sregex_iterator();
                 for (auto it = begin; it != endit; ++it) {
                     out << "QALLOC " << (*it)[1] << " " << (*it)[2] << "\n";
+                    task_qubits += std::stoi((*it)[2]);
                 }
                 begin = std::sregex_iterator(params.begin(), params.end(), param_creg);
                 for (auto it = begin; it != endit; ++it) {
@@ -86,6 +109,14 @@ int main(int argc, char** argv) {
         trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
         if (in_task && trimmed == "}" && !cond_active) {
             out << "ENDTASK\n";
+            if (have_profile) {
+                if (profile.max_qubits > 0 && task_qubits > profile.max_qubits)
+                    std::cerr << "Warning: task " << current_task << " uses " << task_qubits
+                              << " qubits (limit " << profile.max_qubits << ")" << std::endl;
+                if (profile.max_depth > 0 && task_depth > profile.max_depth)
+                    std::cerr << "Warning: task " << current_task << " depth " << task_depth
+                              << " exceeds device limit " << profile.max_depth << std::endl;
+            }
             in_task = false;
             continue;
         }
@@ -101,6 +132,7 @@ int main(int argc, char** argv) {
                         << cond_index << " " << m[1] << " " << m[2] << " " << m[3]
                         << "\n";
                 }
+                ++task_depth;
                 continue;
             }
             if (std::regex_search(line, else_regex)) {
@@ -155,27 +187,37 @@ int main(int argc, char** argv) {
         }
         if (std::regex_search(line, m, qalloc_regex)) {
             out << "QALLOC " << m[1] << " " << m[2] << "\n";
+            task_qubits += std::stoi(m[2]);
         } else if (std::regex_search(line, m, creg_regex)) {
             out << "CALLOC " << m[1] << " " << m[2] << "\n";
         } else if (std::regex_search(line, m, meas_var_regex)) {
             out << "VAR " << m[1] << "\n";
             out << "MEASURE " << m[2] << " " << m[3] << " -> VAR " << m[1] << "\n";
+            ++task_depth;
         } else if (std::regex_search(line, m, gate_regex)) {
             out << m[1] << " " << m[2] << " " << m[3] << "\n";
+            ++task_depth;
         } else if (std::regex_search(line, m, swap_regex)) {
             out << "SWAP " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            ++task_depth;
         } else if (std::regex_search(line, m, cnot_regex)) {
             out << "CNOT " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            ++task_depth;
         } else if (std::regex_search(line, m, cz_regex)) {
             out << "CZ " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            ++task_depth;
         } else if (std::regex_search(line, m, ccx_regex)) {
             out << "CCX " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << " " << m[5] << " " << m[6] << "\n";
+            ++task_depth;
         } else if (std::regex_search(line, m, xor_assign_regex)) {
             out << "CNOT " << m[3] << " " << m[4] << " " << m[1] << " " << m[2] << "\n";
+            ++task_depth;
         } else if (std::regex_search(line, m, meas_assign_regex)) {
             out << "MEASURE " << m[3] << " " << m[4] << " -> " << m[1] << " " << m[2] << "\n";
+            ++task_depth;
         } else if (std::regex_search(line, m, measure_regex)) {
             out << "MEASURE " << m[1] << " " << m[2] << "\n";
+            ++task_depth;
         } else if (trimmed.size() > 0) {
             std::cerr << "Unrecognized syntax on line " << line_no << ": " << trimmed << "\n";
         }

@@ -114,6 +114,10 @@ Compile and run the sample program in `docs/examples/demo.qpp` with:
 qppc docs/examples/demo.qpp demo.ir
 qpp-run demo.ir
 ```
+You can optionally supply a hardware profile file to enforce device limits:
+```bash
+qppc docs/examples/demo.qpp demo.ir --profile ibmq.json
+```
 
 This demonstrates the toy toolchain using the runtime scheduler and wavefunction simulator.
 
