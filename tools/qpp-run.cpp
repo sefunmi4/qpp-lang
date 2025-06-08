@@ -47,6 +47,8 @@ int main(int argc, char** argv) {
     Engine current_engine = Engine::FULL;
     std::vector<std::vector<std::string>> ops;
 
+    bool use_stabilizer = false;
+
     std::vector<std::string> logs;
 
     auto add_current_task = [&]() {
@@ -54,15 +56,11 @@ int main(int argc, char** argv) {
         auto instrs = ops;
         auto name = current_name;
         auto target = current_target;
-        auto engine = current_engine;
-        scheduler.add_task({name, target, 0, [instrs,&logs,name,target,engine]() {
-            std::cout << "Using ";
-            switch(engine) {
-                case Engine::FULL: std::cout << "full state"; break;
-                case Engine::TENSOR: std::cout << "tensor network"; break;
-                case Engine::STABILIZER: std::cout << "stabilizer"; break;
+        bool stab = use_stabilizer;
+        scheduler.add_task({name, target, 0, [instrs,&logs,name,target,stab]() {
+            if (stab) {
+                std::cout << "[stabilizer] " << name << std::endl;
             }
-            std::cout << " simulator" << std::endl;
             if (target == Target::QPU && qpu_backend()) {
                 auto qir = emit_qir(instrs);
                 qpu_backend()->execute_qir(qir);
@@ -179,7 +177,11 @@ int main(int argc, char** argv) {
         std::istringstream iss(line);
         std::string tok;
         iss >> tok;
-        if (tok == "TASK") {
+        if (tok == "CLIFFORD") {
+            int v = 0;
+            iss >> v;
+            use_stabilizer = (v != 0);
+        } else if (tok == "TASK") {
             add_current_task();
             iss >> current_name >> tok; // tok is target
             if (tok == "CPU") current_target = Target::CPU;
