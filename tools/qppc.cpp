@@ -40,7 +40,7 @@ int main(int argc, char** argv) {
     std::regex meas_var_regex(R"(int\s+(\w+)\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex measure_regex(R"(measure\((\w+)\[(\d+)\]\);)");
     std::regex xor_assign_regex(R"((\w+)\[(\d+)\]\s*\^=\s*(\w+)\[(\d+)\];)");
-    std::regex call_regex(R"((\w+)\s*\([^)]*\);)" );
+    std::regex call_regex(R"((\w+)\s*\([^;]*\);)");
     std::regex if_var_regex(R"(if\s*\(\s*(\w+)\s*\)\s*\{)");
     std::regex if_creg_regex(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{)");
     std::regex call_regex(R"(\w+\(.*\);)");
@@ -199,7 +199,8 @@ int main(int argc, char** argv) {
         } else if (std::regex_search(line, m, measure_regex)) {
             out << "MEASURE " << m[1] << " " << m[2] << "\n";
         } else if (std::regex_search(line, m, call_regex)) {
-            // ignore simple task calls
+            // function call - no IR needed for simple driver
+            (void)m;
         } else if (trimmed.size() > 0) {
             std::cerr << "Unrecognized syntax on line " << line_no << ": " << trimmed << "\n";
         }

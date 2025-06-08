@@ -92,6 +92,18 @@ size_t MemoryManager::creg_allocs(int id) {
     return calloc_count[id];
 }
 
+size_t MemoryManager::memory_usage() {
+    std::lock_guard<std::mutex> lock(mtx);
+    size_t bytes = 0;
+    for (const auto& q : qregs) {
+        if (q) bytes += q->wf.state.size() * sizeof(std::complex<double>);
+    }
+    for (const auto& c : cregs) {
+        if (c) bytes += c->bits.size() * sizeof(int);
+    }
+    return bytes;
+}
+
 std::vector<std::complex<double>> MemoryManager::export_state(int id) {
     std::lock_guard<std::mutex> lock(mtx);
     if (id < 0 || id >= static_cast<int>(qregs.size()) || !qregs[id])
