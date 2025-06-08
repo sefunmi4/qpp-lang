@@ -1,0 +1,167 @@
+runtime:
+  memory_optimization:
+    amplitude_compression:
+      priority: must-have
+      description: Store only non-zero amplitudes for sparse states.
+      tasks:
+        - Implement sparse wavefunction storage in runtime/Wavefunction.
+        - Add unit tests verifying compressed storage.
+        - Document usage in docs.
+    fixed_point_precision:
+      priority: must-have
+      description: Allow std::complex<float> or user-defined precision.
+      tasks:
+        - Add precision template or runtime option for Wavefunction.
+        - Update examples and tests for float precision.
+    quidd_support:
+      priority: must-have
+      description: Use Quantum Information Decision Diagrams for compression.
+      tasks:
+        - Integrate QuIDD library or implement simplified decision diagrams.
+        - Provide conversion between wavefunction and QuIDD forms.
+        - Benchmark memory savings on example circuits.
+    low_rank_factorization:
+      priority: should-have
+      description: Use low-rank approximations for weakly entangled systems.
+      tasks:
+        - Detect low-entanglement regions.
+        - Apply Schmidt or tensor decomposition when beneficial.
+    disk_backed_streaming:
+      priority: could-have
+      description: Offload wavefunction segments to disk when RAM limits are hit.
+      tasks:
+        - Implement disk paging for wavefunction data.
+        - Expose configuration through runtime options.
+
+  gate_application:
+    gate_fusion:
+      priority: must-have
+      description: Precompute fused gate matrices to reduce operations.
+      tasks:
+        - Analyze consecutive gates and combine into single matrices.
+        - Cache fused matrices for reuse across runs.
+    sparse_matrix_ops:
+      priority: must-have
+      description: Use sparse matrix multiplication when appropriate.
+      tasks:
+        - Represent gates and states with sparse structures.
+        - Optimize multiplication kernels.
+    multithread_simd:
+      priority: should-have
+      description: Parallelize state updates via OpenMP or SIMD.
+      tasks:
+        - Split amplitude array among threads.
+        - Implement SIMD kernels for common gates.
+    gpu_offload:
+      priority: should-have
+      description: Offload simulation steps to CUDA or Metal.
+      tasks:
+        - Provide GPU kernels for gate application.
+        - Add device selection options and fallbacks.
+
+  smart_simulation_modes:
+    entanglement_forging:
+      priority: must-have
+      description: Partition weakly entangled qubits into subcircuits.
+      tasks:
+        - Analyze circuits for separable regions.
+        - Execute partitions independently with recombination.
+    clifford_detection:
+      priority: should-have
+      description: Detect Clifford-only circuits for stabilizer simulation.
+      tasks:
+        - Implement Clifford gate checker in compiler.
+        - Use stabilizer simulator when possible.
+    dynamic_simulator_switch:
+      priority: must-have
+      description: Choose between full state, tensor network, or stabilizer methods.
+      tasks:
+        - Profile circuit properties during compilation.
+        - Dispatch to best simulator at runtime.
+    timeout_aware_partitioning:
+      priority: could-have
+      description: Split tasks to avoid EntanglementTimeoutError.
+      tasks:
+        - Monitor execution time and complexity.
+        - Automatically checkpoint and resume large circuits.
+
+compiler:
+  simplification_pass:
+    circuit_simplification:
+      priority: must-have
+      description: Remove redundant gates and fuse adjacents.
+      tasks:
+        - Implement pass in compiler frontend.
+        - Add tests with known optimizations.
+    pattern_detection:
+      priority: should-have
+      description: Detect common patterns like QFT or Grover.
+      tasks:
+        - Add pattern library and optimized stubs.
+    hardware_profile_enforcement:
+      priority: must-have
+      description: Warn if circuits exceed device limits.
+      tasks:
+        - Define hardware profile schema.
+        - Validate qubit count and depth at compile time.
+    resource_estimator:
+      priority: should-have
+      description: Predict memory usage and steps.
+      tasks:
+        - Collect qubit and gate statistics during compilation.
+        - Expose estimates to users before execution.
+    backend_hints:
+      priority: could-have
+      description: Allow user annotations like @dense or @clifford.
+      tasks:
+        - Parse backend hint annotations.
+        - Use hints to select optimized runtime paths.
+
+research_inspired:
+  wavefunction_periodicity_filter:
+    priority: could-have
+    description: Detect periodic interference patterns for compression.
+    tasks:
+      - Implement periodicity analysis based on ripple models.
+  spacetime_slicing:
+    priority: could-have
+    description: Decompose wavefunctions into phased timelines.
+    tasks:
+      - Prototype timeline decomposition using radial models.
+  pde_simulation_paths:
+    priority: could-have
+    description: Use PDE-based estimates for long evolutions.
+    tasks:
+      - Approximate state evolution with Dirac or KG equations.
+  resonance_zone_caching:
+    priority: could-have
+    description: Cache entangled subsystems when phase-locked.
+    tasks:
+      - Store and reuse resonance zone results across steps.
+  quantum_classical_crossover:
+    priority: could-have
+    description: Simulate deterministic paths classically, quantum for uncertain.
+    tasks:
+      - Allow mixed classical-quantum evaluation within tasks.
+
+debugging_tools:
+  memory_tracker:
+    priority: must-have
+    description: Track memory usage per simulation step.
+    tasks:
+      - Output live memory stats during execution.
+  amplitude_heatmap:
+    priority: must-have
+    description: Visualize state amplitudes and phases.
+    tasks:
+      - Generate 2D/3D plots of amplitudes.
+  gate_profiler:
+    priority: should-have
+    description: Measure time per gate or qubit block.
+    tasks:
+      - Instrument gate application functions for timing.
+  branching_map_visualizer:
+    priority: should-have
+    description: Display branching after each measurement.
+    tasks:
+      - Show measurement branches for debugging or storytelling.
