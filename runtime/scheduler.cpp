@@ -1,4 +1,5 @@
 #include "scheduler.h"
+#include "memory.h"
 #include <iostream>
 #include <mutex>
 
@@ -35,9 +36,14 @@ void Scheduler::run() {
             std::cout << "AUTO";
             break;
         }
+        if (t.hint == ExecHint::CLIFFORD)
+            std::cout << " [CLIFFORD]";
+        else if (t.hint == ExecHint::DENSE)
+            std::cout << " [DENSE]";
         std::cout << std::endl;
         if (t.handler)
             t.handler();
+        std::cout << "Memory in use: " << memory.memory_usage() << " bytes" << std::endl;
     }
     running = false;
 }
@@ -72,9 +78,14 @@ void Scheduler::run_async() {
                 std::cout << "AUTO";
                 break;
             }
+            if (t.hint == ExecHint::CLIFFORD)
+                std::cout << " [CLIFFORD]";
+            else if (t.hint == ExecHint::DENSE)
+                std::cout << " [DENSE]";
             std::cout << std::endl;
             if (t.handler)
                 t.handler();
+            std::cout << "Memory in use: " << memory.memory_usage() << " bytes" << std::endl;
         }
     });
 }

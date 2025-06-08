@@ -36,7 +36,6 @@ These docs are ideal for new contributors and those trying to understand Q++'s p
 ### 🧪 `./examples/` – Playable Q++ Code [#13](https://github.com/sefunmi4/qpp-lang/issues/13#issue-3006787477)
 Reference `.qpp` files that demonstrate working language features:
 - `adaptive_task.qpp` – Conditional branching and task adaptation
-- `hello_world.qpp` – Minimal task and print interaction
 - `teleport.qpp` – Quantum teleportation and entanglement usage
 - `demo.qpp` – Quick demonstration to compile and run with `qppc` and `qpp-run`
 - `wavefunction_demo.qpp` – Exercises all built-in gates and conditional
