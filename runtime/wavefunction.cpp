@@ -25,17 +25,20 @@ static void apply_single_qubit_gate(std::vector<std::complex<double>>& st,
 }
 
 void Wavefunction::apply_h(std::size_t qubit) {
+    decompress();
     const double f = 1.0 / std::sqrt(2.0);
     const std::complex<double> mat[2][2] = {{f, f}, {f, -f}};
     apply_single_qubit_gate(state, qubit, mat);
 }
 
 void Wavefunction::apply_x(std::size_t qubit) {
+    decompress();
     const std::complex<double> mat[2][2] = {{0, 1}, {1, 0}};
     apply_single_qubit_gate(state, qubit, mat);
 }
 
 void Wavefunction::apply_y(std::size_t qubit) {
+    decompress();
     const std::complex<double> mat[2][2] = {
         {0.0, std::complex<double>(0, -1)},
         {std::complex<double>(0, 1), 0.0}
@@ -44,11 +47,13 @@ void Wavefunction::apply_y(std::size_t qubit) {
 }
 
 void Wavefunction::apply_z(std::size_t qubit) {
+    decompress();
     const std::complex<double> mat[2][2] = {{1, 0}, {0, -1}};
     apply_single_qubit_gate(state, qubit, mat);
 }
 
 void Wavefunction::apply_s(std::size_t qubit) {
+    decompress();
     const std::complex<double> mat[2][2] = {
         {1, 0},
         {0, std::complex<double>(0, 1)}
@@ -57,6 +62,7 @@ void Wavefunction::apply_s(std::size_t qubit) {
 }
 
 void Wavefunction::apply_t(std::size_t qubit) {
+    decompress();
     const std::complex<double> mat[2][2] = {
         {1, 0},
         {0, std::exp(std::complex<double>(0, M_PI / 4))}
@@ -65,6 +71,7 @@ void Wavefunction::apply_t(std::size_t qubit) {
 }
 
 void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
+    decompress();
     if (q1 == q2) return;
     std::size_t bit1 = 1ULL << q1;
     std::size_t bit2 = 1ULL << q2;
@@ -79,6 +86,7 @@ void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
 }
 
 void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
+    decompress();
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
     for (std::size_t i = 0; i < state.size(); ++i) {
@@ -90,6 +98,7 @@ void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
 }
 
 void Wavefunction::apply_cz(std::size_t control, std::size_t target) {
+    decompress();
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
     for (std::size_t i = 0; i < state.size(); ++i) {
@@ -100,6 +109,7 @@ void Wavefunction::apply_cz(std::size_t control, std::size_t target) {
 }
 
 void Wavefunction::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target) {
+    decompress();
     std::size_t b1 = 1ULL << c1;
     std::size_t b2 = 1ULL << c2;
     std::size_t tbit = 1ULL << target;
@@ -112,6 +122,7 @@ void Wavefunction::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t targe
 }
 
 int Wavefunction::measure(std::size_t qubit) {
+    decompress();
     std::size_t bit = 1ULL << qubit;
     double p1 = 0.0;
     for (std::size_t i = 0; i < state.size(); ++i) {
@@ -134,6 +145,7 @@ int Wavefunction::measure(std::size_t qubit) {
 
 std::size_t Wavefunction::measure(const std::vector<std::size_t>& qubits) {
     if (qubits.empty()) return 0;
+    decompress();
     // compute probabilities for all outcomes
     std::size_t outcomes = 1ULL << qubits.size();
     std::vector<double> probs(outcomes, 0.0);
@@ -163,13 +175,49 @@ std::size_t Wavefunction::measure(const std::vector<std::size_t>& qubits) {
 }
 
 void Wavefunction::reset() {
+    decompress();
     state.assign(state.size(), {0.0,0.0});
     if (!state.empty()) state[0] = 1.0;
+    is_sparse = false;
 }
 
 std::complex<double> Wavefunction::amplitude(std::size_t index) const {
+    if (is_sparse) {
+        auto it = sparse_state.find(index);
+        if (it == sparse_state.end()) return {0.0,0.0};
+        return it->second;
+    }
     if (index >= state.size()) return {0.0,0.0};
     return state[index];
+}
+
+void Wavefunction::compress() {
+    if (is_sparse) return;
+    sparse_state.clear();
+    for (std::size_t i = 0; i < state.size(); ++i) {
+        if (std::norm(state[i]) > 1e-12)
+            sparse_state[i] = state[i];
+    }
+    state.clear();
+    is_sparse = true;
+}
+
+void Wavefunction::decompress() {
+    if (!is_sparse) return;
+    state.assign(1ULL << num_qubits, {0.0,0.0});
+    for (const auto& kv : sparse_state)
+        if (kv.first < state.size())
+            state[kv.first] = kv.second;
+    sparse_state.clear();
+    is_sparse = false;
+}
+
+std::size_t Wavefunction::nnz() const {
+    if (is_sparse) return sparse_state.size();
+    std::size_t count = 0;
+    for (const auto& amp : state)
+        if (std::norm(amp) > 1e-12) ++count;
+    return count;
 }
 
 // TODO: implement full state collapse for multi-qubit measurements
