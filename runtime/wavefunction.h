@@ -37,14 +37,14 @@ public:
 
 // TODO(good-first-issue): extend with parameterized rotations and register
 // import/export helpers
-} // namespace qpp
+// namespace qpp
 
 
 // TODO(good-first-issue): add more multi-qubit gates and state vector utilities
-} // namespace qpp
+// namespace qpp
 
 // TODO(good-first-issue): add more multi-qubit gates and state vector utilities
-} // namespace qpp
+// namespace qpp
 
 
 // TODO(good-first-issue): add more multi-qubit gates and state vector utilities
