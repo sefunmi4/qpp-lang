@@ -6,6 +6,9 @@
 #include <sstream>
 #include <unordered_map>
 #include <memory>
+#include <string>
+#include <algorithm>
+#include <string>
 
 // Simple interpreter for the toy IR emitted by qppc.
 
@@ -18,6 +21,10 @@ int main(int argc, char** argv) {
     }
     int argi = 1;
     std::string opt = argv[1];
+    int header_qubits = -1;
+    int header_gates = -1;
+    int calc_qubits = 0;
+    int calc_gates = 0;
     if (opt.rfind("--use-",0)==0) {
         if (opt == "--use-qiskit") set_qpu_backend(std::make_unique<QiskitBackend>());
         else if (opt == "--use-cirq") set_qpu_backend(std::make_unique<CirqBackend>());
@@ -46,6 +53,7 @@ int main(int argc, char** argv) {
     std::vector<std::vector<std::string>> ops;
 
     std::vector<std::string> logs;
+    const std::vector<std::string> gate_ops = {"H","X","Y","Z","S","T","SWAP","CNOT","CZ","CCX","IFVAR","IFNVAR","IFC","IFNC"};
 
     auto add_current_task = [&]() {
         if (current_name.empty()) return;
@@ -150,6 +158,13 @@ int main(int argc, char** argv) {
         std::istringstream iss(line);
         std::string tok;
         iss >> tok;
+        if (tok == "#QUBITS") {
+            iss >> header_qubits;
+            continue;
+        } else if (tok == "#GATES") {
+            iss >> header_gates;
+            continue;
+        }
         if (tok == "TASK") {
             add_current_task();
             iss >> current_name >> tok; // tok is target
@@ -164,11 +179,20 @@ int main(int argc, char** argv) {
             std::string s;
             while (iss >> s) parts.push_back(s);
             ops.push_back(parts);
+            if (tok == "QALLOC" && parts.size() >= 3) {
+                calc_qubits += std::stoi(parts[2]);
+            } else if (std::find(gate_ops.begin(), gate_ops.end(), tok) != gate_ops.end()) {
+                if (!(tok == "QALLOC" || tok == "CALLOC" || tok == "MEASURE" || tok == "VAR"))
+                    calc_gates++;
+            }
         } else if (!line.empty()) {
             std::cerr << "Unknown instruction on line " << line_no << ": " << line << "\n";
         }
     }
     add_current_task();
+    int q_est = header_qubits >= 0 ? header_qubits : calc_qubits;
+    int g_est = header_gates >= 0 ? header_gates : calc_gates;
+    std::cout << "Estimated qubits: " << q_est << ", gates: " << g_est << std::endl;
     scheduler.run();
     for (const auto& l : logs) std::cout << l << std::endl;
     std::cout << "Executed " << logs.size() << " measurements." << std::endl;

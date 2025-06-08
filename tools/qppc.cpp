@@ -2,6 +2,7 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include <vector>
 
 // Very small parser generating a trivial IR used by qpp-run.
 // TODO(good-first-issue): replace with a proper frontend when the language
@@ -41,6 +42,11 @@ int main(int argc, char** argv) {
     std::regex if_var_gate_single(R"(if\s*\(\s*(\w+)\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex if_creg_gate_single(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex else_regex(R"(\}\s*else\s*\{)");
+    std::regex call_regex(R"((\w+)\s*\([^)]*\)\s*;)");
+
+    int total_qubits = 0;
+    int total_gates = 0;
+    std::vector<std::string> output_lines;
 
     std::string line;
     int line_no = 0;
@@ -62,7 +68,7 @@ int main(int argc, char** argv) {
         auto pos = line.find("//");
         if (pos != std::string::npos) line = line.substr(0, pos);
         if (std::regex_search(line, m, task_regex)) {
-            out << "TASK " << m[2] << " " << m[1] << "\n";
+            output_lines.push_back(std::string("TASK ") + m[2].str() + " " + m[1].str());
             std::size_t start = line.find('(', m.position(0));
             std::size_t end = line.find(')', start);
             if (start != std::string::npos && end != std::string::npos) {
@@ -71,11 +77,12 @@ int main(int argc, char** argv) {
                 auto begin = std::sregex_iterator(params.begin(), params.end(), param_qreg);
                 auto endit = std::sregex_iterator();
                 for (auto it = begin; it != endit; ++it) {
-                    out << "QALLOC " << (*it)[1] << " " << (*it)[2] << "\n";
+                    output_lines.push_back(std::string("QALLOC ") + (*it)[1].str() + " " + (*it)[2].str());
+                    total_qubits += std::stoi((*it)[2]);
                 }
                 begin = std::sregex_iterator(params.begin(), params.end(), param_creg);
                 for (auto it = begin; it != endit; ++it) {
-                    out << "CALLOC " << (*it)[1] << " " << (*it)[2] << "\n";
+                    output_lines.push_back(std::string("CALLOC ") + (*it)[1].str() + " " + (*it)[2].str());
                 }
             }
             in_task = true;
@@ -85,7 +92,7 @@ int main(int argc, char** argv) {
         trimmed.erase(0, trimmed.find_first_not_of(" \t"));
         trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
         if (in_task && trimmed == "}" && !cond_active) {
-            out << "ENDTASK\n";
+            output_lines.push_back("ENDTASK");
             in_task = false;
             continue;
         }
@@ -94,13 +101,11 @@ int main(int argc, char** argv) {
         if (cond_active) {
             if (std::regex_search(line, m, gate_regex)) {
                 if (cond_type == "var") {
-                    out << (cond_else ? "IFNVAR " : "IFVAR ") << cond_name << " "
-                        << m[1] << " " << m[2] << " " << m[3] << "\n";
+                    output_lines.push_back(std::string(cond_else ? "IFNVAR " : "IFVAR ") + cond_name + " " + m[1].str() + " " + m[2].str() + " " + m[3].str());
                 } else if (cond_type == "creg") {
-                    out << (cond_else ? "IFNC " : "IFC ") << cond_name << " "
-                        << cond_index << " " << m[1] << " " << m[2] << " " << m[3]
-                        << "\n";
+                    output_lines.push_back(std::string(cond_else ? "IFNC " : "IFC ") + cond_name + " " + cond_index + " " + m[1].str() + " " + m[2].str() + " " + m[3].str());
                 }
+                total_gates++;
                 continue;
             }
             if (std::regex_search(line, else_regex)) {
@@ -130,11 +135,13 @@ int main(int argc, char** argv) {
         }
 
         if (std::regex_search(line, m, if_var_gate_single)) {
-            out << "IFVAR " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            output_lines.push_back(std::string("IFVAR ") + m[1].str() + " " + m[2].str() + " " + m[3].str() + " " + m[4].str());
+            total_gates++;
             continue;
         }
         if (std::regex_search(line, m, if_creg_gate_single)) {
-        out << "IFC " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << " " << m[5] << "\n";
+            output_lines.push_back(std::string("IFC ") + m[1].str() + " " + m[2].str() + " " + m[3].str() + " " + m[4].str() + " " + m[5].str());
+            total_gates++;
             continue;
         }
 
@@ -154,32 +161,46 @@ int main(int argc, char** argv) {
             continue;
         }
         if (std::regex_search(line, m, qalloc_regex)) {
-            out << "QALLOC " << m[1] << " " << m[2] << "\n";
+            output_lines.push_back(std::string("QALLOC ") + m[1].str() + " " + m[2].str());
+            total_qubits += std::stoi(m[2]);
         } else if (std::regex_search(line, m, creg_regex)) {
-            out << "CALLOC " << m[1] << " " << m[2] << "\n";
+            output_lines.push_back(std::string("CALLOC ") + m[1].str() + " " + m[2].str());
         } else if (std::regex_search(line, m, meas_var_regex)) {
-            out << "VAR " << m[1] << "\n";
-            out << "MEASURE " << m[2] << " " << m[3] << " -> VAR " << m[1] << "\n";
+            output_lines.push_back(std::string("VAR ") + m[1].str());
+            output_lines.push_back(std::string("MEASURE ") + m[2].str() + " " + m[3].str() + " -> VAR " + m[1].str());
         } else if (std::regex_search(line, m, gate_regex)) {
-            out << m[1] << " " << m[2] << " " << m[3] << "\n";
+            output_lines.push_back(std::string(m[1]) + " " + m[2].str() + " " + m[3].str());
+            total_gates++;
         } else if (std::regex_search(line, m, swap_regex)) {
-            out << "SWAP " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            output_lines.push_back(std::string("SWAP ") + m[1].str() + " " + m[2].str() + " " + m[3].str() + " " + m[4].str());
+            total_gates++;
         } else if (std::regex_search(line, m, cnot_regex)) {
-            out << "CNOT " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            output_lines.push_back(std::string("CNOT ") + m[1].str() + " " + m[2].str() + " " + m[3].str() + " " + m[4].str());
+            total_gates++;
         } else if (std::regex_search(line, m, cz_regex)) {
-            out << "CZ " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            output_lines.push_back(std::string("CZ ") + m[1].str() + " " + m[2].str() + " " + m[3].str() + " " + m[4].str());
+            total_gates++;
         } else if (std::regex_search(line, m, ccx_regex)) {
-            out << "CCX " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << " " << m[5] << " " << m[6] << "\n";
+            output_lines.push_back(std::string("CCX ") + m[1].str() + " " + m[2].str() + " " + m[3].str() + " " + m[4].str() + " " + m[5].str() + " " + m[6].str());
+            total_gates++;
         } else if (std::regex_search(line, m, xor_assign_regex)) {
-            out << "CNOT " << m[3] << " " << m[4] << " " << m[1] << " " << m[2] << "\n";
+            output_lines.push_back(std::string("CNOT ") + m[3].str() + " " + m[4].str() + " " + m[1].str() + " " + m[2].str());
+            total_gates++;
         } else if (std::regex_search(line, m, meas_assign_regex)) {
-            out << "MEASURE " << m[3] << " " << m[4] << " -> " << m[1] << " " << m[2] << "\n";
+            output_lines.push_back(std::string("MEASURE ") + m[3].str() + " " + m[4].str() + " -> " + m[1].str() + " " + m[2].str());
         } else if (std::regex_search(line, m, measure_regex)) {
-            out << "MEASURE " << m[1] << " " << m[2] << "\n";
+            output_lines.push_back(std::string("MEASURE ") + m[1].str() + " " + m[2].str());
+        } else if (std::regex_search(line, m, call_regex)) {
+            // simple function call ignored in this toy compiler
         } else if (trimmed.size() > 0) {
             std::cerr << "Unrecognized syntax on line " << line_no << ": " << trimmed << "\n";
         }
     }
-    std::cout << "Compilation complete." << std::endl;
+    out.seekp(0);
+    out << "#QUBITS " << total_qubits << "\n";
+    out << "#GATES " << total_gates << "\n";
+    for (const auto& l : output_lines) out << l << "\n";
+    std::cout << "Compilation complete. Estimated qubits: " << total_qubits
+              << ", gates: " << total_gates << std::endl;
     return 0;
 }
