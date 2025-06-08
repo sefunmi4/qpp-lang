@@ -100,5 +100,14 @@ Defines available QPUs, simulators, and constraints like:
 
 ---
 
+### Scheduler Overview
+The reference runtime now supports task priorities and asynchronous execution.
+Tasks added via `scheduler.add_task` are queued in priority order. `scheduler.run_async()`
+launches a worker thread so CPU tasks can execute concurrently with QPU
+simulation. When a `task<QPU>` handler is invoked, it operates on registers
+managed by `MemoryManager` and can apply gates through the `QRegister`
+interface. CPU tasks run standard C++ code and may interact with classical
+registers, enabling hybrid workflows.
+
 *End of Runtime Spec v0.1*
 
