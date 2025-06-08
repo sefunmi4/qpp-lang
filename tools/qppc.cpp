@@ -72,6 +72,7 @@ int main(int argc, char** argv) {
         }
     };
     std::regex task_regex(R"(task<\s*(CPU|QPU|AUTO)\s*>\s*(\w+)\s*\()") ;
+    std::regex hint_regex(R"(@(dense|clifford))", std::regex::icase);
     std::regex param_qreg(R"(qregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
     std::regex param_creg(R"(cregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
     std::regex qalloc_regex(R"(qalloc\s+\w+\s+(\w+)\[(\d+)\];)");
@@ -84,13 +85,17 @@ int main(int argc, char** argv) {
     std::regex meas_assign_regex(R"((\w+)\[(\d+)\]\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex meas_var_regex(R"(int\s+(\w+)\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex measure_regex(R"(measure\((\w+)\[(\d+)\]\);)");
+    std::regex call_regex(R"(\b\w+\s*\([^)]*\);)");
     std::regex xor_assign_regex(R"((\w+)\[(\d+)\]\s*\^=\s*(\w+)\[(\d+)\];)");
-    std::regex call_regex(R"(\w+\s*\([^\)]*\)\s*;)");
+    std::regex simple_call_regex(R"(\w+\s*\(\s*\)\s*;)");
+    std::regex any_call_regex(R"(\w+\s*\([^)]*\)\s*;)");
     std::regex if_var_regex(R"(if\s*\(\s*(\w+)\s*\)\s*\{)");
     std::regex if_creg_regex(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{)");
+    std::regex call_regex(R"(\w+\(.*\);)");
     std::regex if_var_gate_single(R"(if\s*\(\s*(\w+)\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex if_creg_gate_single(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex else_regex(R"(\}\s*else\s*\{)");
+    std::regex call_regex(R"((\w+)\s*\(.*\);)");
 
     std::string line;
     int line_no = 0;
@@ -105,6 +110,11 @@ int main(int argc, char** argv) {
     std::string cond_name;
     std::string cond_index;
 
+    std::string current_task_name;
+    int gate_count = 0;
+    int qubit_count = 0;
+    bool non_clifford = false;
+
     while (std::getline(input, line)) {
         ++line_no;
         std::smatch m;
@@ -116,9 +126,17 @@ int main(int argc, char** argv) {
             ir.push_back({"TASK", {m[2], m[1]}});
             std::size_t start = line.find('(', m.position(0));
             std::size_t end = line.find(')', start);
+            std::string hint;
+            std::smatch hm;
+            if (end != std::string::npos && std::regex_search(line.cbegin()+end, line.cend(), hm, hint_regex))
+                hint = hm[1];
+            std::string hint_up;
+            if (!hint.empty()) { hint_up = hint; for (auto& c : hint_up) c = toupper(c); }
+            out << "TASK " << m[2] << " " << m[1];
+            if (!hint_up.empty()) out << " " << hint_up;
+            out << "\n";
             if (start != std::string::npos && end != std::string::npos) {
                 std::string params = line.substr(start + 1, end - start - 1);
-                std::smatch pm;
                 auto begin = std::sregex_iterator(params.begin(), params.end(), param_qreg);
                 auto endit = std::sregex_iterator();
                 for (auto it = begin; it != endit; ++it) {
@@ -153,6 +171,8 @@ int main(int argc, char** argv) {
                     ir.push_back({cond_else ? "IFNC" : "IFC",
                                    {cond_name, cond_index, m[1], m[2], m[3]}});
                 }
+                gate_count++;
+                if (std::string(m[1]) == "T") non_clifford = true;
                 continue;
             }
             if (std::regex_search(line, else_regex)) {
@@ -252,6 +272,7 @@ int main(int argc, char** argv) {
         for (const auto& a : ins.args) out << " " << a;
         out << "\n";
     }
+
     std::cout << "Compilation complete." << std::endl;
     return 0;
 }
