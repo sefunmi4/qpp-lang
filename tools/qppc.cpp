@@ -98,6 +98,8 @@ int main(int argc, char** argv) {
     std::regex ccx_regex(R"(CCX\((\w+)\[(\d+)\],\s*(\w+)\[(\d+)\],\s*(\w+)\[(\d+)\]\);)");
     std::regex swap_regex(R"(SWAP\((\w+)\[(\d+)\],\s*(\w+)\[(\d+)\]\);)");
     std::regex cnot_regex(R"(CX\((\w+)\[(\d+)\],\s*(\w+)\[(\d+)\]\);)");
+    std::regex call_regex(R"((\w+)\s*\(\s*\);)");
+    std::regex print_regex(R"(printf\(\"([^\"]*)\"\);)");
     std::regex meas_assign_regex(R"((\w+)\[(\d+)\]\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex meas_var_regex(R"(int\s+(\w+)\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex measure_regex(R"(measure\((\w+)\[(\d+)\]\);)");

@@ -70,6 +70,10 @@ if(BUILD_TESTING)
     target_link_libraries(memory_reuse_test PRIVATE qpp_runtime)
     add_test(NAME memory_reuse_test COMMAND memory_reuse_test)
 
+    add_executable(checkpoint_test tests/checkpoint_test.cpp)
+    target_link_libraries(checkpoint_test PRIVATE qpp_runtime)
+    add_test(NAME checkpoint_test COMMAND checkpoint_test)
+    
     add_executable(disk_paging_test tests/disk_paging_test.cpp)
     target_link_libraries(disk_paging_test PRIVATE qpp_runtime)
     add_test(NAME disk_paging_test COMMAND disk_paging_test)

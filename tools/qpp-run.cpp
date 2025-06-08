@@ -120,6 +120,11 @@ int main(int argc, char** argv) {
                     int targ = qmap.at(ins[5]); // ensure register exists
                     (void)targ;
                     memory.qreg(c1).ccnot(std::stoul(ins[2]), std::stoul(ins[4]), std::stoul(ins[6]));
+                } else if (ins[0] == "CALL" && ins.size() == 2) {
+                    // call support not implemented - ignore
+                    (void)ins[1];
+                } else if (ins[0] == "PRINT" && ins.size() == 2) {
+                    std::cout << ins[1] << std::endl;
                 } else if (ins[0] == "MEASURE") {
                     int qid = qmap.at(ins[1]);
                     std::size_t qidx = std::stoul(ins[2]);
