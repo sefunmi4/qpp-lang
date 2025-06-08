@@ -31,6 +31,11 @@ public:
     std::size_t num_qubits;
 };
 
+// Analyze amplitude magnitudes using a ripple-based Fourier model.
+// Returns the dominant period length if detected, otherwise 0.
+std::size_t detect_periodicity_ripple(const Wavefunction& wf,
+                                      double threshold = 0.1);
+
 // TODO(good-first-issue): extend with parameterized rotations and register
 // import/export helpers
 } // namespace qpp
