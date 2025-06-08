@@ -15,7 +15,3 @@ task<QPU> bell_demo() {
     c[0] = measure(q[0]);
     c[1] = measure(q[1]);
 }
-
-task<AUTO> main() {
-    bell_demo();
-}
