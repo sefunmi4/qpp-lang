@@ -43,6 +43,8 @@ int main(int argc, char** argv) {
     std::string line;
     std::string current_name;
     Target current_target = Target::AUTO;
+    enum class Engine { FULL, TENSOR, STABILIZER };
+    Engine current_engine = Engine::FULL;
     std::vector<std::vector<std::string>> ops;
 
     bool use_stabilizer = false;
@@ -126,20 +128,32 @@ int main(int argc, char** argv) {
                         }
                     }
                 } else if (ins[0] == "IFVAR" && ins.size() == 5) {
-                    if (vars[ins[1]])
+                    bool cond = vars[ins[1]];
+                    logs.push_back(name + ": branch IFVAR " + ins[1] + " -> " +
+                                   (cond ? "taken" : "skipped"));
+                    if (cond)
                         apply_gate(ins[2], ins[3], ins[4]);
                 } else if (ins[0] == "IFNVAR" && ins.size() == 5) {
-                    if (!vars[ins[1]])
+                    bool cond = !vars[ins[1]];
+                    logs.push_back(name + ": branch IFNVAR " + ins[1] + " -> " +
+                                   (cond ? "taken" : "skipped"));
+                    if (cond)
                         apply_gate(ins[2], ins[3], ins[4]);
                 } else if (ins[0] == "IFC" && ins.size() == 6) {
                     int cid = cmap.at(ins[1]);
                     std::size_t idx = std::stoul(ins[2]);
-                    if (memory.creg(cid).bits[idx])
+                    bool cond = memory.creg(cid).bits[idx];
+                    logs.push_back(name + ": branch IFC " + ins[1] + "[" + ins[2]
+                                   + "] -> " + (cond ? "taken" : "skipped"));
+                    if (cond)
                         apply_gate(ins[3], ins[4], ins[5]);
                 } else if (ins[0] == "IFNC" && ins.size() == 6) {
                     int cid = cmap.at(ins[1]);
                     std::size_t idx = std::stoul(ins[2]);
-                    if (!memory.creg(cid).bits[idx])
+                    bool cond = !memory.creg(cid).bits[idx];
+                    logs.push_back(name + ": branch IFNC " + ins[1] + "[" + ins[2]
+                                   + "] -> " + (cond ? "taken" : "skipped"));
+                    if (cond)
                         apply_gate(ins[3], ins[4], ins[5]);
                 }
             }
@@ -153,6 +167,8 @@ int main(int argc, char** argv) {
     int line_no = 0;
     while (std::getline(input, line)) {
         ++line_no;
+        if (!line.empty() && line[0] == '#')
+            continue;
         std::istringstream iss(line);
         std::string tok;
         iss >> tok;
@@ -166,8 +182,15 @@ int main(int argc, char** argv) {
             if (tok == "CPU") current_target = Target::CPU;
             else if (tok == "QPU") current_target = Target::QPU;
             else current_target = Target::AUTO;
+            current_engine = Engine::FULL;
         } else if (tok == "ENDTASK") {
             add_current_task();
+        } else if (tok == "ENGINE") {
+            std::string eng;
+            iss >> eng;
+            if (eng == "FULL") current_engine = Engine::FULL;
+            else if (eng == "TENSOR") current_engine = Engine::TENSOR;
+            else if (eng == "STABILIZER") current_engine = Engine::STABILIZER;
         } else if (!tok.empty()) {
             std::vector<std::string> parts;
             parts.push_back(tok);

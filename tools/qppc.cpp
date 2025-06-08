@@ -40,8 +40,10 @@ int main(int argc, char** argv) {
     std::regex meas_var_regex(R"(int\s+(\w+)\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex measure_regex(R"(measure\((\w+)\[(\d+)\]\);)");
     std::regex xor_assign_regex(R"((\w+)\[(\d+)\]\s*\^=\s*(\w+)\[(\d+)\];)");
+    std::regex call_regex(R"((\w+)\s*\([^)]*\);)" );
     std::regex if_var_regex(R"(if\s*\(\s*(\w+)\s*\)\s*\{)");
     std::regex if_creg_regex(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{)");
+    std::regex call_noargs_regex(R"(^\s*\w+\s*\(\s*\)\s*;\s*$)");
     std::regex if_var_gate_single(R"(if\s*\(\s*(\w+)\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex if_creg_gate_single(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex else_regex(R"(\}\s*else\s*\{)");
@@ -58,6 +60,11 @@ int main(int argc, char** argv) {
     std::string cond_type; // "var" or "creg"
     std::string cond_name;
     std::string cond_index;
+
+    std::string current_task_name;
+    int gate_count = 0;
+    int qubit_count = 0;
+    bool non_clifford = false;
 
     while (std::getline(input, line)) {
         ++line_no;
@@ -105,6 +112,8 @@ int main(int argc, char** argv) {
                     emit(std::string(cond_else ? "IFNC " : "IFC ") + cond_name + " " + cond_index +
                          " " + std::string(m[1]) + " " + std::string(m[2]) + " " + std::string(m[3]));
                 }
+                gate_count++;
+                if (std::string(m[1]) == "T") non_clifford = true;
                 continue;
             }
             if (std::regex_search(line, else_regex)) {
