@@ -90,6 +90,9 @@ ctest
 
 `ctest` executes the small wavefunction simulator tests.
 
+The wavefunction runtime now supports low-precision `float` amplitudes via a
+template parameter. All examples and unit tests build against this mode.
+
 ### Python Requirements
 
 To run the demo in `tools/wave_primes.py` install dependencies via:

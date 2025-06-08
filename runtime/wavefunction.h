@@ -6,6 +6,7 @@
 #include <cstddef>
 
 namespace qpp {
+template<typename Real = double>
 class Wavefunction {
 public:
     explicit Wavefunction(std::size_t qubits = 1);
@@ -21,15 +22,19 @@ public:
     void apply_t(std::size_t qubit);
     void apply_swap(std::size_t q1, std::size_t q2);
 
+    using complex_t = std::complex<Real>;
+
     void reset();
-    std::complex<double> amplitude(std::size_t index) const;
+    complex_t amplitude(std::size_t index) const;
 
     int measure(std::size_t qubit);
     std::size_t measure(const std::vector<std::size_t>& qubits);
 
-    std::vector<std::complex<double>> state;
-    std::size_t num_qubits;
+  std::vector<complex_t> state;
+  std::size_t num_qubits;
 };
+
+using WavefunctionF = Wavefunction<float>;
 
 // TODO(good-first-issue): extend with parameterized rotations and register
 // import/export helpers
