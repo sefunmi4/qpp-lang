@@ -13,12 +13,22 @@ using namespace qpp;
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "Usage: qpp-run [--use-qiskit] <compiled.ir>\n";
+        std::cerr << "Usage: qpp-run [--use-qiskit|--use-cirq|--use-braket|--use-qsharp|--use-nvidia|--use-psi] <compiled.ir>\n";
         return 1;
     }
     int argi = 1;
-    if (std::string(argv[1]) == "--use-qiskit") {
-        set_qpu_backend(std::make_unique<QiskitBackend>());
+    std::string opt = argv[1];
+    if (opt.rfind("--use-",0)==0) {
+        if (opt == "--use-qiskit") set_qpu_backend(std::make_unique<QiskitBackend>());
+        else if (opt == "--use-cirq") set_qpu_backend(std::make_unique<CirqBackend>());
+        else if (opt == "--use-braket") set_qpu_backend(std::make_unique<BraketBackend>());
+        else if (opt == "--use-qsharp") set_qpu_backend(std::make_unique<QSharpBackend>());
+        else if (opt == "--use-nvidia") set_qpu_backend(std::make_unique<NvidiaBackend>());
+        else if (opt == "--use-psi") set_qpu_backend(std::make_unique<PsiBackend>());
+        else {
+            std::cerr << "Unknown backend option " << opt << "\n";
+            return 1;
+        }
         if (argc < 3) {
             std::cerr << "No IR file provided\n";
             return 1;

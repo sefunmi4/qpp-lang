@@ -4,7 +4,6 @@
 #include <cstdio>
 #include <unistd.h>
 
-
 namespace qpp {
 
 static std::unique_ptr<QPUBackend> active_backend;
@@ -36,6 +35,26 @@ void QiskitBackend::execute_qir(const std::string& qir) {
     if (rc != 0)
         std::cerr << "Qiskit backend execution failed\n";
     std::remove(qir_path);
+}
+  
+void CirqBackend::execute_qir(const std::string& qir) {
+    std::cout << "[Cirq] Received QIR:\n" << qir << std::endl;
+}
+
+void NvidiaBackend::execute_qir(const std::string& qir) {
+    std::cout << "[Nvidia] Received QIR:\n" << qir << std::endl;
+}
+
+void QSharpBackend::execute_qir(const std::string& qir) {
+    std::cout << "[QSharp] Received QIR:\n" << qir << std::endl;
+}
+
+void BraketBackend::execute_qir(const std::string& qir) {
+    std::cout << "[Braket] Received QIR:\n" << qir << std::endl;
+}
+
+void PsiBackend::execute_qir(const std::string& qir) {
+    std::cout << "[PsiQuantum] Received QIR:\n" << qir << std::endl;
 }
 
 std::string emit_qir(const std::vector<std::vector<std::string>>& ops) {

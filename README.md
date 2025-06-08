@@ -26,8 +26,7 @@ Inspired by how C++ evolved from C, Q++ introduces just enough new logic to supp
 | LLVM IR | Enhanced with QIR, collapse metadata, and probabilistic flags |
 | Import/Export | Save and restore `qregister` state for external simulators |
 | Scheduler | Priorities, async run, pause and stop controls |
-| Hardware API | Emits QIR strings and can plug in vendor backends (Qiskit example included) |
-
+| Hardware API | Emits QIR strings and plugs into vendor backends. Stubs for Qiskit, Cirq, Braket, Q#, NVIDIA, and PsiQuantum are included; real SDK integration is still required. |
 
 ---
 
@@ -367,6 +366,86 @@ If `qiskit` is installed you can run the same IR on the Qiskit simulator by regi
 
 ```bash
 qpp-run --use-qiskit demo.ir
+```
+
+### Open Tasks
+
+See [TODO.md](TODO.md) for current areas where help is welcome. Items marked
+`good-first-issue` are ideal starting points for new contributors. The file also
+contains a **Longer Term Roadmap** describing features like a full compiler,
+advanced scheduler, and hardware API integration that would move Q++ toward
+production readiness.
+
+### Editor Support
+
+For syntax highlighting in VS Code, a minimal extension is provided under
+`/vscode`. Launch VS Code with the extension enabled using:
+
+```bash
+code --extensionDevelopmentPath=vscode .
+```
+
+This registers the `.qpp` extension with basic grammar definitions so Q++
+files render cleanly without C++ template errors.
+
+
+## Building and Testing
+
+The project uses CMake. A typical build workflow is:
+
+```bash
+mkdir build && cd build
+cmake ..
+make
+ctest
+```
+
+`ctest` executes the small wavefunction simulator tests.
+
+### Python Requirements
+
+To run the demo in `tools/wave_primes.py` install dependencies via:
+
+```bash
+pip install -r requirements.txt
+```
+
+`qiskit` is optional but required for the experimental hardware backend.
+
+For contribution guidelines see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+### Quick Start Example
+
+Compile and run the sample program in `docs/examples/demo.qpp` with:
+
+```bash
+qppc docs/examples/demo.qpp demo.ir
+qpp-run demo.ir
+```
+
+This demonstrates the toy toolchain using the runtime scheduler and wavefunction simulator.
+For a more thorough test of the simulator, try `docs/examples/wavefunction_demo.qpp`:
+
+```bash
+qppc docs/examples/wavefunction_demo.qpp wf.ir
+qpp-run wf.ir
+```
+To see how bitwise operators map to quantum gates, compile `docs/examples/bitwise_demo.qpp`:
+
+```bash
+qppc docs/examples/bitwise_demo.qpp bitwise.ir
+qpp-run bitwise.ir
+```
+
+If you have external frameworks installed you can run the IR on different simulators or hardware by registering another backend:
+
+```bash
+qpp-run --use-qiskit demo.ir    # IBM Qiskit
+qpp-run --use-cirq demo.ir      # Google/Cirq
+qpp-run --use-braket demo.ir    # Amazon Braket
+qpp-run --use-qsharp demo.ir    # Microsoft Q#
+qpp-run --use-nvidia demo.ir    # NVIDIA
+qpp-run --use-psi demo.ir       # PsiQuantum
 ```
 
 ### Open Tasks

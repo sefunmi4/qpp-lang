@@ -22,3 +22,35 @@ if (b && other) {
 
 In loops the measurement result is cached so subsequent evaluations of the same variable use the measured value. Developers should consider resetting qubits or re-preparing the state if multiple passes are needed.
 
+## Short-Circuit Behavior
+
+Logical operators such as `&&` and `||` still short-circuit. When the first operand involves a qubit, the measurement is performed immediately. The second operand is evaluated only if needed based on that outcome.
+
+```cpp
+qregister bool q0, q1;
+if (measure(q0) && measure(q1)) {
+    // q0 measured first; q1 measured only when q0 == true
+}
+```
+
+## Side Effects in Loops
+
+Qubits measured inside loops collapse on the first iteration.
+To reuse the same quantum state across iterations you must reset or reallocate the qubits.
+
+```cpp
+for (int i = 0; i < 3; ++i) {
+    int bit = measure(q[i]);
+    // q[i] collapsed; prepare again if needed
+}
+```
+
+## Boolean Return Values
+
+Functions that return `bool` may hide measurements. Document these side effects clearly so callers understand the underlying qubits will be collapsed.
+
+```cpp
+bool check(qregister q[1]) {
+    return measure(q[0]);
+}
+```

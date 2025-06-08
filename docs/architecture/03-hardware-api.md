@@ -97,10 +97,12 @@ send_to_qpu(TaskIR task, HardwareProfile profile);
 ---
 
 The current codebase includes a small runtime skeleton in `hardware_api.h/cpp`
-which can emit QIR strings and pass them to a pluggable backend. A small
-`QiskitBackend` implementation shows how QIR can be routed to Python and
-executed on the Qiskit simulator. Additional vendor SDKs can be plugged in
-using the same interface.
+which can emit QIR strings and pass them to a pluggable backend. Stubs are
+provided for several vendors: `QiskitBackend`, `CirqBackend`, `BraketBackend`,
+`QSharpBackend`, `NvidiaBackend`, and `PsiBackend`. These backends simply print
+the generated QIR but demonstrate how real SDKs could be integrated using the
+same interface.
+
 
 *End of Hardware API Spec v0.1*
 

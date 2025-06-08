@@ -13,6 +13,31 @@ class QiskitBackend : public QPUBackend {
 public:
     void execute_qir(const std::string& qir) override;
 };
+  
+class CirqBackend : public QPUBackend {
+public:
+    void execute_qir(const std::string& qir) override;
+};
+
+class NvidiaBackend : public QPUBackend {
+public:
+    void execute_qir(const std::string& qir) override;
+};
+
+class QSharpBackend : public QPUBackend {
+public:
+    void execute_qir(const std::string& qir) override;
+};
+
+class BraketBackend : public QPUBackend {
+public:
+    void execute_qir(const std::string& qir) override;
+};
+
+class PsiBackend : public QPUBackend {
+public:
+    void execute_qir(const std::string& qir) override;
+};
 
 void set_qpu_backend(std::unique_ptr<QPUBackend> b);
 QPUBackend* qpu_backend();
