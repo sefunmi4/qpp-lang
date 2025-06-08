@@ -30,6 +30,7 @@ if(BUILD_TESTING)
     add_executable(wavefunction_extra_test tests/wavefunction_extra_test.cpp)
     target_link_libraries(wavefunction_extra_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_extra_test COMMAND wavefunction_extra_test)
+    
     add_executable(wavefunction_collapse_test tests/wavefunction_collapse_test.cpp)
     target_link_libraries(wavefunction_collapse_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_collapse_test COMMAND wavefunction_collapse_test)

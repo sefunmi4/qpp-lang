@@ -36,7 +36,7 @@ void QiskitBackend::execute_qir(const std::string& qir) {
         std::cerr << "Qiskit backend execution failed\n";
     std::remove(qir_path);
 }
-
+  
 void CirqBackend::execute_qir(const std::string& qir) {
     std::cout << "[Cirq] Received QIR:\n" << qir << std::endl;
 }

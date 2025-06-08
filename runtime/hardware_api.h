@@ -13,7 +13,7 @@ class QiskitBackend : public QPUBackend {
 public:
     void execute_qir(const std::string& qir) override;
 };
-
+  
 class CirqBackend : public QPUBackend {
 public:
     void execute_qir(const std::string& qir) override;
