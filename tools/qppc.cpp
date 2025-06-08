@@ -38,8 +38,10 @@ int main(int argc, char** argv) {
     std::regex meas_var_regex(R"(int\s+(\w+)\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex measure_regex(R"(measure\((\w+)\[(\d+)\]\);)");
     std::regex xor_assign_regex(R"((\w+)\[(\d+)\]\s*\^=\s*(\w+)\[(\d+)\];)");
+    std::regex call_regex(R"((\w+)\s*\([^)]*\);)" );
     std::regex if_var_regex(R"(if\s*\(\s*(\w+)\s*\)\s*\{)");
     std::regex if_creg_regex(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{)");
+    std::regex call_noargs_regex(R"(^\s*\w+\s*\(\s*\)\s*;\s*$)");
     std::regex if_var_gate_single(R"(if\s*\(\s*(\w+)\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex if_creg_gate_single(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex else_regex(R"(\}\s*else\s*\{)");
@@ -57,6 +59,11 @@ int main(int argc, char** argv) {
     std::string cond_name;
     std::string cond_index;
 
+    std::string current_task_name;
+    int gate_count = 0;
+    int qubit_count = 0;
+    bool non_clifford = false;
+
     while (std::getline(input, line)) {
         ++line_no;
         std::smatch m;
@@ -65,6 +72,10 @@ int main(int argc, char** argv) {
         if (pos != std::string::npos) line = line.substr(0, pos);
         if (std::regex_search(line, m, task_regex)) {
             out << "TASK " << m[2] << " " << m[1] << "\n";
+            current_task_name = m[2];
+            gate_count = 0;
+            qubit_count = 0;
+            non_clifford = false;
             std::size_t start = line.find('(', m.position(0));
             std::size_t end = line.find(')', start);
             if (start != std::string::npos && end != std::string::npos) {
@@ -74,6 +85,7 @@ int main(int argc, char** argv) {
                 auto endit = std::sregex_iterator();
                 for (auto it = begin; it != endit; ++it) {
                     out << "QALLOC " << (*it)[1] << " " << (*it)[2] << "\n";
+                    qubit_count += std::stoi((*it)[2]);
                 }
                 begin = std::sregex_iterator(params.begin(), params.end(), param_creg);
                 for (auto it = begin; it != endit; ++it) {
@@ -87,7 +99,16 @@ int main(int argc, char** argv) {
         trimmed.erase(0, trimmed.find_first_not_of(" \t"));
         trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
         if (in_task && trimmed == "}" && !cond_active) {
+            std::string engine;
+            if (!non_clifford) engine = "STABILIZER";
+            else if (qubit_count > 8 || gate_count > 20) engine = "TENSOR";
+            else engine = "FULL";
+            out << "ENGINE " << engine << "\n";
             out << "ENDTASK\n";
+            std::cout << "Task " << current_task_name
+                      << ": qubits=" << qubit_count
+                      << " gates=" << gate_count
+                      << " -> " << engine << std::endl;
             in_task = false;
             continue;
         }
@@ -103,6 +124,8 @@ int main(int argc, char** argv) {
                         << cond_index << " " << m[1] << " " << m[2] << " " << m[3]
                         << "\n";
                 }
+                gate_count++;
+                if (std::string(m[1]) == "T") non_clifford = true;
                 continue;
             }
             if (std::regex_search(line, else_regex)) {
@@ -133,10 +156,14 @@ int main(int argc, char** argv) {
 
         if (std::regex_search(line, m, if_var_gate_single)) {
             out << "IFVAR " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            gate_count++;
+            if (std::string(m[2]) == "T") non_clifford = true;
             continue;
         }
         if (std::regex_search(line, m, if_creg_gate_single)) {
         out << "IFC " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << " " << m[5] << "\n";
+            gate_count++;
+            if (std::string(m[3]) == "T") non_clifford = true;
             continue;
         }
 
@@ -157,21 +184,30 @@ int main(int argc, char** argv) {
         }
         if (std::regex_search(line, m, qalloc_regex)) {
             out << "QALLOC " << m[1] << " " << m[2] << "\n";
+            qubit_count += std::stoi(m[2]);
         } else if (std::regex_search(line, m, creg_regex)) {
             out << "CALLOC " << m[1] << " " << m[2] << "\n";
         } else if (std::regex_search(line, m, meas_var_regex)) {
             out << "VAR " << m[1] << "\n";
             out << "MEASURE " << m[2] << " " << m[3] << " -> VAR " << m[1] << "\n";
+            gate_count++;
         } else if (std::regex_search(line, m, gate_regex)) {
             out << m[1] << " " << m[2] << " " << m[3] << "\n";
+            gate_count++;
+            if (std::string(m[1]) == "T") non_clifford = true;
         } else if (std::regex_search(line, m, swap_regex)) {
             out << "SWAP " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            gate_count++;
         } else if (std::regex_search(line, m, cnot_regex)) {
             out << "CNOT " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            gate_count++;
         } else if (std::regex_search(line, m, cz_regex)) {
             out << "CZ " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << "\n";
+            gate_count++;
         } else if (std::regex_search(line, m, ccx_regex)) {
             out << "CCX " << m[1] << " " << m[2] << " " << m[3] << " " << m[4] << " " << m[5] << " " << m[6] << "\n";
+            gate_count++;
+            non_clifford = true;
         } else if (std::regex_search(line, m, xor_assign_regex)) {
             out << "CNOT " << m[3] << " " << m[4] << " " << m[1] << " " << m[2] << "\n";
         } else if (std::regex_search(line, m, call_regex)) {
@@ -180,8 +216,12 @@ int main(int argc, char** argv) {
             out << "PRINT " << m[1] << "\n";
         } else if (std::regex_search(line, m, meas_assign_regex)) {
             out << "MEASURE " << m[3] << " " << m[4] << " -> " << m[1] << " " << m[2] << "\n";
+            gate_count++;
         } else if (std::regex_search(line, m, measure_regex)) {
             out << "MEASURE " << m[1] << " " << m[2] << "\n";
+            gate_count++;
+        } else if (std::regex_search(line, m, call_regex)) {
+            // ignore simple function calls for now
         } else if (trimmed.size() > 0) {
             std::cerr << "Unrecognized syntax on line " << line_no << ": " << trimmed << "\n";
         }
