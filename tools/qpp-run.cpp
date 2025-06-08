@@ -37,7 +37,7 @@ int main(int argc, char** argv) {
     }
     std::ifstream input(argv[argi]);
     if (!input.is_open()) {
-        std::cerr << "Failed to open " << argv[1] << "\n";
+        std::cerr << "Failed to open " << argv[argi] << "\n";
         return 1;
     }
     std::string line;
