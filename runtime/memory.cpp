@@ -96,6 +96,7 @@ std::vector<std::complex<double>> MemoryManager::export_state(int id) {
     std::lock_guard<std::mutex> lock(mtx);
     if (id < 0 || id >= static_cast<int>(qregs.size()) || !qregs[id])
         return {};
+    qregs[id]->wf.decompress();
     return qregs[id]->wf.state;
 }
 
@@ -103,6 +104,7 @@ bool MemoryManager::import_state(int id, const std::vector<std::complex<double>>
     std::lock_guard<std::mutex> lock(mtx);
     if (id < 0 || id >= static_cast<int>(qregs.size()) || !qregs[id])
         return false;
+    qregs[id]->wf.decompress();
     if (st.size() != qregs[id]->wf.state.size()) return false;
     qregs[id]->wf.state = st;
     return true;

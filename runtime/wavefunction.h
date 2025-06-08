@@ -4,6 +4,7 @@
 #include <complex>
 #include <vector>
 #include <cstddef>
+#include <unordered_map>
 
 namespace qpp {
 template<typename Real = double>

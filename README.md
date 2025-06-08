@@ -76,6 +76,19 @@ python tools/wave_primes.py --plot --method square -n 50
 The demo is purely experimental but serves as a playground for ideas inspired by
 quantum Fourier transforms.
 
+### 📊 Amplitude Heatmap Visualizer
+
+`tools/amplitude_heatmap.py` helps inspect small wavefunctions. It loads a list
+of complex amplitudes (text or `.npy`) and plots their magnitudes and phases.
+
+```bash
+python tools/amplitude_heatmap.py state.npy --3d
+```
+
+The state vector must contain `2^n` amplitudes. Colors encode phase while bar
+height or heatmap intensity represents the magnitude.
+
+
 
 ## Building and Testing
 

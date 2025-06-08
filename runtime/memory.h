@@ -25,6 +25,10 @@ struct QRegister {
     void reset() { wf.reset(); }
     std::complex<double> amp(std::size_t idx) const { return wf.amplitude(idx); }
     void resize(std::size_t n) { wf = Wavefunction(n); }
+    void compress() { wf.compress(); }
+    void decompress() { wf.decompress(); }
+    std::size_t nnz() const { return wf.nnz(); }
+    bool using_sparse() const { return wf.using_sparse(); }
 };
 
 // TODO(good-first-issue): enhance QRegister with save/load helpers and
