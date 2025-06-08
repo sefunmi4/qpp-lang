@@ -3,6 +3,8 @@ project(qpp-lang)
 
 set(CMAKE_CXX_STANDARD 17)
 
+find_package(OpenMP)
+
 option(BUILD_TESTING "Build tests" ON)
 
 add_library(qpp_runtime
@@ -12,6 +14,10 @@ add_library(qpp_runtime
     runtime/hardware_api.cpp
     runtime/wavefunction.cpp
 )
+
+if(OpenMP_CXX_FOUND)
+    target_link_libraries(qpp_runtime PUBLIC OpenMP::OpenMP_CXX)
+endif()
 
 target_include_directories(qpp_runtime PUBLIC include)
 
