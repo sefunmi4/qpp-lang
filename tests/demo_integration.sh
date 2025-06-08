@@ -12,4 +12,6 @@ SRC_DIR="$(cd "$DIR"/.. && pwd)"
 "$SRC_DIR/build/qpp-run" adapt.ir
 "$SRC_DIR/build/qppc" "$SRC_DIR/docs/examples/teleport.qpp" teleport.ir
 "$SRC_DIR/build/qpp-run" teleport.ir
+"$SRC_DIR/build/qppc" "$SRC_DIR/docs/examples/hints_demo.qpp" hints.ir
+"$SRC_DIR/build/qpp-run" hints.ir
 

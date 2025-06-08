@@ -6,7 +6,7 @@
 
 int main() {
     using namespace qpp;
-    Wavefunction wf(3);
+    Wavefunction<float> wf(3);
     wf.apply_x(0);
     wf.apply_y(1);
     wf.apply_s(0);
@@ -16,7 +16,7 @@ int main() {
     wf.apply_ccnot(0,1,2);
     wf.reset();
     auto amp_after = wf.amplitude(0);
-    assert(std::abs(amp_after - std::complex<double>(1.0,0.0)) < 1e-9);
+    assert(std::abs(amp_after - std::complex<float>(1.0,0.0)) < 1e-6);
     int m0 = wf.measure(0);
     int m1 = wf.measure(1);
     assert(m0 == 0 || m0 == 1);
