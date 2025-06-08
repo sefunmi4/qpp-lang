@@ -172,6 +172,38 @@ std::complex<double> Wavefunction::amplitude(std::size_t index) const {
     return state[index];
 }
 
+std::size_t detect_periodicity_ripple(const Wavefunction& wf,
+                                      double threshold) {
+    const auto N = wf.state.size();
+    if (N <= 1) return 0;
+
+    std::vector<double> mags(N);
+    for (std::size_t i = 0; i < N; ++i) {
+        mags[i] = std::abs(wf.state[i]);
+    }
+
+    double energy = 0.0;
+    for (double m : mags) energy += m * m;
+
+    std::size_t best_p = 0;
+    double best_corr = 0.0;
+    for (std::size_t p = 1; p < N; ++p) {
+        double corr = 0.0;
+        for (std::size_t i = 0; i < N; ++i) {
+            corr += mags[i] * mags[(i + p) % N];
+        }
+        if (corr > best_corr) {
+            best_corr = corr;
+            best_p = p;
+        }
+    }
+
+    if (best_p == 0 || energy == 0.0) return 0;
+    double normalized = best_corr / energy;
+    if (normalized < threshold) return 0;
+    return best_p;
+}
+
 // TODO: implement full state collapse for multi-qubit measurements
 
 } // namespace qpp
