@@ -76,6 +76,20 @@ python tools/wave_primes.py --plot --method square -n 50
 The demo is purely experimental but serves as a playground for ideas inspired by
 quantum Fourier transforms.
 
+### 🌌 Spacetime Slicing Demo
+
+`tools/spacetime_slicing.py` visualizes a wavefunction expanding radially over
+time. Each angular segment represents a possible timeline branch. Launch an
+animation with:
+
+```bash
+python tools/spacetime_slicing.py --animate --frames 80
+```
+
+Use `--time` instead of `--animate` to view a single snapshot at a specific
+moment.
+
+
 
 ## Building and Testing
 
@@ -89,6 +103,9 @@ ctest
 ```
 
 `ctest` executes the small wavefunction simulator tests.
+
+The wavefunction runtime now supports low-precision `float` amplitudes via a
+template parameter. All examples and unit tests build against this mode.
 
 ### Python Requirements
 
@@ -113,6 +130,10 @@ Compile and run the sample program in `docs/examples/demo.qpp` with:
 ```bash
 qppc docs/examples/demo.qpp demo.ir
 qpp-run demo.ir
+```
+You can optionally supply a hardware profile file to enforce device limits:
+```bash
+qppc docs/examples/demo.qpp demo.ir --profile ibmq.json
 ```
 
 This demonstrates the toy toolchain using the runtime scheduler and wavefunction simulator.
