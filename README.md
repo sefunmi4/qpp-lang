@@ -76,6 +76,19 @@ python tools/wave_primes.py --plot --method square -n 50
 The demo is purely experimental but serves as a playground for ideas inspired by
 quantum Fourier transforms.
 
+### 🌌 Spacetime Slicing Demo
+
+`tools/spacetime_slicing.py` visualizes a wavefunction expanding radially over
+time. Each angular segment represents a possible timeline branch. Launch an
+animation with:
+
+```bash
+python tools/spacetime_slicing.py --animate --frames 80
+```
+
+Use `--time` instead of `--animate` to view a single snapshot at a specific
+moment.
+
 
 ## Building and Testing
 
