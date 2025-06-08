@@ -11,6 +11,7 @@ add_library(qpp_runtime
     runtime/scheduler.cpp
     runtime/hardware_api.cpp
     runtime/wavefunction.cpp
+    runtime/quidd.cpp
 )
 
 target_include_directories(qpp_runtime PUBLIC include)
@@ -20,6 +21,9 @@ target_link_libraries(qppc PRIVATE qpp_runtime)
 
 add_executable(qpp-run tools/qpp-run.cpp)
 target_link_libraries(qpp-run PRIVATE qpp_runtime)
+
+add_executable(quidd_benchmark tools/quidd_benchmark.cpp)
+target_link_libraries(quidd_benchmark PRIVATE qpp_runtime)
 
 if(BUILD_TESTING)
     enable_testing()
@@ -54,6 +58,10 @@ if(BUILD_TESTING)
     add_executable(memory_reuse_test tests/memory_reuse_test.cpp)
     target_link_libraries(memory_reuse_test PRIVATE qpp_runtime)
     add_test(NAME memory_reuse_test COMMAND memory_reuse_test)
+
+    add_executable(quidd_conversion_test tests/quidd_conversion_test.cpp)
+    target_link_libraries(quidd_conversion_test PRIVATE qpp_runtime)
+    add_test(NAME quidd_conversion_test COMMAND quidd_conversion_test)
 
     add_executable(scheduler_pause_test tests/scheduler_pause_test.cpp)
     target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
