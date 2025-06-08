@@ -42,6 +42,7 @@ Reference `.qpp` files that demonstrate working language features:
   measurement logic
 - `bitwise_demo.qpp` – Shows bitwise operators expanding to quantum gates
 
+
 Use these to test local builds or see practical use cases of language features.
 
 ---
