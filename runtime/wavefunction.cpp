@@ -1,4 +1,8 @@
 #include "wavefunction.h"
+#include "device.h"
+#ifdef USE_CUDA
+#include "gpu_kernels.h"
+#endif
 #include <cmath>
 #include <random>
 
@@ -10,9 +14,9 @@ Wavefunction::Wavefunction(std::size_t qubits)
     state[0] = 1.0;
 }
 
-static void apply_single_qubit_gate(std::vector<std::complex<double>>& st,
-                                    std::size_t target,
-                                    const std::complex<double> mat[2][2]) {
+static void apply_single_qubit_gate_cpu(std::vector<std::complex<double>>& st,
+                                        std::size_t target,
+                                        const std::complex<double> mat[2][2]) {
     std::size_t step = 1ULL << target;
     for (std::size_t i = 0; i < st.size(); i += 2 * step) {
         for (std::size_t j = 0; j < step; ++j) {
@@ -27,12 +31,28 @@ static void apply_single_qubit_gate(std::vector<std::complex<double>>& st,
 void Wavefunction::apply_h(std::size_t qubit) {
     const double f = 1.0 / std::sqrt(2.0);
     const std::complex<double> mat[2][2] = {{f, f}, {f, -f}};
-    apply_single_qubit_gate(state, qubit, mat);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 void Wavefunction::apply_x(std::size_t qubit) {
     const std::complex<double> mat[2][2] = {{0, 1}, {1, 0}};
-    apply_single_qubit_gate(state, qubit, mat);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 void Wavefunction::apply_y(std::size_t qubit) {
@@ -40,12 +60,28 @@ void Wavefunction::apply_y(std::size_t qubit) {
         {0.0, std::complex<double>(0, -1)},
         {std::complex<double>(0, 1), 0.0}
     };
-    apply_single_qubit_gate(state, qubit, mat);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 void Wavefunction::apply_z(std::size_t qubit) {
     const std::complex<double> mat[2][2] = {{1, 0}, {0, -1}};
-    apply_single_qubit_gate(state, qubit, mat);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 void Wavefunction::apply_s(std::size_t qubit) {
@@ -53,7 +89,15 @@ void Wavefunction::apply_s(std::size_t qubit) {
         {1, 0},
         {0, std::complex<double>(0, 1)}
     };
-    apply_single_qubit_gate(state, qubit, mat);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 void Wavefunction::apply_t(std::size_t qubit) {
@@ -61,7 +105,15 @@ void Wavefunction::apply_t(std::size_t qubit) {
         {1, 0},
         {0, std::exp(std::complex<double>(0, M_PI / 4))}
     };
-    apply_single_qubit_gate(state, qubit, mat);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
@@ -79,12 +131,27 @@ void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
 }
 
 void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
-    std::size_t cbit = 1ULL << control;
-    std::size_t tbit = 1ULL << target;
-    for (std::size_t i = 0; i < state.size(); ++i) {
-        if ((i & cbit) && !(i & tbit)) {
-            std::size_t j = i | tbit;
-            std::swap(state[i], state[j]);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_cnot(state, control, target);
+#else
+        std::size_t cbit = 1ULL << control;
+        std::size_t tbit = 1ULL << target;
+        for (std::size_t i = 0; i < state.size(); ++i) {
+            if ((i & cbit) && !(i & tbit)) {
+                std::size_t j = i | tbit;
+                std::swap(state[i], state[j]);
+            }
+        }
+#endif
+    } else {
+        std::size_t cbit = 1ULL << control;
+        std::size_t tbit = 1ULL << target;
+        for (std::size_t i = 0; i < state.size(); ++i) {
+            if ((i & cbit) && !(i & tbit)) {
+                std::size_t j = i | tbit;
+                std::swap(state[i], state[j]);
+            }
         }
     }
 }

@@ -1,14 +1,6 @@
-task<CPU> say_hello() {
+task<AUTO> main() {
     // classical print
-    printf("Hello, classical world!\n");
-}
-
-task<QPU> quantum_demo() {
+    // (I/O not yet supported, so this is illustrative only)
     qalloc qbit q[1];
     // placeholder for quantum operations
-}
-
-task<AUTO> main() {
-    say_hello();
-    quantum_demo();
 }

@@ -150,6 +150,10 @@ qpp-run --use-nvidia demo.ir    # NVIDIA
 qpp-run --use-psi demo.ir       # PsiQuantum
 ```
 
+By default the runtime executes on the CPU. Pass `--device GPU` to `qpp-run`
+to request GPU kernels when built with CUDA support. If CUDA is unavailable the
+tool falls back to the CPU implementation automatically.
+
 ### Open Tasks
 
 See [TODO.md](TODO.md) for current areas where help is welcome. Items marked
