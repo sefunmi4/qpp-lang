@@ -1,6 +1,9 @@
 #include "hardware_api.h"
 #include <iostream>
 #include <sstream>
+#include <cstdio>
+#include <unistd.h>
+
 
 namespace qpp {
 
@@ -11,6 +14,29 @@ void set_qpu_backend(std::unique_ptr<QPUBackend> b) {
 }
 
 QPUBackend* qpu_backend() { return active_backend.get(); }
+
+void QiskitBackend::execute_qir(const std::string& qir) {
+    // Write QIR to temporary file and invoke helper python script
+    char qir_path[] = "/tmp/qpp_qirXXXXXX";
+    int fd = mkstemp(qir_path);
+    if (fd == -1) {
+        std::cerr << "Failed to create temp file for QIR\n";
+        return;
+    }
+    FILE* f = fdopen(fd, "w");
+    if (!f) {
+        std::cerr << "fdopen failed\n";
+        close(fd);
+        return;
+    }
+    fwrite(qir.c_str(), 1, qir.size(), f);
+    fclose(f);
+    std::string cmd = std::string("python3 ") + "../tools/qiskit_backend.py " + qir_path;
+    int rc = std::system(cmd.c_str());
+    if (rc != 0)
+        std::cerr << "Qiskit backend execution failed\n";
+    std::remove(qir_path);
+}
 
 std::string emit_qir(const std::vector<std::vector<std::string>>& ops) {
     std::ostringstream out;

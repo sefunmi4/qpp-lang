@@ -34,5 +34,4 @@ public:
 // import/export helpers
 } // namespace qpp
 
-
 #endif // QPP_WAVEFUNCTION_H

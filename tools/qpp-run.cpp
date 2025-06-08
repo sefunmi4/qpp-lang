@@ -5,6 +5,7 @@
 #include <iostream>
 #include <sstream>
 #include <unordered_map>
+#include <memory>
 
 // Simple interpreter for the toy IR emitted by qppc.
 
@@ -12,10 +13,19 @@ using namespace qpp;
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "Usage: qpp-run <compiled.ir>\n";
+        std::cerr << "Usage: qpp-run [--use-qiskit] <compiled.ir>\n";
         return 1;
     }
-    std::ifstream input(argv[1]);
+    int argi = 1;
+    if (std::string(argv[1]) == "--use-qiskit") {
+        set_qpu_backend(std::make_unique<QiskitBackend>());
+        if (argc < 3) {
+            std::cerr << "No IR file provided\n";
+            return 1;
+        }
+        argi = 2;
+    }
+    std::ifstream input(argv[argi]);
     if (!input.is_open()) {
         std::cerr << "Failed to open " << argv[1] << "\n";
         return 1;
@@ -124,7 +134,9 @@ int main(int argc, char** argv) {
         current_name.clear();
     };
 
+    int line_no = 0;
     while (std::getline(input, line)) {
+        ++line_no;
         std::istringstream iss(line);
         std::string tok;
         iss >> tok;
@@ -142,6 +154,8 @@ int main(int argc, char** argv) {
             std::string s;
             while (iss >> s) parts.push_back(s);
             ops.push_back(parts);
+        } else if (!line.empty()) {
+            std::cerr << "Unknown instruction on line " << line_no << ": " << line << "\n";
         }
     }
     add_current_task();

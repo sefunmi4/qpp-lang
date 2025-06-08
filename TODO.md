@@ -17,21 +17,21 @@ The following larger tasks are required before Q++ reaches feature parity with e
 
 - Compiler front-end parses simple control flow and emits an intermediate representation used by `qpp-run`.
 - `qpp-run` now executes that IR via the scheduler and wavefunction backend, supporting conditional gates.
-
 - ~~Expand the runtime scheduler with task priorities and asynchronous execution, allowing CPU hooks for hybrid workflows.~~ *(done)*
 - ~~Extend the `Wavefunction` library with additional gates and utilities for multi-qubit operations and state management.~~ *(done)*
-- **Partial** Hardware API skeleton added with QIR generation stubs. Next step is connecting to vendor SDKs and executing on real QPUs.
+- Hardware API now includes a Qiskit backend example but more vendor SDKs should be plugged in for real QPU execution.
 - Continue documenting migration guides such as `bitwise_to_gate.md` and `bool_logic.md`.
-- Grow the test suite to cover more runtime paths and edge cases.
+- Grow the test suite to cover more runtime paths and edge cases. *(ongoing)*
+
 
 ## Help Wanted
 
 The following items could use community help. Tasks tagged `good-first-issue`
 are relatively self-contained and ideal for newcomers.
 
-- `good-first-issue` Extend `Scheduler` with task priorities and async execution.
-- `good-first-issue` Add register reuse logic to `MemoryManager` to avoid excess
-  allocations.
+- ~~`good-first-issue` Extend `Scheduler` with task priorities and async execution.~~ *(done)*
+- ~~`good-first-issue` Add register reuse logic to `MemoryManager` to avoid excess
+  allocations.~~ *(done)*
 - ~~Add support for saving/loading `QRegister` state for interoperability with
   external simulators.~~ *(done)*
 

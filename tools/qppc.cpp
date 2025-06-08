@@ -43,6 +43,7 @@ int main(int argc, char** argv) {
     std::regex else_regex(R"(\}\s*else\s*\{)");
 
     std::string line;
+    int line_no = 0;
     bool in_task = false;
     bool cond_active = false;
     bool cond_else = false;
@@ -55,6 +56,7 @@ int main(int argc, char** argv) {
     std::string cond_index;
 
     while (std::getline(input, line)) {
+        ++line_no;
         std::smatch m;
         // strip comments
         auto pos = line.find("//");
@@ -174,6 +176,8 @@ int main(int argc, char** argv) {
             out << "MEASURE " << m[3] << " " << m[4] << " -> " << m[1] << " " << m[2] << "\n";
         } else if (std::regex_search(line, m, measure_regex)) {
             out << "MEASURE " << m[1] << " " << m[2] << "\n";
+        } else if (trimmed.size() > 0) {
+            std::cerr << "Unrecognized syntax on line " << line_no << ": " << trimmed << "\n";
         }
     }
     std::cout << "Compilation complete." << std::endl;
