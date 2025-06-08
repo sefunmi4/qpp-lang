@@ -35,6 +35,9 @@ void Scheduler::run() {
         case Target::AUTO:
             std::cout << "AUTO";
             break;
+        case Target::MIXED:
+            std::cout << "MIXED";
+            break;
         }
         if (t.hint == ExecHint::CLIFFORD)
             std::cout << " [CLIFFORD]";
@@ -76,6 +79,9 @@ void Scheduler::run_async() {
                 break;
             case Target::AUTO:
                 std::cout << "AUTO";
+                break;
+            case Target::MIXED:
+                std::cout << "MIXED";
                 break;
             }
             if (t.hint == ExecHint::CLIFFORD)

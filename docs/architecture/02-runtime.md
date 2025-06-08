@@ -14,6 +14,7 @@ Q++ defines three runtime task contexts:
 - `task<CPU>` → Runs directly on CPU
 - `task<QPU>` → Delegated to quantum processing unit
 - `task<AUTO>` → Evaluated and dispatched based on scope and data
+- `task<MIXED>` → Runs CPU and QPU logic sequentially in the same task
 
 Runtime determines target execution via scope analysis, bit type resolution, and probabilistic annotations.
 
