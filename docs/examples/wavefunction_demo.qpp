@@ -3,14 +3,14 @@
 //   qppc docs/examples/wavefunction_demo.qpp wf.ir
 // Run with:
 //   qpp-run wf.ir
-// This program applies a series of single- and multi-qubit gates,
-// then performs conditional logic based on measurement results.
+// This program applies a series of single- and multi-qubit gates
+// followed by simple measurements. Control flow has been removed
+// because the current `qppc` compiler only supports gates and
+// measurements.
 
 task<QPU> wave_demo() {
     qalloc qbit q[3];
-    cregister int c[1];
-    // measure the first qubit immediately
-    int m = measure(q[0]);
+    cregister int c[3];
     // prepare entangled state
     H(q[0]);
     CX(q[0], q[1]);
@@ -28,13 +28,8 @@ task<QPU> wave_demo() {
     CCX(q[0], q[1], q[2]);
     SWAP(q[0], q[2]);
 
-    if (m) {
-        X(q[1]);
-    } else {
-        Y(q[1]);
-    }
-
-    c[0] = measure(q[1]);
-    c[0] = measure(q[2]);
+    c[0] = measure(q[0]);
+    c[1] = measure(q[1]);
+    c[2] = measure(q[2]);
 }
 
