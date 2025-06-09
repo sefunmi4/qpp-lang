@@ -5,6 +5,7 @@
 int main() {
     using namespace qpp;
     QRegister qr(2);
+    qr.wave();
     // initial state |00>
     qr.compress();
     assert(qr.using_sparse());
@@ -13,10 +14,10 @@ int main() {
     qr.x(1); // state |10>
     qr.compress();
     assert(qr.nnz() == 1);
-    auto amp = qr.wf.amplitude(2);
+    auto amp = qr.wave().amplitude(2);
     assert(std::abs(amp - std::complex<double>(1.0,0.0)) < 1e-9);
     qr.decompress();
-    assert(qr.wf.state[2] == std::complex<double>(1.0,0.0));
+    assert(qr.wave().state[2] == std::complex<double>(1.0,0.0));
     std::cout << "Sparse compression test passed." << std::endl;
     return 0;
 }
