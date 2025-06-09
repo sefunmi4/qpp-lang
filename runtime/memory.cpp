@@ -122,6 +122,24 @@ bool MemoryManager::import_state(int id, const std::vector<std::complex<double>>
     qregs[id]->wf.state = st;
     return true;
 }
+  
+bool MemoryManager::save_resonance_zone(int id, const std::string& key) {
+    std::lock_guard<std::mutex> lock(mtx);
+    if (id < 0 || id >= static_cast<int>(qregs.size()) || !qregs[id])
+        return false;
+    resonance_cache[key] = qregs[id]->wf.state;
+    return true;
+}
+
+bool MemoryManager::load_resonance_zone(int id, const std::string& key) {
+    std::lock_guard<std::mutex> lock(mtx);
+    auto it = resonance_cache.find(key);
+    if (it == resonance_cache.end() || id < 0 || id >= static_cast<int>(qregs.size()) || !qregs[id])
+        return false;
+    if (it->second.size() != qregs[id]->wf.state.size()) return false;
+    qregs[id]->wf.state = it->second;
+    return true;
+}
 
 bool MemoryManager::save_state_to_file(int id, const std::string& path) {
     std::vector<std::complex<double>> st;

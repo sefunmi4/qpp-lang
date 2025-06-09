@@ -188,6 +188,8 @@ advanced scheduler, and hardware API integration that would move Q++ toward
 production readiness.
 For a complete list of proposed features and their implementation tasks,
 refer to [features.yaml](features.yaml).
+- The runtime provides a basic resonance zone cache via
+  `memory.save_resonance_zone` and `memory.load_resonance_zone`.
 
 ### Editor Support
 
