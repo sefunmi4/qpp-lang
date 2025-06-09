@@ -63,6 +63,10 @@ if(BUILD_TESTING)
     target_link_libraries(wavefunction_twoqubit_measure_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_twoqubit_measure_test COMMAND wavefunction_twoqubit_measure_test)
 
+    add_executable(wavefunction_multi_qubit_collapse_test tests/wavefunction_multi_qubit_collapse_test.cpp)
+    target_link_libraries(wavefunction_multi_qubit_collapse_test PRIVATE qpp_runtime)
+    add_test(NAME wavefunction_multi_qubit_collapse_test COMMAND wavefunction_multi_qubit_collapse_test)
+
     add_executable(fused_gate_test tests/fused_gate_test.cpp)
     target_link_libraries(fused_gate_test PRIVATE qpp_runtime)
     add_test(NAME fused_gate_test COMMAND fused_gate_test)
@@ -119,6 +123,10 @@ if(BUILD_TESTING)
     add_executable(scheduler_pause_test tests/scheduler_pause_test.cpp)
     target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
     add_test(NAME scheduler_pause_test COMMAND scheduler_pause_test)
+
+    add_executable(scheduler_qpu_dispatch_test tests/scheduler_qpu_dispatch_test.cpp)
+    target_link_libraries(scheduler_qpu_dispatch_test PRIVATE qpp_runtime)
+    add_test(NAME scheduler_qpu_dispatch_test COMMAND scheduler_qpu_dispatch_test)
 
     add_executable(hardware_api_test tests/hardware_api_test.cpp)
     target_link_libraries(hardware_api_test PRIVATE qpp_runtime)

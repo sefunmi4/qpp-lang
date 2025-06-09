@@ -299,18 +299,24 @@ template<typename Real>
 std::size_t Wavefunction<Real>::measure(const std::vector<std::size_t>& qubits) {
     if (qubits.empty()) return 0;
     decompress();
-    // compute probabilities for all outcomes
+
+    // mask covering all measured qubits
+    std::size_t mask = 0;
+    for (auto q : qubits) mask |= 1ULL << q;
+
+    // compute probabilities for each measurement outcome
     std::size_t outcomes = 1ULL << qubits.size();
     std::vector<double> probs(outcomes, 0.0);
+
 #pragma omp parallel
     {
         std::vector<double> local(outcomes, 0.0);
 #pragma omp for schedule(static)
         for (std::size_t i = 0; i < state.size(); ++i) {
+            std::size_t bits = i & mask;
             std::size_t outcome = 0;
-            for (std::size_t q = 0; q < qubits.size(); ++q) {
-                if (i & (1ULL << qubits[q])) outcome |= 1ULL << q;
-            }
+            for (std::size_t j = 0; j < qubits.size(); ++j)
+                if (bits & (1ULL << qubits[j])) outcome |= 1ULL << j;
             local[outcome] += std::norm(state[i]);
         }
 #pragma omp critical
@@ -324,15 +330,16 @@ std::size_t Wavefunction<Real>::measure(const std::vector<std::size_t>& qubits) 
     double norm_factor = std::sqrt(probs[result]);
 #pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
+        std::size_t bits = i & mask;
         std::size_t outcome = 0;
-        for (std::size_t q = 0; q < qubits.size(); ++q) {
-            if (i & (1ULL << qubits[q])) outcome |= 1ULL << q;
-        }
-        if (outcome != result)
-            state[i] = 0;
-        else
+        for (std::size_t j = 0; j < qubits.size(); ++j)
+            if (bits & (1ULL << qubits[j])) outcome |= 1ULL << j;
+        if (outcome == result)
             state[i] /= norm_factor;
+        else
+            state[i] = {Real(0.0), Real(0.0)};
     }
+
     return result;
 }
 

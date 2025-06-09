@@ -36,6 +36,17 @@ bool MemoryManager::release_qregister(int id) {
     return true;
 }
 
+std::vector<int> MemoryManager::create_qregisters(const std::vector<size_t>& sizes) {
+    std::vector<int> ids;
+    ids.reserve(sizes.size());
+    for (size_t n : sizes) ids.push_back(create_qregister(n));
+    return ids;
+}
+
+void MemoryManager::release_qregisters(const std::vector<int>& ids) {
+    for (int id : ids) release_qregister(id);
+}
+
 int MemoryManager::create_cregister(size_t n) {
     std::lock_guard<std::mutex> lock(mtx);
     int id;
@@ -65,6 +76,17 @@ bool MemoryManager::release_cregister(int id) {
         ++calloc_count[id];
     free_cids.push_back(id);
     return true;
+}
+
+std::vector<int> MemoryManager::create_cregisters(const std::vector<size_t>& sizes) {
+    std::vector<int> ids;
+    ids.reserve(sizes.size());
+    for (size_t n : sizes) ids.push_back(create_cregister(n));
+    return ids;
+}
+
+void MemoryManager::release_cregisters(const std::vector<int>& ids) {
+    for (int id : ids) release_cregister(id);
 }
 
 QRegister& MemoryManager::qreg(int id) {
@@ -97,7 +119,8 @@ size_t MemoryManager::memory_usage() {
     std::lock_guard<std::mutex> lock(mtx);
     size_t bytes = 0;
     for (const auto& q : qregs) {
-        if (q) bytes += q->wf.state.size() * sizeof(std::complex<double>);
+        if (q && q->wf)
+            bytes += q->wf->state.size() * sizeof(std::complex<double>);
     }
     for (const auto& c : cregs) {
         if (c) bytes += c->bits.size() * sizeof(int);
@@ -109,17 +132,17 @@ std::vector<std::complex<double>> MemoryManager::export_state(int id) {
     std::lock_guard<std::mutex> lock(mtx);
     if (id < 0 || id >= static_cast<int>(qregs.size()) || !qregs[id])
         return {};
-    qregs[id]->wf.decompress();
-    return qregs[id]->wf.state;
+    qregs[id]->wave().decompress();
+    return qregs[id]->wave().state;
 }
 
 bool MemoryManager::import_state(int id, const std::vector<std::complex<double>>& st) {
     std::lock_guard<std::mutex> lock(mtx);
     if (id < 0 || id >= static_cast<int>(qregs.size()) || !qregs[id])
         return false;
-    qregs[id]->wf.decompress();
-    if (st.size() != qregs[id]->wf.state.size()) return false;
-    qregs[id]->wf.state = st;
+    qregs[id]->wave().decompress();
+    if (st.size() != qregs[id]->wave().state.size()) return false;
+    qregs[id]->wave().state = st;
     return true;
 }
   
@@ -127,7 +150,7 @@ bool MemoryManager::save_resonance_zone(int id, const std::string& key) {
     std::lock_guard<std::mutex> lock(mtx);
     if (id < 0 || id >= static_cast<int>(qregs.size()) || !qregs[id])
         return false;
-    resonance_cache[key] = qregs[id]->wf.state;
+    resonance_cache[key] = qregs[id]->wave().state;
     return true;
 }
 
@@ -136,8 +159,8 @@ bool MemoryManager::load_resonance_zone(int id, const std::string& key) {
     auto it = resonance_cache.find(key);
     if (it == resonance_cache.end() || id < 0 || id >= static_cast<int>(qregs.size()) || !qregs[id])
         return false;
-    if (it->second.size() != qregs[id]->wf.state.size()) return false;
-    qregs[id]->wf.state = it->second;
+    if (it->second.size() != qregs[id]->wave().state.size()) return false;
+    qregs[id]->wave().state = it->second;
     return true;
 }
 
@@ -147,7 +170,7 @@ bool MemoryManager::save_state_to_file(int id, const std::string& path) {
         std::lock_guard<std::mutex> lock(mtx);
         if (id < 0 || id >= static_cast<int>(qregs.size()) || !qregs[id])
             return false;
-        st = qregs[id]->wf.state;
+        st = qregs[id]->wave().state;
     }
     std::ofstream ofs(path, std::ios::binary);
     if (!ofs) return false;
@@ -181,7 +204,7 @@ bool MemoryManager::checkpoint_if_needed(int id, std::size_t op_threshold,
         qr.elapsed_seconds() >= time_threshold_sec)
         should = true;
     if (!should) return false;
-    std::vector<std::complex<double>> st = qr.wf.state;
+    std::vector<std::complex<double>> st = qr.wave().state;
     qr.reset_metrics();
     lock.unlock();
     std::ofstream ofs(file, std::ios::binary);

@@ -7,6 +7,7 @@ using namespace qpp;
 int main() {
     size_t base = memory.memory_usage();
     int id = memory.create_qregister(2);
+    memory.qreg(id).wave();
     size_t used = memory.memory_usage();
     assert(used > base);
     memory.release_qregister(id);
