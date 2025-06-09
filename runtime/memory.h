@@ -11,9 +11,17 @@
 
 namespace qpp {
 struct QRegister {
-    Wavefunction<> wf;
     explicit QRegister(size_t n)
-        : wf(n), start_time(std::chrono::steady_clock::now()) {}
+        : num_qubits(n), start_time(std::chrono::steady_clock::now()) {}
+
+    void ensure_allocated() const {
+        if (!wf) wf = std::make_unique<Wavefunction<>>(num_qubits);
+    }
+
+    Wavefunction<> &wave() const {
+        ensure_allocated();
+        return *wf;
+    }
 
     void reset_metrics() { op_count = 0; start_time = std::chrono::steady_clock::now(); }
     double elapsed_seconds() const {
@@ -44,6 +52,10 @@ struct QRegister {
     std::size_t nnz() const { return wf.nnz(); }
     bool using_sparse() const { return wf.using_sparse(); }
     std::size_t ops() const { return op_count; }
+  
+  
+    mutable std::unique_ptr<Wavefunction<>> wf;
+    std::size_t num_qubits;
 
     bool save_to_file(const std::string& path) {
         wf.decompress();
@@ -68,13 +80,11 @@ struct QRegister {
         wf.state = std::move(st);
         return true;
     }
-
     std::chrono::steady_clock::time_point start_time;
     std::size_t op_count{0};
 };
 
-// TODO(good-first-issue): enhance QRegister with save/load helpers and
-// optional lazy allocation of the underlying Wavefunction
+// TODO(good-first-issue): enhance QRegister with save/load helpers
 
 struct CRegister {
     std::vector<int> bits;
@@ -87,6 +97,10 @@ public:
     bool release_qregister(int id);
     int create_cregister(size_t n);
     bool release_cregister(int id);
+    std::vector<int> create_qregisters(const std::vector<size_t>& sizes);
+    void release_qregisters(const std::vector<int>& ids);
+    std::vector<int> create_cregisters(const std::vector<size_t>& sizes);
+    void release_cregisters(const std::vector<int>& ids);
     QRegister& qreg(int id);
     CRegister& creg(int id);
     // statistics helpers
@@ -121,7 +135,7 @@ private:
     std::mutex mtx;
 };
 
-// TODO(good-first-issue): implement register reuse and bulk operations
+
 
 extern MemoryManager memory;
 }
