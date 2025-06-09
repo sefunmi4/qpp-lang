@@ -3,9 +3,11 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include "../runtime/random.h"
 
 int main() {
     using namespace qpp;
+    seed_rng(42);
     Wavefunction dense(2);
     SparseWavefunction sparse(2);
 

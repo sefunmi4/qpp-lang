@@ -1,10 +1,12 @@
 #include "../runtime/memory.h"
 #include <cassert>
 #include <iostream>
+#include "../runtime/random.h"
 
 using namespace qpp;
 
 int main() {
+    seed_rng(42);
     int id = memory.create_qregister(1);
     memory.qreg(id).x(0);
     auto st = memory.export_state(id);
