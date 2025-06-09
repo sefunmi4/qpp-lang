@@ -144,6 +144,63 @@ void Wavefunction<Real>::apply_t(std::size_t qubit) {
 }
 
 template<typename Real>
+void Wavefunction<Real>::apply_rx(std::size_t qubit, Real theta) {
+    Real c = std::cos(theta / Real(2.0));
+    Real s = std::sin(theta / Real(2.0));
+    const std::complex<Real> mat[2][2] = {
+        {c, std::complex<Real>(0, -s)},
+        {std::complex<Real>(0, -s), c}
+    };
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
+}
+
+template<typename Real>
+void Wavefunction<Real>::apply_ry(std::size_t qubit, Real theta) {
+    Real c = std::cos(theta / Real(2.0));
+    Real s = std::sin(theta / Real(2.0));
+    const std::complex<Real> mat[2][2] = {
+        {c, -s},
+        {s,  c}
+    };
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
+}
+
+template<typename Real>
+void Wavefunction<Real>::apply_rz(std::size_t qubit, Real theta) {
+    std::complex<Real> e_pos = std::exp(std::complex<Real>(0, theta / Real(2.0)));
+    std::complex<Real> e_neg = std::exp(std::complex<Real>(0, -theta / Real(2.0)));
+    const std::complex<Real> mat[2][2] = {
+        {e_neg, 0},
+        {0, e_pos}
+    };
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
+}
+
+template<typename Real>
 struct Mat2 {
     std::complex<Real> v[2][2];
 };

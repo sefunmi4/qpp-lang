@@ -144,6 +144,14 @@ if(BUILD_TESTING)
     target_link_libraries(sparse_wavefunction_test PRIVATE qpp_runtime)
     add_test(NAME sparse_wavefunction_test COMMAND sparse_wavefunction_test)
 
+    add_executable(rotation_gate_test tests/rotation_gate_test.cpp)
+    target_link_libraries(rotation_gate_test PRIVATE qpp_runtime)
+    add_test(NAME rotation_gate_test COMMAND rotation_gate_test)
+
+    add_executable(qregister_serialization_test tests/qregister_serialization_test.cpp)
+    target_link_libraries(qregister_serialization_test PRIVATE qpp_runtime)
+    add_test(NAME qregister_serialization_test COMMAND qregister_serialization_test)
+
     add_test(NAME demo_integration
         COMMAND ${CMAKE_SOURCE_DIR}/tests/demo_integration.sh)
     add_test(NAME examples_compile_test
