@@ -12,7 +12,13 @@ inline std::atomic<uint64_t>& rng_seed() {
 } // namespace detail
 
 inline std::mt19937& global_rng() {
-    thread_local std::mt19937 gen(detail::rng_seed().load(std::memory_order_relaxed));
+    thread_local uint64_t last_seed = detail::rng_seed().load(std::memory_order_relaxed);
+    thread_local std::mt19937 gen(last_seed);
+    uint64_t current = detail::rng_seed().load(std::memory_order_relaxed);
+    if (current != last_seed) {
+        gen.seed(current);
+        last_seed = current;
+    }
     return gen;
 }
 
