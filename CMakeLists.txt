@@ -170,4 +170,6 @@ if(BUILD_TESTING)
         COMMAND ${CMAKE_SOURCE_DIR}/tests/compiler_opt_test.sh)
     add_test(NAME engine_dispatch_test
         COMMAND ${CMAKE_SOURCE_DIR}/tests/engine_dispatch_test.sh)
+    add_test(NAME hardware_profile_enforcement_test
+        COMMAND ${CMAKE_SOURCE_DIR}/tests/hardware_profile_enforcement_test.sh)
 endif()
