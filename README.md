@@ -21,7 +21,7 @@ Inspired by how C++ evolved from C, Q++ introduces just enough new logic to supp
 | `bool` | Automatically probabilistic if linked to quantum memory |
 | Bitwise Ops | Become quantum gate macros (`^` → `CX`, `&` → `Toffoli`) |
 | `register` | Extended as `qregister`, `cregister`, or left as `auto` |
-| `task<T>` | `task<QPU>`, `task<CPU>`, `task<AUTO>` target hardware like GPU kernels |
+| `task<T>` | `task<QPU>`, `task<CPU>`, `task<AUTO>`, `task<MIXED>` target hardware or hybrid modes |
 | `__qasm` | Inject raw gate-level code (like inline asm) |
 | LLVM IR | Enhanced with QIR, collapse metadata, and probabilistic flags |
 | Import/Export | Save and restore `qregister` state for external simulators |
@@ -76,6 +76,20 @@ python tools/wave_primes.py --plot --method square -n 50
 The demo is purely experimental but serves as a playground for ideas inspired by
 quantum Fourier transforms.
 
+### 🌌 Spacetime Slicing Demo
+
+`tools/spacetime_slicing.py` visualizes a wavefunction expanding radially over
+time. Each angular segment represents a possible timeline branch. Launch an
+animation with:
+
+```bash
+python tools/spacetime_slicing.py --animate --frames 80
+```
+
+Use `--time` instead of `--animate` to view a single snapshot at a specific
+moment.
+
+
 
 ## Building and Testing
 
@@ -89,6 +103,9 @@ ctest
 ```
 
 `ctest` executes the small wavefunction simulator tests.
+
+The wavefunction runtime now supports low-precision `float` amplitudes via a
+template parameter. All examples and unit tests build against this mode.
 
 ### Python Requirements
 
@@ -114,6 +131,10 @@ Compile and run the sample program in `docs/examples/demo.qpp` with:
 qppc docs/examples/demo.qpp demo.ir
 qpp-run demo.ir
 ```
+You can optionally supply a hardware profile file to enforce device limits:
+```bash
+qppc docs/examples/demo.qpp demo.ir --profile ibmq.json
+```
 
 This demonstrates the toy toolchain using the runtime scheduler and wavefunction simulator.
 
@@ -125,6 +146,14 @@ builds cleanly with the current compiler:
 qppc docs/examples/wavefunction_demo.qpp wf.ir
 qpp-run wf.ir
 ```
+
+The decision diagram implementation can be benchmarked using:
+
+```bash
+quidd_benchmark 8
+```
+
+This compares memory usage of the dense wavefunction against the QuIDD form.
 
 To see how bitwise operators map to quantum gates, compile `docs/examples/bitwise_demo.qpp`:
 

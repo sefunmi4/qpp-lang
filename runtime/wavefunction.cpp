@@ -1,20 +1,31 @@
 #include "wavefunction.h"
 #include <cmath>
 #include <random>
+#include <unordered_map>
+#include <string>
+#include <array>
+#ifdef _OPENMP
+#include <omp.h>
+#endif
 
 namespace qpp {
 // TODO(good-first-issue): consolidate random engine usage across the runtime
 
-Wavefunction::Wavefunction(std::size_t qubits)
+
+template<typename Real>
+Wavefunction<Real>::Wavefunction(std::size_t qubits)
     : state(1ULL << qubits, {0.0, 0.0}), num_qubits(qubits) {
-    state[0] = 1.0;
+    state[0] = Real(1.0);
 }
 
-static void apply_single_qubit_gate(std::vector<std::complex<double>>& st,
+template<typename Real>
+static void apply_single_qubit_gate(std::vector<std::complex<Real>>& st,
                                     std::size_t target,
-                                    const std::complex<double> mat[2][2]) {
+                                    const std::complex<Real> mat[2][2]) {
     std::size_t step = 1ULL << target;
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < st.size(); i += 2 * step) {
+#pragma omp simd
         for (std::size_t j = 0; j < step; ++j) {
             auto a = st[i + j];
             auto b = st[i + j + step];
@@ -22,52 +33,117 @@ static void apply_single_qubit_gate(std::vector<std::complex<double>>& st,
             st[i + j + step] = mat[1][0] * a + mat[1][1] * b;
         }
     }
+  }
 }
 
-void Wavefunction::apply_h(std::size_t qubit) {
+
+template<typename Real>
+void Wavefunction<Real>::apply_h(std::size_t qubit) {
+    const Real f = Real(1.0) / std::sqrt(Real(2.0));
+    const std::complex<Real> mat[2][2] = {{f, f}, {f, -f}};
+    apply_single_qubit_gate<Real>(state, qubit, mat);
+}
+
+template<typename Real>
+void Wavefunction<Real>::apply_x(std::size_t qubit) {
+    const std::complex<Real> mat[2][2] = {{0, 1}, {1, 0}};
+    apply_single_qubit_gate<Real>(state, qubit, mat);
+}
+
+template<typename Real>
+void Wavefunction<Real>::apply_y(std::size_t qubit) {
+    const std::complex<Real> mat[2][2] = {
+        {Real(0.0), std::complex<Real>(0, -1)},
+        {std::complex<Real>(0, 1), Real(0.0)}
+    };
+    apply_single_qubit_gate<Real>(state, qubit, mat);
+}
+
+template<typename Real>
+void Wavefunction<Real>::apply_z(std::size_t qubit) {
+    const std::complex<Real> mat[2][2] = {{1, 0}, {0, -1}};
+    apply_single_qubit_gate<Real>(state, qubit, mat);
+}
+
+template<typename Real>
+void Wavefunction<Real>::apply_s(std::size_t qubit) {
+    const std::complex<Real> mat[2][2] = {
+        {1, 0},
+        {0, std::complex<Real>(0, 1)}
+    };
+    apply_single_qubit_gate<Real>(state, qubit, mat);
+}
+
+template<typename Real>
+void Wavefunction<Real>::apply_t(std::size_t qubit) {
+    const std::complex<Real> mat[2][2] = {
+        {1, 0},
+        {0, std::exp(std::complex<Real>(0, M_PI / 4))}
+    };
+    apply_single_qubit_gate<Real>(state, qubit, mat);
+}
+
+struct Mat2 {
+    std::complex<double> v[2][2];
+};
+
+static Mat2 mat_mul(const Mat2& A, const Mat2& B) {
+    Mat2 C{};
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            C.v[i][j] = A.v[i][0] * B.v[0][j] + A.v[i][1] * B.v[1][j];
+        }
+    }
+    return C;
+}
+
+static Mat2 identity_mat() {
+    Mat2 I{};
+    I.v[0][0] = 1; I.v[0][1] = 0;
+    I.v[1][0] = 0; I.v[1][1] = 1;
+    return I;
+}
+
+static Mat2 gate_matrix(const std::string& g) {
     const double f = 1.0 / std::sqrt(2.0);
-    const std::complex<double> mat[2][2] = {{f, f}, {f, -f}};
-    apply_single_qubit_gate(state, qubit, mat);
+    if (g == "H") return Mat2{{{f,f},{f,-f}}};
+    if (g == "X") return Mat2{{{0,1},{1,0}}};
+    if (g == "Y") return Mat2{{{0,std::complex<double>(0,-1)},{std::complex<double>(0,1),0}}};
+    if (g == "Z") return Mat2{{{1,0},{0,-1}}};
+    if (g == "S") return Mat2{{{1,0},{0,std::complex<double>(0,1)}}};
+    if (g == "T") return Mat2{{{1,0},{0,std::exp(std::complex<double>(0,M_PI/4))}}};
+    return identity_mat();
 }
 
-void Wavefunction::apply_x(std::size_t qubit) {
-    const std::complex<double> mat[2][2] = {{0, 1}, {1, 0}};
-    apply_single_qubit_gate(state, qubit, mat);
+void Wavefunction::apply_fused(const std::vector<std::string>& gates,
+                               std::size_t qubit) {
+    if (gates.empty()) return;
+    static std::unordered_map<std::string, Mat2> cache;
+    std::string key;
+    for (const auto& g : gates) {
+        key += g;
+        key += ';';
+    }
+    Mat2 fused;
+    auto it = cache.find(key);
+    if (it != cache.end()) {
+        fused = it->second;
+    } else {
+        fused = identity_mat();
+        for (const auto& g : gates) {
+            fused = mat_mul(gate_matrix(g), fused);
+        }
+        cache.emplace(key, fused);
+    }
+    apply_single_qubit_gate(state, qubit, fused.v);
 }
 
-void Wavefunction::apply_y(std::size_t qubit) {
-    const std::complex<double> mat[2][2] = {
-        {0.0, std::complex<double>(0, -1)},
-        {std::complex<double>(0, 1), 0.0}
-    };
-    apply_single_qubit_gate(state, qubit, mat);
-}
-
-void Wavefunction::apply_z(std::size_t qubit) {
-    const std::complex<double> mat[2][2] = {{1, 0}, {0, -1}};
-    apply_single_qubit_gate(state, qubit, mat);
-}
-
-void Wavefunction::apply_s(std::size_t qubit) {
-    const std::complex<double> mat[2][2] = {
-        {1, 0},
-        {0, std::complex<double>(0, 1)}
-    };
-    apply_single_qubit_gate(state, qubit, mat);
-}
-
-void Wavefunction::apply_t(std::size_t qubit) {
-    const std::complex<double> mat[2][2] = {
-        {1, 0},
-        {0, std::exp(std::complex<double>(0, M_PI / 4))}
-    };
-    apply_single_qubit_gate(state, qubit, mat);
-}
-
-void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
+template<typename Real>
+void Wavefunction<Real>::apply_swap(std::size_t q1, std::size_t q2) {
     if (q1 == q2) return;
     std::size_t bit1 = 1ULL << q1;
     std::size_t bit2 = 1ULL << q2;
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         bool b1 = i & bit1;
         bool b2 = i & bit2;
@@ -76,22 +152,29 @@ void Wavefunction::apply_swap(std::size_t q1, std::size_t q2) {
             if (i < j) std::swap(state[i], state[j]);
         }
     }
+  }
 }
 
-void Wavefunction::apply_cnot(std::size_t control, std::size_t target) {
+
+template<typename Real>
+void Wavefunction<Real>::apply_cnot(std::size_t control, std::size_t target) {
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         if ((i & cbit) && !(i & tbit)) {
             std::size_t j = i | tbit;
             std::swap(state[i], state[j]);
         }
     }
+  }
 }
 
-void Wavefunction::apply_cz(std::size_t control, std::size_t target) {
+template<typename Real>
+void Wavefunction<Real>::apply_cz(std::size_t control, std::size_t target) {
     std::size_t cbit = 1ULL << control;
     std::size_t tbit = 1ULL << target;
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         if ((i & cbit) && (i & tbit)) {
             state[i] = -state[i];
@@ -99,21 +182,27 @@ void Wavefunction::apply_cz(std::size_t control, std::size_t target) {
     }
 }
 
-void Wavefunction::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target) {
+template<typename Real>
+void Wavefunction<Real>::apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target) {
     std::size_t b1 = 1ULL << c1;
     std::size_t b2 = 1ULL << c2;
     std::size_t tbit = 1ULL << target;
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         if ((i & b1) && (i & b2) && !(i & tbit)) {
             std::size_t j = i | tbit;
             std::swap(state[i], state[j]);
         }
     }
+  }
 }
 
-int Wavefunction::measure(std::size_t qubit) {
+
+template<typename Real>
+int Wavefunction<Real>::measure(std::size_t qubit) {
     std::size_t bit = 1ULL << qubit;
     double p1 = 0.0;
+#pragma omp parallel for reduction(+:p1) schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         if (i & bit)
             p1 += std::norm(state[i]);
@@ -123,6 +212,7 @@ int Wavefunction::measure(std::size_t qubit) {
     std::bernoulli_distribution dist(p1);
     int result = dist(gen);
     double norm_factor = std::sqrt(result ? p1 : 1.0 - p1);
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         if (((i & bit) != 0) != static_cast<bool>(result))
             state[i] = 0;
@@ -132,23 +222,36 @@ int Wavefunction::measure(std::size_t qubit) {
     return result;
 }
 
-std::size_t Wavefunction::measure(const std::vector<std::size_t>& qubits) {
+template<typename Real>
+std::size_t Wavefunction<Real>::measure(const std::vector<std::size_t>& qubits) {
     if (qubits.empty()) return 0;
+    decompress();
     // compute probabilities for all outcomes
     std::size_t outcomes = 1ULL << qubits.size();
     std::vector<double> probs(outcomes, 0.0);
-    for (std::size_t i = 0; i < state.size(); ++i) {
-        std::size_t outcome = 0;
-        for (std::size_t q = 0; q < qubits.size(); ++q) {
-            if (i & (1ULL << qubits[q])) outcome |= 1ULL << q;
+#pragma omp parallel
+    {
+        std::vector<double> local(outcomes, 0.0);
+#pragma omp for schedule(static)
+        for (std::size_t i = 0; i < state.size(); ++i) {
+            std::size_t outcome = 0;
+            for (std::size_t q = 0; q < qubits.size(); ++q) {
+                if (i & (1ULL << qubits[q])) outcome |= 1ULL << q;
+            }
+            local[outcome] += std::norm(state[i]);
         }
-        probs[outcome] += std::norm(state[i]);
+#pragma omp critical
+        {
+            for (std::size_t o = 0; o < outcomes; ++o)
+                probs[o] += local[o];
+        }
     }
     std::random_device rd;
     std::mt19937 gen(rd());
     std::discrete_distribution<std::size_t> dist(probs.begin(), probs.end());
     std::size_t result = dist(gen);
     double norm_factor = std::sqrt(probs[result]);
+#pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         std::size_t outcome = 0;
         for (std::size_t q = 0; q < qubits.size(); ++q) {
@@ -162,17 +265,109 @@ std::size_t Wavefunction::measure(const std::vector<std::size_t>& qubits) {
     return result;
 }
 
-void Wavefunction::reset() {
+template<typename Real>
+void Wavefunction<Real>::reset() {
     state.assign(state.size(), {0.0,0.0});
-    if (!state.empty()) state[0] = 1.0;
+    if (!state.empty()) state[0] = Real(1.0);
 }
 
-std::complex<double> Wavefunction::amplitude(std::size_t index) const {
+template<typename Real>
+std::complex<Real> Wavefunction<Real>::amplitude(std::size_t index) const {
     if (index >= state.size()) return {0.0,0.0};
     return state[index];
 }
 
+bool Wavefunction::schmidt_low_rank(std::size_t qubit, double threshold) {
+    if (qubit >= num_qubits) return false;
+    std::size_t mask = 1ULL << qubit;
+    std::size_t dim_rest = 1ULL << (num_qubits - 1);
+    std::vector<std::complex<double>> row0(dim_rest), row1(dim_rest);
+    std::size_t lowmask = mask - 1;
+    std::size_t highmask = (~0ULL) << (qubit + 1);
+    for (std::size_t idx = 0; idx < state.size(); ++idx) {
+        std::size_t rest = (idx & lowmask) | ((idx & highmask) >> 1);
+        if (idx & mask)
+            row1[rest] = state[idx];
+        else
+            row0[rest] = state[idx];
+    }
+    double n00 = 0.0, n11 = 0.0;
+    std::complex<double> n01{0.0, 0.0};
+    for (std::size_t j = 0; j < dim_rest; ++j) {
+        n00 += std::norm(row0[j]);
+        n11 += std::norm(row1[j]);
+        n01 += row0[j] * std::conj(row1[j]);
+    }
+    double tr = n00 + n11;
+    double diff = n00 - n11;
+    double root = std::sqrt(diff * diff + 4.0 * std::norm(n01));
+    double lambda1 = 0.5 * (tr + root);
+    if (lambda1 < 1.0 - threshold)
+        return false;
+
+    std::array<std::complex<double>, 2> u;
+    std::complex<double> x1 = n01;
+    std::complex<double> x2 = lambda1 - n00;
+    double norm = std::sqrt(std::norm(x1) + std::norm(x2));
+    if (norm < 1e-12) {
+        if (n00 >= n11) {
+            u = {1.0, 0.0};
+        } else {
+            u = {0.0, 1.0};
+        }
+    } else {
+        u = {x1 / norm, x2 / norm};
+    }
+
+    std::vector<std::complex<double>> right(dim_rest);
+    for (std::size_t j = 0; j < dim_rest; ++j) {
+        right[j] = std::conj(u[0]) * row0[j] + std::conj(u[1]) * row1[j];
+    }
+    double s0 = std::sqrt(lambda1);
+    for (auto& v : right) v /= s0;
+
+    for (std::size_t idx = 0; idx < state.size(); ++idx) {
+        std::size_t idx_rest = (idx & lowmask) | ((idx & highmask) >> 1);
+        if (idx & mask)
+            state[idx] = u[1] * right[idx_rest];
+        else
+            state[idx] = u[0] * right[idx_rest];
+    }
+    return true;
+}
+
+void Wavefunction::compress() {
+    if (is_sparse) return;
+    sparse_state.clear();
+    for (std::size_t i = 0; i < state.size(); ++i) {
+        if (std::norm(state[i]) > 1e-12)
+            sparse_state[i] = state[i];
+    }
+    state.clear();
+    is_sparse = true;
+}
+
+void Wavefunction::decompress() {
+    if (!is_sparse) return;
+    state.assign(1ULL << num_qubits, {0.0,0.0});
+    for (const auto& kv : sparse_state)
+        if (kv.first < state.size())
+            state[kv.first] = kv.second;
+    sparse_state.clear();
+    is_sparse = false;
+}
+
+std::size_t Wavefunction::nnz() const {
+    if (is_sparse) return sparse_state.size();
+    std::size_t count = 0;
+    for (const auto& amp : state)
+        if (std::norm(amp) > 1e-12) ++count;
+    return count;
+}
+
 // TODO: implement full state collapse for multi-qubit measurements
 
-} // namespace qpp
+template class Wavefunction<double>;
+template class Wavefunction<float>;
 
+} // namespace qpp

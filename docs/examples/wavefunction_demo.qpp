@@ -1,4 +1,5 @@
 // Wavefunction simulator demo covering all current gates.
+// Uses low-precision float amplitudes when compiled with the runtime template.
 // Compile with:
 //   qppc docs/examples/wavefunction_demo.qpp wf.ir
 // Run with:

@@ -1,3 +1,4 @@
+
 task<AUTO> main() {
     // classical print (currently ignored by the toy parser)
     // printf("Hello, classical world!\n");
