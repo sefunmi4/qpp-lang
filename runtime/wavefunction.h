@@ -1,12 +1,17 @@
 #ifndef QPP_WAVEFUNCTION_H
 #define QPP_WAVEFUNCTION_H
 
+#include "disk_pager.h"
+#include "runtime_config.h"
 #include <complex>
 #include <vector>
 #include <string>
 #include <cstddef>
+#include <memory>
+#include <vector>
 
 namespace qpp {
+template<typename Real = double>
 class Wavefunction {
 public:
     explicit Wavefunction(std::size_t qubits = 1);
@@ -32,9 +37,18 @@ public:
     int measure(std::size_t qubit);
     std::size_t measure(const std::vector<std::size_t>& qubits);
 
-    std::vector<std::complex<double>> state;
-    std::size_t num_qubits;
+    // Detect low entanglement for a single qubit and, when nearly separable,
+    // approximate the state via a rank-1 Schmidt decomposition. Returns true
+    // if the decomposition was applied.
+    bool schmidt_low_rank(std::size_t qubit, double threshold = 1e-6);
+
+  std::vector<std::complex<double>> state;
+  std::unique_ptr<DiskPager> pager;
+  bool disk_backed{false};
+  std::size_t num_qubits;
 };
+
+using WavefunctionF = Wavefunction<float>;
 
 // TODO(good-first-issue): extend with parameterized rotations and register
 // import/export helpers

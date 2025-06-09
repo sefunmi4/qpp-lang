@@ -1,5 +1,4 @@
 task<AUTO> main() {
     qalloc qbit q[1];
-    // placeholder for quantum operations
-    measure(q[0]);
+    int m = measure(q[0]);
 }
