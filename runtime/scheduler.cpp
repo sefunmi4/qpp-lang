@@ -1,5 +1,6 @@
 #include "scheduler.h"
 #include "memory.h"
+#include "hardware_api.h"
 #include <iostream>
 #include <mutex>
 
@@ -46,6 +47,8 @@ void Scheduler::run() {
         std::cout << std::endl;
         if (t.handler)
             t.handler();
+        if (t.target == Target::QPU && qpu_backend())
+            qpu_backend()->execute_qir("; scheduler dispatch\n");
         std::cout << "Memory in use: " << memory.memory_usage() << " bytes" << std::endl;
     }
     running = false;
@@ -91,6 +94,8 @@ void Scheduler::run_async() {
             std::cout << std::endl;
             if (t.handler)
                 t.handler();
+            if (t.target == Target::QPU && qpu_backend())
+                qpu_backend()->execute_qir("; scheduler dispatch\n");
             std::cout << "Memory in use: " << memory.memory_usage() << " bytes" << std::endl;
         }
     });

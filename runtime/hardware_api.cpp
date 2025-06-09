@@ -8,14 +8,9 @@ namespace qpp {
 
 static std::unique_ptr<QPUBackend> active_backend;
 
-void set_qpu_backend(std::unique_ptr<QPUBackend> b) {
-    active_backend = std::move(b);
-}
-
-QPUBackend* qpu_backend() { return active_backend.get(); }
-
-void QiskitBackend::execute_qir(const std::string& qir) {
-    // Write QIR to temporary file and invoke helper python script
+static void invoke_python_backend(const std::string& script,
+                                  const std::string& qir,
+                                  const std::string& name) {
     char qir_path[] = "/tmp/qpp_qirXXXXXX";
     int fd = mkstemp(qir_path);
     if (fd == -1) {
@@ -30,31 +25,41 @@ void QiskitBackend::execute_qir(const std::string& qir) {
     }
     fwrite(qir.c_str(), 1, qir.size(), f);
     fclose(f);
-    std::string cmd = std::string("python3 ") + "../tools/qiskit_backend.py " + qir_path;
+    std::string cmd = std::string("python3 ") + script + " " + qir_path;
     int rc = std::system(cmd.c_str());
     if (rc != 0)
-        std::cerr << "Qiskit backend execution failed\n";
+        std::cerr << name << " backend execution failed\n";
     std::remove(qir_path);
+}
+
+void set_qpu_backend(std::unique_ptr<QPUBackend> b) {
+    active_backend = std::move(b);
+}
+
+QPUBackend* qpu_backend() { return active_backend.get(); }
+
+void QiskitBackend::execute_qir(const std::string& qir) {
+    invoke_python_backend("../tools/qiskit_backend.py", qir, "Qiskit");
 }
   
 void CirqBackend::execute_qir(const std::string& qir) {
-    std::cout << "[Cirq] Received QIR:\n" << qir << std::endl;
+    invoke_python_backend("../tools/cirq_backend.py", qir, "Cirq");
 }
 
 void NvidiaBackend::execute_qir(const std::string& qir) {
-    std::cout << "[Nvidia] Received QIR:\n" << qir << std::endl;
+    invoke_python_backend("../tools/nvidia_backend.py", qir, "Nvidia");
 }
 
 void QSharpBackend::execute_qir(const std::string& qir) {
-    std::cout << "[QSharp] Received QIR:\n" << qir << std::endl;
+    invoke_python_backend("../tools/qsharp_backend.py", qir, "QSharp");
 }
 
 void BraketBackend::execute_qir(const std::string& qir) {
-    std::cout << "[Braket] Received QIR:\n" << qir << std::endl;
+    invoke_python_backend("../tools/braket_backend.py", qir, "Braket");
 }
 
 void PsiBackend::execute_qir(const std::string& qir) {
-    std::cout << "[PsiQuantum] Received QIR:\n" << qir << std::endl;
+    invoke_python_backend("../tools/psi_backend.py", qir, "PsiQuantum");
 }
 
 std::string emit_qir(const std::vector<std::vector<std::string>>& ops) {
