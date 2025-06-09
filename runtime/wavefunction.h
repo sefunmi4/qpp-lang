@@ -9,6 +9,7 @@
 #include <cstddef>
 #include <memory>
 #include <vector>
+#include <unordered_map>
 
 namespace qpp {
 template<typename Real = double>
@@ -32,17 +33,25 @@ public:
                      std::size_t qubit);
 
     void reset();
-    std::complex<double> amplitude(std::size_t index) const;
+    std::complex<Real> amplitude(std::size_t index) const;
 
     int measure(std::size_t qubit);
     std::size_t measure(const std::vector<std::size_t>& qubits);
+
+    void compress();
+    void decompress();
+    std::size_t nnz() const;
+    bool using_sparse() const;
+    bool uses_disk() const { return disk_backed; }
 
     // Detect low entanglement for a single qubit and, when nearly separable,
     // approximate the state via a rank-1 Schmidt decomposition. Returns true
     // if the decomposition was applied.
     bool schmidt_low_rank(std::size_t qubit, double threshold = 1e-6);
 
-  std::vector<std::complex<double>> state;
+  std::vector<std::complex<Real>> state;
+  std::unordered_map<std::size_t, std::complex<Real>> sparse_state;
+  bool is_sparse{false};
   std::unique_ptr<DiskPager> pager;
   bool disk_backed{false};
   std::size_t num_qubits;

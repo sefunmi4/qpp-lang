@@ -24,6 +24,6 @@ using Partition = std::vector<QubitRef>;
 
 std::vector<Partition> analyze_separable_regions(const std::vector<std::vector<std::string>>& ops);
 
-Wavefunction execute_partitions(const std::vector<std::vector<std::string>>& ops);
+Wavefunction<> execute_partitions(const std::vector<std::vector<std::string>>& ops);
 
 }

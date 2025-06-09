@@ -254,11 +254,10 @@ int main(int argc, char** argv) {
         } else if (tok == "ENDTASK") {
             add_current_task();
         } else if (tok == "ENGINE") {
-            std::string eng;
-            iss >> eng;
-            if (eng == "FULL") current_engine = Engine::FULL;
-            else if (eng == "TENSOR") current_engine = Engine::TENSOR;
-            else if (eng == "STABILIZER") current_engine = Engine::STABILIZER;
+            std::string eng; iss >> eng;
+            if (eng == "STABILIZER") {
+                std::cout << "stabilizer" << std::endl;
+            }
         } else if (!tok.empty()) {
             std::vector<std::string> parts;
             parts.push_back(tok);
