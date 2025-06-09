@@ -13,6 +13,7 @@ Detailed planning documents for core system features:
 - [`01-frontend.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/01-frontend.md#q-frontend-specification) – Grammar, syntax, and parser expectations
 - [`02-runtime.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/02-runtime.md) – Runtime architecture: `qalloc`, `task<>`, `qguard`
 - [`03-hardware-api.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/03-hardware-api.md) – Planned integration with QPUs
+- [`pde_state_evolution.md`](https://github.com/sefunmi4/qpp-lang/blob/main/docs/architecture/pde_state_evolution.md) – Research notes on Dirac/Klein–Gordon based simulation
 
 Each file links directly to GitHub issues and project boards. These are meant for experienced contributors focused on design, implementation details, or tracking bugs.
 
@@ -35,7 +36,6 @@ These docs are ideal for new contributors and those trying to understand Q++'s p
 ### 🧪 `./examples/` – Playable Q++ Code [#13](https://github.com/sefunmi4/qpp-lang/issues/13#issue-3006787477)
 Reference `.qpp` files that demonstrate working language features:
 - `adaptive_task.qpp` – Conditional branching and task adaptation
-- `hello_world.qpp` – Minimal task and print interaction
 - `teleport.qpp` – Quantum teleportation and entanglement usage
 - `demo.qpp` – Quick demonstration to compile and run with `qppc` and `qpp-run`
 - `wavefunction_demo.qpp` – Exercises all built-in gates and conditional

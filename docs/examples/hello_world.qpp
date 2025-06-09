@@ -1,6 +1,8 @@
 task<AUTO> main() {
-    // classical print
-    // (I/O not yet supported, so this is illustrative only)
+    // classical print (currently ignored by the toy parser)
+    // printf("Hello, classical world!\n");
+
     qalloc qbit q[1];
     // placeholder for quantum operations
+
 }
