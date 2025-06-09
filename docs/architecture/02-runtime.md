@@ -75,10 +75,16 @@ Quantum states exceeding coherence time or simulator bounds raise:
 
 ## 🔧 Task Scheduling and Dispatch
 
-### Hybrid Dispatch Queue 
+### Hybrid Dispatch Queue
 - `AUTO` tasks enter a dispatch queue
 - Runtime analyzes scope, calls, and bit usage
 - Dispatched to either CPU, simulator, or QPU
+
+### Device Selection and Fallbacks
+The runtime can target GPU kernels when available. Use `set_device(DeviceType::GPU)`
+or pass `--device GPU` to `qpp-run` to enable GPU offload. If the runtime or build
+lacks CUDA support it automatically falls back to the CPU implementation so tests
+and examples still run.
 
 ### Hardware Capabilities Map 
 Defines available QPUs, simulators, and constraints like:

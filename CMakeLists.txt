@@ -6,12 +6,14 @@ set(CMAKE_CXX_STANDARD 17)
 find_package(OpenMP)
 
 option(BUILD_TESTING "Build tests" ON)
+option(USE_CUDA "Enable CUDA acceleration" OFF)
 
 add_library(qpp_runtime
     runtime/engine.cpp
     runtime/memory.cpp
     runtime/scheduler.cpp
     runtime/hardware_api.cpp
+    runtime/device.cpp
     runtime/patterns.cpp
     runtime/hardware_profile.cpp
     runtime/wavefunction.cpp
@@ -22,11 +24,17 @@ add_library(qpp_runtime
     runtime/quidd.cpp
 )
 
+if(USE_CUDA)
+    enable_language(CUDA)
+    target_sources(qpp_runtime PRIVATE runtime/gpu_kernels.cu)
+    target_compile_definitions(qpp_runtime PUBLIC USE_CUDA)
+endif()
+
 if(OpenMP_CXX_FOUND)
     target_link_libraries(qpp_runtime PUBLIC OpenMP::OpenMP_CXX)
 endif()
 
-target_include_directories(qpp_runtime PUBLIC include)
+target_include_directories(qpp_runtime PUBLIC include PRIVATE runtime)
 
 add_executable(qppc tools/qppc.cpp)
 target_link_libraries(qppc PRIVATE qpp_runtime)
@@ -115,6 +123,10 @@ if(BUILD_TESTING)
     add_executable(hardware_api_test tests/hardware_api_test.cpp)
     target_link_libraries(hardware_api_test PRIVATE qpp_runtime)
     add_test(NAME hardware_api_test COMMAND hardware_api_test)
+
+    add_executable(device_fallback_test tests/device_fallback_test.cpp)
+    target_link_libraries(device_fallback_test PRIVATE qpp_runtime)
+    add_test(NAME device_fallback_test COMMAND device_fallback_test)
 
     add_executable(partitioner_test tests/partitioner_test.cpp)
     target_link_libraries(partitioner_test PRIVATE qpp_runtime)

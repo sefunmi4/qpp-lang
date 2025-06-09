@@ -1,4 +1,8 @@
 #include "wavefunction.h"
+#include "device.h"
+#ifdef USE_CUDA
+#include "gpu_kernels.h"
+#endif
 #include <cmath>
 #include <random>
 #include <unordered_map>
@@ -19,7 +23,7 @@ Wavefunction<Real>::Wavefunction(std::size_t qubits)
 }
 
 template<typename Real>
-static void apply_single_qubit_gate(std::vector<std::complex<Real>>& st,
+static void Wavefunction<Real>::apply_single_qubit_gate_cpu(std::vector<std::complex<Real>>& st,
                                     std::size_t target,
                                     const std::complex<Real> mat[2][2]) {
     std::size_t step = 1ULL << target;
@@ -37,17 +41,34 @@ static void apply_single_qubit_gate(std::vector<std::complex<Real>>& st,
 }
 
 
+
 template<typename Real>
 void Wavefunction<Real>::apply_h(std::size_t qubit) {
     const Real f = Real(1.0) / std::sqrt(Real(2.0));
     const std::complex<Real> mat[2][2] = {{f, f}, {f, -f}};
-    apply_single_qubit_gate<Real>(state, qubit, mat);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 template<typename Real>
 void Wavefunction<Real>::apply_x(std::size_t qubit) {
     const std::complex<Real> mat[2][2] = {{0, 1}, {1, 0}};
-    apply_single_qubit_gate<Real>(state, qubit, mat);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 template<typename Real>
@@ -56,6 +77,16 @@ void Wavefunction<Real>::apply_y(std::size_t qubit) {
         {Real(0.0), std::complex<Real>(0, -1)},
         {std::complex<Real>(0, 1), Real(0.0)}
     };
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
+}
     apply_single_qubit_gate<Real>(state, qubit, mat);
 }
 
@@ -63,6 +94,15 @@ template<typename Real>
 void Wavefunction<Real>::apply_z(std::size_t qubit) {
     const std::complex<Real> mat[2][2] = {{1, 0}, {0, -1}};
     apply_single_qubit_gate<Real>(state, qubit, mat);
+        if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 template<typename Real>
@@ -71,7 +111,15 @@ void Wavefunction<Real>::apply_s(std::size_t qubit) {
         {1, 0},
         {0, std::complex<Real>(0, 1)}
     };
-    apply_single_qubit_gate<Real>(state, qubit, mat);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 template<typename Real>
@@ -80,7 +128,15 @@ void Wavefunction<Real>::apply_t(std::size_t qubit) {
         {1, 0},
         {0, std::exp(std::complex<Real>(0, M_PI / 4))}
     };
-    apply_single_qubit_gate<Real>(state, qubit, mat);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
 }
 
 struct Mat2 {
@@ -135,7 +191,7 @@ void Wavefunction::apply_fused(const std::vector<std::string>& gates,
         }
         cache.emplace(key, fused);
     }
-    apply_single_qubit_gate(state, qubit, fused.v);
+    apply_single_qubit_gate_cpu(state, qubit, fused.v);
 }
 
 template<typename Real>
@@ -155,16 +211,29 @@ void Wavefunction<Real>::apply_swap(std::size_t q1, std::size_t q2) {
   }
 }
 
-
 template<typename Real>
 void Wavefunction<Real>::apply_cnot(std::size_t control, std::size_t target) {
-    std::size_t cbit = 1ULL << control;
-    std::size_t tbit = 1ULL << target;
-#pragma omp parallel for schedule(static)
-    for (std::size_t i = 0; i < state.size(); ++i) {
-        if ((i & cbit) && !(i & tbit)) {
-            std::size_t j = i | tbit;
-            std::swap(state[i], state[j]);
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_cnot(state, control, target);
+#else
+        std::size_t cbit = 1ULL << control;
+        std::size_t tbit = 1ULL << target;
+        for (std::size_t i = 0; i < state.size(); ++i) {
+            if ((i & cbit) && !(i & tbit)) {
+                std::size_t j = i | tbit;
+                std::swap(state[i], state[j]);
+            }
+        }
+#endif
+    } else {
+        std::size_t cbit = 1ULL << control;
+        std::size_t tbit = 1ULL << target;
+        for (std::size_t i = 0; i < state.size(); ++i) {
+            if ((i & cbit) && !(i & tbit)) {
+                std::size_t j = i | tbit;
+                std::swap(state[i], state[j]);
+            }
         }
     }
   }
