@@ -120,6 +120,10 @@ if(BUILD_TESTING)
     target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
     add_test(NAME scheduler_pause_test COMMAND scheduler_pause_test)
 
+    add_executable(scheduler_qpu_dispatch_test tests/scheduler_qpu_dispatch_test.cpp)
+    target_link_libraries(scheduler_qpu_dispatch_test PRIVATE qpp_runtime)
+    add_test(NAME scheduler_qpu_dispatch_test COMMAND scheduler_qpu_dispatch_test)
+
     add_executable(hardware_api_test tests/hardware_api_test.cpp)
     target_link_libraries(hardware_api_test PRIVATE qpp_runtime)
     add_test(NAME hardware_api_test COMMAND hardware_api_test)
