@@ -6,13 +6,22 @@
 #include <unordered_map>
 #include <chrono>
 #include <string>
+#include <fstream>
 #include "wavefunction.h"
 
 namespace qpp {
 struct QRegister {
-    Wavefunction<> wf;
     explicit QRegister(size_t n)
-        : wf(n), start_time(std::chrono::steady_clock::now()) {}
+        : num_qubits(n), start_time(std::chrono::steady_clock::now()) {}
+
+    void ensure_allocated() const {
+        if (!wf) wf = std::make_unique<Wavefunction<>>(num_qubits);
+    }
+
+    Wavefunction<> &wave() const {
+        ensure_allocated();
+        return *wf;
+    }
 
     void reset_metrics() { op_count = 0; start_time = std::chrono::steady_clock::now(); }
     double elapsed_seconds() const {
@@ -23,6 +32,9 @@ struct QRegister {
     void x(std::size_t q) { ++op_count; wf.apply_x(q); }
     void y(std::size_t q) { ++op_count; wf.apply_y(q); }
     void z(std::size_t q) { ++op_count; wf.apply_z(q); }
+    void rx(std::size_t q, double theta) { ++op_count; wf.apply_rx(q, theta); }
+    void ry(std::size_t q, double theta) { ++op_count; wf.apply_ry(q, theta); }
+    void rz(std::size_t q, double theta) { ++op_count; wf.apply_rz(q, theta); }
     void cnot(std::size_t c, std::size_t t) { ++op_count; wf.apply_cnot(c, t); }
     void cz(std::size_t c, std::size_t t) { ++op_count; wf.apply_cz(c, t); }
     void ccnot(std::size_t c1, std::size_t c2, std::size_t t) { ++op_count; wf.apply_ccnot(c1, c2, t); }
@@ -40,13 +52,39 @@ struct QRegister {
     std::size_t nnz() const { return wf.nnz(); }
     bool using_sparse() const { return wf.using_sparse(); }
     std::size_t ops() const { return op_count; }
+  
+  
+    mutable std::unique_ptr<Wavefunction<>> wf;
+    std::size_t num_qubits;
 
+    bool save_to_file(const std::string& path) {
+        wf.decompress();
+        std::ofstream ofs(path, std::ios::binary);
+        if (!ofs) return false;
+        size_t n = wf.state.size();
+        ofs.write(reinterpret_cast<const char*>(&n), sizeof(size_t));
+        ofs.write(reinterpret_cast<const char*>(wf.state.data()),
+                  n * sizeof(std::complex<double>));
+        return true;
+    }
+
+    bool load_from_file(const std::string& path) {
+        std::ifstream ifs(path, std::ios::binary);
+        if (!ifs) return false;
+        size_t n;
+        ifs.read(reinterpret_cast<char*>(&n), sizeof(size_t));
+        std::vector<std::complex<double>> st(n);
+        ifs.read(reinterpret_cast<char*>(st.data()), n * sizeof(std::complex<double>));
+        wf.decompress();
+        if (st.size() != wf.state.size()) return false;
+        wf.state = std::move(st);
+        return true;
+    }
     std::chrono::steady_clock::time_point start_time;
     std::size_t op_count{0};
 };
 
-// TODO(good-first-issue): enhance QRegister with save/load helpers and
-// optional lazy allocation of the underlying Wavefunction
+// TODO(good-first-issue): enhance QRegister with save/load helpers
 
 struct CRegister {
     std::vector<int> bits;
@@ -59,6 +97,10 @@ public:
     bool release_qregister(int id);
     int create_cregister(size_t n);
     bool release_cregister(int id);
+    std::vector<int> create_qregisters(const std::vector<size_t>& sizes);
+    void release_qregisters(const std::vector<int>& ids);
+    std::vector<int> create_cregisters(const std::vector<size_t>& sizes);
+    void release_cregisters(const std::vector<int>& ids);
     QRegister& qreg(int id);
     CRegister& creg(int id);
     // statistics helpers
@@ -93,7 +135,7 @@ private:
     std::mutex mtx;
 };
 
-// TODO(good-first-issue): implement register reuse and bulk operations
+
 
 extern MemoryManager memory;
 }

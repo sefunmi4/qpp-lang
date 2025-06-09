@@ -2,6 +2,7 @@
 #include <iostream>
 #include <regex>
 #include <string>
+#include "peglib.h"
 #include "hardware_profile.h"
 #include <vector>
 
@@ -88,6 +89,24 @@ int main(int argc, char** argv) {
         }
     };
     
+    // Use a small PEG parser for basic structure validation
+    peg::parser task_parser(R"(
+        TASK <- 'task' '<' TARGET '>' _ NAME _ '(' PARAMS? ')' _ HINT? _ '{'
+        TARGET <- 'CPU' / 'QPU' / 'AUTO'
+        NAME <- [a-zA-Z_][a-zA-Z0-9_]*
+        HINT <- '@' NAME
+        PARAMS <- (!')' .)*
+        _ <- [ \t]*
+    )");
+    peg::parser ctrl_parser(R"(
+        IFV <- 'if' _ '(' _ NAME _ ')' _ '{'
+        IFC <- 'if' _ '(' _ NAME '[' NUMBER ']' _ ')' _ '{'
+        ELSE <- '}' _ 'else' _ '{'
+        NAME <- [a-zA-Z_][a-zA-Z0-9_]*
+        NUMBER <- [0-9]+
+        _ <- [ \t]*
+    )");
+
     std::regex task_regex(R"(task<\s*(CPU|QPU|AUTO)\s*>\s*(\w+)\s*\()") ;
     std::regex hint_regex(R"(@(dense|clifford))", std::regex::icase);
     std::regex param_qreg(R"(qregister(?:\s+\w+)?\s*(\w+)\[(\d+)\])");
@@ -139,7 +158,24 @@ int main(int argc, char** argv) {
         // strip comments
         auto pos = line.find("//");
         if (pos != std::string::npos) line = line.substr(0, pos);
-        if (std::regex_search(line, m, task_regex)) {
+        auto trimmed = line;
+        trimmed.erase(0, trimmed.find_first_not_of(" \t"));
+        trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
+
+        if (trimmed.rfind("task<", 0) == 0 && !task_parser.parse(trimmed)) {
+            std::cerr << "Syntax error on line " << line_no << ": " << trimmed << "\n";
+            continue;
+        }
+
+        if ((trimmed.rfind("if", 0) == 0 || trimmed.find("else") != std::string::npos)
+            && !ctrl_parser.parse(trimmed)
+            && !(std::regex_search(trimmed, if_var_gate_single) ||
+                 std::regex_search(trimmed, if_creg_gate_single))) {
+            std::cerr << "Syntax error on line " << line_no << ": " << trimmed << "\n";
+            continue;
+        }
+
+        if (std::regex_search(trimmed, m, task_regex)) {
             flush_gates();
             ir.push_back({"TASK", {m[2], m[1]}});
             std::size_t start = line.find('(', m.position(0));
@@ -168,9 +204,6 @@ int main(int argc, char** argv) {
             in_task = true;
             continue;
         }
-        auto trimmed = line;
-        trimmed.erase(0, trimmed.find_first_not_of(" \t"));
-        trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
         if (in_task && trimmed == "}" && !cond_active) {
             flush_gates();
             ir.push_back({"ENDTASK", {}});

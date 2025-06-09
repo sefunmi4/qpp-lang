@@ -38,6 +38,7 @@ target_include_directories(qpp_runtime PUBLIC include PRIVATE runtime)
 
 add_executable(qppc tools/qppc.cpp)
 target_link_libraries(qppc PRIVATE qpp_runtime)
+target_include_directories(qppc PRIVATE include)
 
 add_executable(qpp-run tools/qpp-run.cpp)
 target_link_libraries(qpp-run PRIVATE qpp_runtime)
@@ -62,6 +63,10 @@ if(BUILD_TESTING)
     add_executable(wavefunction_twoqubit_measure_test tests/wavefunction_twoqubit_measure_test.cpp)
     target_link_libraries(wavefunction_twoqubit_measure_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_twoqubit_measure_test COMMAND wavefunction_twoqubit_measure_test)
+
+    add_executable(wavefunction_multi_qubit_collapse_test tests/wavefunction_multi_qubit_collapse_test.cpp)
+    target_link_libraries(wavefunction_multi_qubit_collapse_test PRIVATE qpp_runtime)
+    add_test(NAME wavefunction_multi_qubit_collapse_test COMMAND wavefunction_multi_qubit_collapse_test)
 
     add_executable(fused_gate_test tests/fused_gate_test.cpp)
     target_link_libraries(fused_gate_test PRIVATE qpp_runtime)
@@ -120,6 +125,10 @@ if(BUILD_TESTING)
     target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
     add_test(NAME scheduler_pause_test COMMAND scheduler_pause_test)
 
+    add_executable(scheduler_qpu_dispatch_test tests/scheduler_qpu_dispatch_test.cpp)
+    target_link_libraries(scheduler_qpu_dispatch_test PRIVATE qpp_runtime)
+    add_test(NAME scheduler_qpu_dispatch_test COMMAND scheduler_qpu_dispatch_test)
+
     add_executable(hardware_api_test tests/hardware_api_test.cpp)
     target_link_libraries(hardware_api_test PRIVATE qpp_runtime)
     add_test(NAME hardware_api_test COMMAND hardware_api_test)
@@ -135,6 +144,14 @@ if(BUILD_TESTING)
     add_executable(sparse_wavefunction_test tests/sparse_wavefunction_test.cpp)
     target_link_libraries(sparse_wavefunction_test PRIVATE qpp_runtime)
     add_test(NAME sparse_wavefunction_test COMMAND sparse_wavefunction_test)
+
+    add_executable(rotation_gate_test tests/rotation_gate_test.cpp)
+    target_link_libraries(rotation_gate_test PRIVATE qpp_runtime)
+    add_test(NAME rotation_gate_test COMMAND rotation_gate_test)
+
+    add_executable(qregister_serialization_test tests/qregister_serialization_test.cpp)
+    target_link_libraries(qregister_serialization_test PRIVATE qpp_runtime)
+    add_test(NAME qregister_serialization_test COMMAND qregister_serialization_test)
 
     add_test(NAME demo_integration
         COMMAND ${CMAKE_SOURCE_DIR}/tests/demo_integration.sh)

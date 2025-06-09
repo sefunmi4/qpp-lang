@@ -2,6 +2,7 @@
 #include <random>
 #include <atomic>
 #include <cstdint>
+#include <thread>
 
 namespace qpp {
 namespace detail {

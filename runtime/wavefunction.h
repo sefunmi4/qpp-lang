@@ -21,6 +21,9 @@ public:
     void apply_x(std::size_t qubit);
     void apply_y(std::size_t qubit);
     void apply_z(std::size_t qubit);
+    void apply_rx(std::size_t qubit, Real theta);
+    void apply_ry(std::size_t qubit, Real theta);
+    void apply_rz(std::size_t qubit, Real theta);
     void apply_cnot(std::size_t control, std::size_t target);
     void apply_cz(std::size_t control, std::size_t target);
     void apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target);
@@ -56,6 +59,14 @@ public:
   bool disk_backed{false};
   std::size_t num_qubits;
 };
+
+// Analyze amplitude magnitudes using a naive discrete Fourier scan and return
+// the dominant repeating period. When no strong periodic component is found the
+// function returns 0. The threshold parameter specifies the minimum normalised
+// Fourier magnitude required for detection.
+template<typename Real = double>
+std::size_t detect_periodicity_ripple(const Wavefunction<Real>& wf,
+                                      double threshold = 0.05);
 
 using WavefunctionF = Wavefunction<float>;
 

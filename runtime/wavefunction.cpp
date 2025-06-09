@@ -144,6 +144,63 @@ void Wavefunction<Real>::apply_t(std::size_t qubit) {
 }
 
 template<typename Real>
+void Wavefunction<Real>::apply_rx(std::size_t qubit, Real theta) {
+    Real c = std::cos(theta / Real(2.0));
+    Real s = std::sin(theta / Real(2.0));
+    const std::complex<Real> mat[2][2] = {
+        {c, std::complex<Real>(0, -s)},
+        {std::complex<Real>(0, -s), c}
+    };
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
+}
+
+template<typename Real>
+void Wavefunction<Real>::apply_ry(std::size_t qubit, Real theta) {
+    Real c = std::cos(theta / Real(2.0));
+    Real s = std::sin(theta / Real(2.0));
+    const std::complex<Real> mat[2][2] = {
+        {c, -s},
+        {s,  c}
+    };
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
+}
+
+template<typename Real>
+void Wavefunction<Real>::apply_rz(std::size_t qubit, Real theta) {
+    std::complex<Real> e_pos = std::exp(std::complex<Real>(0, theta / Real(2.0)));
+    std::complex<Real> e_neg = std::exp(std::complex<Real>(0, -theta / Real(2.0)));
+    const std::complex<Real> mat[2][2] = {
+        {e_neg, 0},
+        {0, e_pos}
+    };
+    if (current_device() == DeviceType::GPU && gpu_supported()) {
+#ifdef USE_CUDA
+        gpu_apply_single_qubit_gate(state, qubit, mat);
+#else
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+#endif
+    } else {
+        apply_single_qubit_gate_cpu(state, qubit, mat);
+    }
+}
+
+template<typename Real>
 struct Mat2 {
     std::complex<Real> v[2][2];
 };
@@ -299,18 +356,24 @@ template<typename Real>
 std::size_t Wavefunction<Real>::measure(const std::vector<std::size_t>& qubits) {
     if (qubits.empty()) return 0;
     decompress();
-    // compute probabilities for all outcomes
+
+    // mask covering all measured qubits
+    std::size_t mask = 0;
+    for (auto q : qubits) mask |= 1ULL << q;
+
+    // compute probabilities for each measurement outcome
     std::size_t outcomes = 1ULL << qubits.size();
     std::vector<double> probs(outcomes, 0.0);
+
 #pragma omp parallel
     {
         std::vector<double> local(outcomes, 0.0);
 #pragma omp for schedule(static)
         for (std::size_t i = 0; i < state.size(); ++i) {
+            std::size_t bits = i & mask;
             std::size_t outcome = 0;
-            for (std::size_t q = 0; q < qubits.size(); ++q) {
-                if (i & (1ULL << qubits[q])) outcome |= 1ULL << q;
-            }
+            for (std::size_t j = 0; j < qubits.size(); ++j)
+                if (bits & (1ULL << qubits[j])) outcome |= 1ULL << j;
             local[outcome] += std::norm(state[i]);
         }
 #pragma omp critical
@@ -324,15 +387,16 @@ std::size_t Wavefunction<Real>::measure(const std::vector<std::size_t>& qubits) 
     double norm_factor = std::sqrt(probs[result]);
 #pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
+        std::size_t bits = i & mask;
         std::size_t outcome = 0;
-        for (std::size_t q = 0; q < qubits.size(); ++q) {
-            if (i & (1ULL << qubits[q])) outcome |= 1ULL << q;
-        }
-        if (outcome != result)
-            state[i] = 0;
-        else
+        for (std::size_t j = 0; j < qubits.size(); ++j)
+            if (bits & (1ULL << qubits[j])) outcome |= 1ULL << j;
+        if (outcome == result)
             state[i] /= norm_factor;
+        else
+            state[i] = {Real(0.0), Real(0.0)};
     }
+
     return result;
 }
 
@@ -450,9 +514,47 @@ bool Wavefunction<Real>::using_sparse() const {
     return is_sparse;
 }
 
+template<typename Real>
+std::size_t detect_periodicity_ripple(const Wavefunction<Real>& wf,
+                                      double threshold) {
+    std::size_t N = wf.using_sparse() ? (1ULL << wf.num_qubits) : wf.state.size();
+    if (N < 2)
+        return 0;
+
+    std::vector<Real> mags(N, Real(0));
+    for (std::size_t i = 0; i < N; ++i) {
+        mags[i] = std::abs(wf.amplitude(i));
+    }
+
+    std::size_t best_k = 0;
+    Real best_amp = Real(0);
+    for (std::size_t k = 1; k <= N / 2; ++k) {
+        std::complex<Real> sum{0.0, 0.0};
+        for (std::size_t n = 0; n < N; ++n) {
+            Real angle = -2.0 * M_PI * Real(k) * Real(n) / Real(N);
+            std::complex<Real> e{std::cos(angle), std::sin(angle)};
+            sum += mags[n] * e;
+        }
+        Real amp = std::abs(sum);
+        if (amp > best_amp) {
+            best_amp = amp;
+            best_k = k;
+        }
+    }
+    if (best_k == 0)
+        return 0;
+    Real norm = best_amp / Real(N);
+    if (norm < threshold)
+        return 0;
+    return N / best_k;
+}
+
 // TODO: implement full state collapse for multi-qubit measurements
 
 template class Wavefunction<double>;
 template class Wavefunction<float>;
+
+template std::size_t detect_periodicity_ripple<double>(const Wavefunction<double>&, double);
+template std::size_t detect_periodicity_ripple<float>(const Wavefunction<float>&, double);
 
 } // namespace qpp

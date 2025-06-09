@@ -42,10 +42,12 @@ Used when real QPU is not available or during testing:
   non-zero amplitudes in memory
 
 ### Ripple-Based Periodicity Analysis
-The simulator includes `detect_periodicity_ripple(wf)` which performs a simple
-Fourier scan of amplitude magnitudes. When a repeating interference pattern is
-detected above a threshold, the function returns the dominant period. Higher
-level passes can leverage this to compress redundant state segments.
+The simulator exposes `detect_periodicity_ripple(wf [, thresh])` which performs
+a naive discrete Fourier scan of the amplitude magnitudes. The coefficient with
+the largest magnitude indicates the dominant repeating period in the state. If
+the normalised peak magnitude falls below the provided threshold (default
+`0.05`) the function returns `0`. Higher level passes can leverage the detected
+period to compress redundant state segments or trigger optimisations.
 
 ### Collapse API
 ```cpp

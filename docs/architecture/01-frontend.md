@@ -94,6 +94,8 @@ task<QPU> teleport() @clifford {
 ```
 Hints are optional but allow the runtime to choose optimized algorithms
 for dense state vectors or stabilizer circuits.
+The prototype compiler validates these annotations using a tiny PEG
+parser so syntax errors are reported clearly.
 
 ### Scope Mapping
 - Compiler emits visual map of probabilistic flow for debugging
