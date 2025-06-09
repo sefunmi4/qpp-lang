@@ -28,29 +28,29 @@ struct QRegister {
         return std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
     }
 
-    void h(std::size_t q) { ++op_count; wf.apply_h(q); }
-    void x(std::size_t q) { ++op_count; wf.apply_x(q); }
-    void y(std::size_t q) { ++op_count; wf.apply_y(q); }
-    void z(std::size_t q) { ++op_count; wf.apply_z(q); }
-    void rx(std::size_t q, double theta) { ++op_count; wf.apply_rx(q, theta); }
-    void ry(std::size_t q, double theta) { ++op_count; wf.apply_ry(q, theta); }
-    void rz(std::size_t q, double theta) { ++op_count; wf.apply_rz(q, theta); }
-    void cnot(std::size_t c, std::size_t t) { ++op_count; wf.apply_cnot(c, t); }
-    void cz(std::size_t c, std::size_t t) { ++op_count; wf.apply_cz(c, t); }
-    void ccnot(std::size_t c1, std::size_t c2, std::size_t t) { ++op_count; wf.apply_ccnot(c1, c2, t); }
-    void s(std::size_t q) { ++op_count; wf.apply_s(q); }
-    void t(std::size_t q) { ++op_count; wf.apply_t(q); }
-    void swap(std::size_t a, std::size_t b) { ++op_count; wf.apply_swap(a, b); }
-    int measure(std::size_t q) { ++op_count; return wf.measure(q); }
-    std::size_t measure(const std::vector<std::size_t>& qs) { op_count += qs.size(); return wf.measure(qs); }
-    void reset() { wf.reset(); reset_metrics(); }
-  
-    std::complex<double> amp(std::size_t idx) const { return wf.amplitude(idx); }
-    void resize(std::size_t n) { wf = Wavefunction(n); }
-    void compress() { wf.compress(); }
-    void decompress() { wf.decompress(); }
-    std::size_t nnz() const { return wf.nnz(); }
-    bool using_sparse() const { return wf.using_sparse(); }
+    void h(std::size_t q) { ++op_count; wave().apply_h(q); }
+    void x(std::size_t q) { ++op_count; wave().apply_x(q); }
+    void y(std::size_t q) { ++op_count; wave().apply_y(q); }
+    void z(std::size_t q) { ++op_count; wave().apply_z(q); }
+    void rx(std::size_t q, double theta) { ++op_count; wave().apply_rx(q, theta); }
+    void ry(std::size_t q, double theta) { ++op_count; wave().apply_ry(q, theta); }
+    void rz(std::size_t q, double theta) { ++op_count; wave().apply_rz(q, theta); }
+    void cnot(std::size_t c, std::size_t t) { ++op_count; wave().apply_cnot(c, t); }
+    void cz(std::size_t c, std::size_t t) { ++op_count; wave().apply_cz(c, t); }
+    void ccnot(std::size_t c1, std::size_t c2, std::size_t t) { ++op_count; wave().apply_ccnot(c1, c2, t); }
+    void s(std::size_t q) { ++op_count; wave().apply_s(q); }
+    void t(std::size_t q) { ++op_count; wave().apply_t(q); }
+    void swap(std::size_t a, std::size_t b) { ++op_count; wave().apply_swap(a, b); }
+    int measure(std::size_t q) { ++op_count; return wave().measure(q); }
+    std::size_t measure(const std::vector<std::size_t>& qs) { op_count += qs.size(); return wave().measure(qs); }
+    void reset() { wave().reset(); reset_metrics(); }
+
+    std::complex<double> amp(std::size_t idx) const { return wave().amplitude(idx); }
+    void resize(std::size_t n) { wf = std::make_unique<Wavefunction<>>(n); }
+    void compress() { wave().compress(); }
+    void decompress() { wave().decompress(); }
+    std::size_t nnz() const { return wave().nnz(); }
+    bool using_sparse() const { return wave().using_sparse(); }
     std::size_t ops() const { return op_count; }
   
   
@@ -58,12 +58,12 @@ struct QRegister {
     std::size_t num_qubits;
 
     bool save_to_file(const std::string& path) {
-        wf.decompress();
+        wave().decompress();
         std::ofstream ofs(path, std::ios::binary);
         if (!ofs) return false;
-        size_t n = wf.state.size();
+        size_t n = wave().state.size();
         ofs.write(reinterpret_cast<const char*>(&n), sizeof(size_t));
-        ofs.write(reinterpret_cast<const char*>(wf.state.data()),
+        ofs.write(reinterpret_cast<const char*>(wave().state.data()),
                   n * sizeof(std::complex<double>));
         return true;
     }
@@ -75,9 +75,9 @@ struct QRegister {
         ifs.read(reinterpret_cast<char*>(&n), sizeof(size_t));
         std::vector<std::complex<double>> st(n);
         ifs.read(reinterpret_cast<char*>(st.data()), n * sizeof(std::complex<double>));
-        wf.decompress();
-        if (st.size() != wf.state.size()) return false;
-        wf.state = std::move(st);
+        wave().decompress();
+        if (st.size() != wave().state.size()) return false;
+        wave().state = std::move(st);
         return true;
     }
     std::chrono::steady_clock::time_point start_time;

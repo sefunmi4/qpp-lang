@@ -1,5 +1,6 @@
 #include "../runtime/wavefunction.h"
 #include "../runtime/quidd.h"
+#include "../runtime/random.h"
 #include <iostream>
 #include <random>
 #include <vector>
@@ -11,10 +12,10 @@ int main(int argc, char** argv) {
     if (argc > 1) qubits = std::stoul(argv[1]);
 
     Wavefunction wf(qubits);
-    std::mt19937 rng(42);
+    seed_rng(42);
     std::normal_distribution<double> dist(0.0, 1.0);
     std::vector<std::complex<double>> st(1ULL << qubits);
-    for (auto& c : st) c = {dist(rng), dist(rng)};
+    for (auto& c : st) c = {dist(global_rng()), dist(global_rng())};
     double norm = 0.0;
     for (const auto& c : st) norm += std::norm(c);
     norm = std::sqrt(norm);
