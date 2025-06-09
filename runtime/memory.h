@@ -2,6 +2,7 @@
 #include <memory>
 #include <mutex>
 #include <vector>
+#include <string>
 #include <complex>
 #include <chrono>
 #include <string>
@@ -10,8 +11,6 @@
 namespace qpp {
 struct QRegister {
     Wavefunction<> wf;
-    explicit QRegister(size_t n) : wf(n) {}
-
     explicit QRegister(size_t n)
         : wf(n), start_time(std::chrono::steady_clock::now()) {}
 
@@ -28,6 +27,7 @@ struct QRegister {
     int measure(std::size_t q) { ++op_count; return wf.measure(q); }
     std::size_t measure(const std::vector<std::size_t>& qs) { op_count += qs.size(); return wf.measure(qs); }
     void reset() { wf.reset(); reset_metrics(); }
+  
     std::complex<double> amp(std::size_t idx) const { return wf.amplitude(idx); }
     void resize(std::size_t n) { wf = Wavefunction(n); }
     void compress() { wf.compress(); }

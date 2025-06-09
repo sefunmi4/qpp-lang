@@ -4,6 +4,8 @@
 #include "disk_pager.h"
 #include "runtime_config.h"
 #include <complex>
+#include <vector>
+#include <string>
 #include <cstddef>
 #include <memory>
 #include <vector>
@@ -12,21 +14,25 @@ namespace qpp {
 template<typename Real = double>
 class Wavefunction {
 public:
-  explicit Wavefunction(std::size_t qubits = 1);
+    explicit Wavefunction(std::size_t qubits = 1);
 
-  void apply_h(std::size_t qubit);
-  void apply_x(std::size_t qubit);
-  void apply_y(std::size_t qubit);
-  void apply_z(std::size_t qubit);
-  void apply_cnot(std::size_t control, std::size_t target);
-  void apply_cz(std::size_t control, std::size_t target);
-  void apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target);
-  void apply_s(std::size_t qubit);
-  void apply_t(std::size_t qubit);
-  void apply_swap(std::size_t q1, std::size_t q2);
+    void apply_h(std::size_t qubit);
+    void apply_x(std::size_t qubit);
+    void apply_y(std::size_t qubit);
+    void apply_z(std::size_t qubit);
+    void apply_cnot(std::size_t control, std::size_t target);
+    void apply_cz(std::size_t control, std::size_t target);
+    void apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target);
+    void apply_s(std::size_t qubit);
+    void apply_t(std::size_t qubit);
+    void apply_swap(std::size_t q1, std::size_t q2);
 
-  void reset();
-  std::complex<double> amplitude(std::size_t index) const;
+    // Apply a sequence of single qubit gates by fusing them into one matrix.
+    void apply_fused(const std::vector<std::string>& gates,
+                     std::size_t qubit);
+
+    void reset();
+    std::complex<double> amplitude(std::size_t index) const;
 
     int measure(std::size_t qubit);
     std::size_t measure(const std::vector<std::size_t>& qubits);

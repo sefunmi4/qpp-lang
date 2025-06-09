@@ -1,6 +1,8 @@
 #include "wavefunction.h"
 #include <cmath>
 #include <random>
+#include <unordered_map>
+#include <string>
 #include <array>
 #ifdef _OPENMP
 #include <omp.h>
@@ -79,6 +81,61 @@ void Wavefunction<Real>::apply_t(std::size_t qubit) {
         {0, std::exp(std::complex<Real>(0, M_PI / 4))}
     };
     apply_single_qubit_gate<Real>(state, qubit, mat);
+}
+
+struct Mat2 {
+    std::complex<double> v[2][2];
+};
+
+static Mat2 mat_mul(const Mat2& A, const Mat2& B) {
+    Mat2 C{};
+    for (int i = 0; i < 2; ++i) {
+        for (int j = 0; j < 2; ++j) {
+            C.v[i][j] = A.v[i][0] * B.v[0][j] + A.v[i][1] * B.v[1][j];
+        }
+    }
+    return C;
+}
+
+static Mat2 identity_mat() {
+    Mat2 I{};
+    I.v[0][0] = 1; I.v[0][1] = 0;
+    I.v[1][0] = 0; I.v[1][1] = 1;
+    return I;
+}
+
+static Mat2 gate_matrix(const std::string& g) {
+    const double f = 1.0 / std::sqrt(2.0);
+    if (g == "H") return Mat2{{{f,f},{f,-f}}};
+    if (g == "X") return Mat2{{{0,1},{1,0}}};
+    if (g == "Y") return Mat2{{{0,std::complex<double>(0,-1)},{std::complex<double>(0,1),0}}};
+    if (g == "Z") return Mat2{{{1,0},{0,-1}}};
+    if (g == "S") return Mat2{{{1,0},{0,std::complex<double>(0,1)}}};
+    if (g == "T") return Mat2{{{1,0},{0,std::exp(std::complex<double>(0,M_PI/4))}}};
+    return identity_mat();
+}
+
+void Wavefunction::apply_fused(const std::vector<std::string>& gates,
+                               std::size_t qubit) {
+    if (gates.empty()) return;
+    static std::unordered_map<std::string, Mat2> cache;
+    std::string key;
+    for (const auto& g : gates) {
+        key += g;
+        key += ';';
+    }
+    Mat2 fused;
+    auto it = cache.find(key);
+    if (it != cache.end()) {
+        fused = it->second;
+    } else {
+        fused = identity_mat();
+        for (const auto& g : gates) {
+            fused = mat_mul(gate_matrix(g), fused);
+        }
+        cache.emplace(key, fused);
+    }
+    apply_single_qubit_gate(state, qubit, fused.v);
 }
 
 template<typename Real>

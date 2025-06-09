@@ -53,6 +53,10 @@ if(BUILD_TESTING)
     target_link_libraries(wavefunction_twoqubit_measure_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_twoqubit_measure_test COMMAND wavefunction_twoqubit_measure_test)
 
+    add_executable(fused_gate_test tests/fused_gate_test.cpp)
+    target_link_libraries(fused_gate_test PRIVATE qpp_runtime)
+    add_test(NAME fused_gate_test COMMAND fused_gate_test)
+    
     add_executable(wavefunction_sparse_test tests/wavefunction_sparse_test.cpp)
     target_link_libraries(wavefunction_sparse_test PRIVATE qpp_runtime)
     add_test(NAME wavefunction_sparse_test COMMAND wavefunction_sparse_test)
