@@ -21,6 +21,7 @@ add_library(qpp_runtime
     runtime/sparse_wavefunction.cpp
     runtime/disk_pager.cpp
     runtime/runtime_config.cpp
+    runtime/memory_tracker.cpp
     runtime/quidd.cpp
 )
 
@@ -120,6 +121,10 @@ if(BUILD_TESTING)
     add_executable(memory_usage_test tests/memory_usage_test.cpp)
     target_link_libraries(memory_usage_test PRIVATE qpp_runtime)
     add_test(NAME memory_usage_test COMMAND memory_usage_test)
+
+    add_executable(memory_tracker_test tests/memory_tracker_test.cpp)
+    target_link_libraries(memory_tracker_test PRIVATE qpp_runtime)
+    add_test(NAME memory_tracker_test COMMAND memory_tracker_test)
 
     add_executable(scheduler_pause_test tests/scheduler_pause_test.cpp)
     target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
