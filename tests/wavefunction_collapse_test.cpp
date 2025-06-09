@@ -2,9 +2,11 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include "../runtime/random.h"
 
 int main() {
     using namespace qpp;
+    seed_rng(42);
     Wavefunction<float> wf(2);
     wf.apply_h(0);
     wf.apply_h(1);

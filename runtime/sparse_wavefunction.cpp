@@ -1,6 +1,7 @@
 #include "sparse_wavefunction.h"
 #include <cmath>
 #include <random>
+#include "random.h"
 
 namespace qpp {
 
@@ -74,10 +75,8 @@ int SparseWavefunction::measure(std::size_t qubit) {
     for (const auto& kv : state) {
         if (kv.first & bit) p1 += std::norm(kv.second);
     }
-    std::random_device rd;
-    std::mt19937 gen(rd());
     std::bernoulli_distribution dist(p1);
-    int result = dist(gen);
+    int result = dist(global_rng());
     double norm_factor = std::sqrt(result ? p1 : 1.0 - p1);
     for (auto it = state.begin(); it != state.end(); ) {
         if ( ((it->first & bit) != 0) != static_cast<bool>(result) ) {

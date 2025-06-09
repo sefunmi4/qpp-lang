@@ -2,10 +2,12 @@
 #include "../runtime/scheduler.h"
 #include <iostream>
 #include <cassert>
+#include "../runtime/random.h"
 
 using namespace qpp;
 
 int main() {
+    seed_rng(42);
     int qid = memory.create_qregister(1);
     int result = -1;
 
