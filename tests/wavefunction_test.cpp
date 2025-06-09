@@ -2,9 +2,11 @@
 #include <cassert>
 #include <cmath>
 #include <iostream>
+#include "../runtime/random.h"
 
 int main() {
     using namespace qpp;
+    seed_rng(42);
     // single qubit tests
     Wavefunction<float> wf(1);
     wf.apply_h(0);

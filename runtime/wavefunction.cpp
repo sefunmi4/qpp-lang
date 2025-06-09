@@ -5,6 +5,7 @@
 #endif
 #include <cmath>
 #include <random>
+#include "random.h"
 #include <unordered_map>
 #include <string>
 #include <array>
@@ -281,10 +282,8 @@ int Wavefunction<Real>::measure(std::size_t qubit) {
         if (i & bit)
             p1 += std::norm(state[i]);
     }
-    std::random_device rd;
-    std::mt19937 gen(rd());
     std::bernoulli_distribution dist(p1);
-    int result = dist(gen);
+    int result = dist(global_rng());
     double norm_factor = std::sqrt(result ? p1 : 1.0 - p1);
 #pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
@@ -326,13 +325,9 @@ std::size_t Wavefunction<Real>::measure(const std::vector<std::size_t>& qubits) 
                 probs[o] += local[o];
         }
     }
-
-    std::random_device rd;
-    std::mt19937 gen(rd());
     std::discrete_distribution<std::size_t> dist(probs.begin(), probs.end());
-    std::size_t result = dist(gen);
-    double norm_factor = probs[result] > 0 ? std::sqrt(probs[result]) : 1.0;
-
+    std::size_t result = dist(global_rng());
+    double norm_factor = std::sqrt(probs[result]);
 #pragma omp parallel for schedule(static)
     for (std::size_t i = 0; i < state.size(); ++i) {
         std::size_t bits = i & mask;

@@ -3,9 +3,11 @@
 #include <iostream>
 #include <complex>
 #include <cmath>
+#include "../runtime/random.h"
 
 int main() {
     using namespace qpp;
+    seed_rng(42);
     Wavefunction<float> wf(3);
     wf.apply_x(0);
     wf.apply_y(1);
