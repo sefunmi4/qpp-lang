@@ -39,6 +39,11 @@ The Q++ Hardware API defines how compiled programs are dispatched to real quantu
   "max_depth": 500
 }
 ```
+- **device_id** – unique name of the backend
+- **max_qubits** – maximum qubits available
+- **supported_gates** – operations allowed by the hardware
+- **coherence_time_us** – approximate coherence window in microseconds
+- **max_depth** – recommended circuit depth
 - Defines compile-time target constraints
 - Used by Q++ optimizer and scheduler
 

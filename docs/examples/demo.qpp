@@ -5,7 +5,7 @@
 //   qpp-run demo.ir
 // This program creates a Bell pair and measures it.
 
-task<QPU> bell_demo() {
+task<QPU> main() {
     qalloc qbit q[2];
     cregister int c[2];
 

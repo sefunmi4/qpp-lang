@@ -7,11 +7,14 @@
 #include <string>
 
 namespace qpp {
-enum class Target { CPU, QPU, AUTO };
+enum class Target { CPU, QPU, AUTO, MIXED };
+
+enum class ExecHint { NONE, DENSE, CLIFFORD };
 
 struct Task {
     std::string name;
     Target target;
+    ExecHint hint{ExecHint::NONE};
     int priority{0};
     std::function<void()> handler;
 };

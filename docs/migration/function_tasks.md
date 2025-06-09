@@ -34,6 +34,7 @@ task<AUTO> my_algorithm() {
 - `task<CPU>` — guaranteed classical logic only
 - `task<QPU>` — guaranteed quantum logic execution only
 - `task<AUTO>` — inferred by scope and contents
+- `task<MIXED>` — explicitly allows CPU and QPU operations in one task
 
 ---
 

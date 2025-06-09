@@ -1,0 +1,16 @@
+// Example of mixed classical and quantum operations in a single task
+
+task<MIXED> hybrid_example() {
+    qalloc qbit q[1];
+    cregister int c[1];
+
+    H(q[0]);
+    c[0] = measure(q[0]);
+
+    // classical branch using measurement result
+    if (c[0]) {
+        X(q[0]);
+    } else {
+        Z(q[0]);
+    }
+}
