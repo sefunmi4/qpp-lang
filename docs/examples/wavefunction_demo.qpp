@@ -5,9 +5,8 @@
 // Run with:
 //   qpp-run wf.ir
 // This program applies a series of single- and multi-qubit gates
-// followed by simple measurements. Control flow has been removed
-// because the current `qppc` compiler only supports gates and
-// measurements.
+// followed by simple measurements. The compiler now understands
+// basic control flow, but this example focuses on gate behavior.
 
 task<QPU> wave_demo() {
     qalloc qbit q[3];
