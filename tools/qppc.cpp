@@ -48,9 +48,17 @@ int main(int argc, char** argv) {
 
     std::vector<Instr> ir;
     std::vector<Instr> gate_buffer;
+    int gate_count = 0;
+    int qubit_count = 0;
+    bool non_clifford = false;
+    std::vector<std::string> used_gates;
 
     auto flush_gates = [&]() {
-        ir.insert(ir.end(), gate_buffer.begin(), gate_buffer.end());
+        for (const auto& g : gate_buffer) {
+            ir.push_back(g);
+            gate_count++;
+            used_gates.push_back(g.op);
+        }
         gate_buffer.clear();
     };
 
@@ -148,9 +156,6 @@ int main(int argc, char** argv) {
     std::string cond_index;
 
     std::string current_task_name;
-    int gate_count = 0;
-    int qubit_count = 0;
-    bool non_clifford = false;
 
     while (std::getline(input, line)) {
         ++line_no;
@@ -223,6 +228,7 @@ int main(int argc, char** argv) {
                                    {cond_name, cond_index, m[1], m[2], m[3]}});
                 }
                 gate_count++;
+                used_gates.push_back(m[1]);
                 if (std::string(m[1]) == "T") non_clifford = true;
                 continue;
             }
@@ -255,11 +261,15 @@ int main(int argc, char** argv) {
         if (std::regex_search(line, m, if_var_gate_single)) {
             flush_gates();
             ir.push_back({"IFVAR", {m[1], m[2], m[3], m[4]}});
+            gate_count++;
+            used_gates.push_back(m[2]);
             continue;
         }
         if (std::regex_search(line, m, if_creg_gate_single)) {
             flush_gates();
             ir.push_back({"IFC", {m[1], m[2], m[3], m[4], m[5]}});
+            gate_count++;
+            used_gates.push_back(m[3]);
             continue;
         }
 
@@ -281,6 +291,7 @@ int main(int argc, char** argv) {
         if (std::regex_search(line, m, qalloc_regex)) {
             flush_gates();
             ir.push_back({"QALLOC", {m[1], m[2]}});
+            qubit_count += std::stoi(m[2]);
         } else if (std::regex_search(line, m, creg_regex)) {
             flush_gates();
             ir.push_back({"CALLOC", {m[1], m[2]}});
@@ -293,24 +304,38 @@ int main(int argc, char** argv) {
         } else if (std::regex_search(line, m, swap_regex)) {
             flush_gates();
             ir.push_back({"SWAP", {m[1], m[2], m[3], m[4]}});
+            gate_count++;
+            used_gates.push_back("SWAP");
         } else if (std::regex_search(line, m, cnot_regex)) {
             flush_gates();
             ir.push_back({"CNOT", {m[1], m[2], m[3], m[4]}});
+            gate_count++;
+            used_gates.push_back("CX");
         } else if (std::regex_search(line, m, cz_regex)) {
             flush_gates();
             ir.push_back({"CZ", {m[1], m[2], m[3], m[4]}});
+            gate_count++;
+            used_gates.push_back("CZ");
         } else if (std::regex_search(line, m, ccx_regex)) {
             flush_gates();
             ir.push_back({"CCX", {m[1], m[2], m[3], m[4], m[5], m[6]}});
+            gate_count++;
+            used_gates.push_back("CCX");
         } else if (std::regex_search(line, m, xor_assign_regex)) {
             flush_gates();
             ir.push_back({"CNOT", {m[3], m[4], m[1], m[2]}});
+            gate_count++;
+            used_gates.push_back("CX");
         } else if (std::regex_search(line, m, meas_assign_regex)) {
             flush_gates();
             ir.push_back({"MEASURE", {m[3], m[4], "->", m[1], m[2]}});
+            gate_count++;
+            used_gates.push_back("MEASURE");
         } else if (std::regex_search(line, m, measure_regex)) {
             flush_gates();
             ir.push_back({"MEASURE", {m[1], m[2]}});
+            gate_count++;
+            used_gates.push_back("MEASURE");
         } else if (std::regex_search(trimmed, call_regex)) {
             // ignore simple function calls
         } else if (trimmed.size() > 0) {
@@ -319,6 +344,11 @@ int main(int argc, char** argv) {
     }
 
     flush_gates();
+    if (have_profile &&
+        !qpp::check_profile_limits(profile, qubit_count, gate_count,
+                                   used_gates, std::cerr)) {
+        return 1;
+    }
     for (const auto& ins : ir) {
         out << ins.op;
         for (const auto& a : ins.args) out << " " << a;

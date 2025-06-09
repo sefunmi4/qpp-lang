@@ -165,6 +165,8 @@ You can optionally supply a hardware profile file to enforce device limits:
 ```bash
 qppc docs/examples/demo.qpp demo.ir --profile ibmq.json
 ```
+If the compiled program exceeds the specified qubit count, depth, or uses
+unsupported gates the compiler now emits an error and aborts.
 
 This demonstrates the toy toolchain using the runtime scheduler and wavefunction simulator.
 

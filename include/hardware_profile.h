@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <ostream>
 
 namespace qpp {
 
@@ -13,5 +14,14 @@ struct HardwareProfile {
 };
 
 bool load_hardware_profile(const std::string& path, HardwareProfile& profile);
+
+// Validate a circuit against the provided hardware profile. Returns true if the
+// circuit fits within all limits, otherwise prints an error message to `err`
+// and returns false.
+bool check_profile_limits(const HardwareProfile& profile,
+                          int qubits,
+                          int depth,
+                          const std::vector<std::string>& gates,
+                          std::ostream& err);
 
 }
