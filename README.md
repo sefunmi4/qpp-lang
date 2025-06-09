@@ -165,6 +165,13 @@ You can optionally supply a hardware profile file to enforce device limits:
 ```bash
 qppc docs/examples/demo.qpp demo.ir --profile ibmq.json
 ```
+If the compiled program exceeds the specified qubit count, depth, or uses
+unsupported gates the compiler now emits an error and aborts.
+
+The compiler also writes `#QUBITS`, `#GATES`, and `CLIFFORD` headers to the
+generated IR summarizing resource usage. `qpp-run` uses these hints to
+automatically select a stabilizer engine when the circuit contains only
+Clifford operations.
 
 This demonstrates the toy toolchain using the runtime scheduler and wavefunction simulator.
 

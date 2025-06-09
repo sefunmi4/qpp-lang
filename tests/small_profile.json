@@ -1,0 +1,7 @@
+{
+  "device_id": "small_device",
+  "max_qubits": 2,
+  "supported_gates": ["H", "X", "CX"],
+  "max_depth": 5,
+  "coherence_time_us": 100
+}

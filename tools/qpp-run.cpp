@@ -86,19 +86,38 @@ int main(int argc, char** argv) {
     ExecHint current_hint = ExecHint::NONE;
     std::vector<std::vector<std::string>> ops;
 
+    struct PendingTask {
+        std::string name;
+        Target target;
+        ExecHint hint;
+        std::vector<std::vector<std::string>> instrs;
+    };
+    std::vector<PendingTask> tasks;
+
     bool use_stabilizer = false;
+    bool clifford_specified = false;
+    bool non_clifford = false;
 
     std::vector<std::string> logs;
+    std::unordered_map<std::string,int> gate_profile;
+    std::unordered_map<std::string,int> branch_profile;
     const std::vector<std::string> gate_ops = {"H","X","Y","Z","S","T","SWAP","CNOT","CZ","CCX","IFVAR","IFNVAR","IFC","IFNC"};
 
     auto add_current_task = [&]() {
         if (current_name.empty()) return;
         auto instrs = ops;
         optimize_patterns(instrs);
-        auto name = current_name;
-        auto target = current_target;
-        auto hint = current_hint;
-        scheduler.add_task({name, target, hint, 0, [instrs,&logs,name,target,hint]() {
+        tasks.push_back({current_name, current_target, current_hint, instrs});
+        ops.clear();
+        current_name.clear();
+    };
+
+    auto schedule_task = [&](const PendingTask& t) {
+        auto instrs = t.instrs;
+        auto name = t.name;
+        auto target = t.target;
+        auto hint = t.hint;
+        scheduler.add_task({name, target, hint, 0, [instrs,&logs,name,target,hint,&gate_profile,&branch_profile]() {
             if (hint == ExecHint::CLIFFORD)
                 std::cout << "[runtime] hint CLIFFORD - using stabilizer path" << std::endl;
             else if (hint == ExecHint::DENSE)
@@ -114,6 +133,7 @@ int main(int argc, char** argv) {
             auto apply_gate = [&](const std::string& g,
                                   const std::string& qname,
                                   const std::string& qidx) {
+                gate_profile[g]++;
                 int id = qmap.at(qname);
                 std::size_t q = std::stoul(qidx);
                 if (g == "H") memory.qreg(id).h(q);
@@ -182,12 +202,14 @@ int main(int argc, char** argv) {
                     }
                 } else if (ins[0] == "IFVAR" && ins.size() == 5) {
                     bool cond = vars[ins[1]];
+                    branch_profile[cond ? "IFVAR_T" : "IFVAR_F"]++;
                     logs.push_back(name + ": branch IFVAR " + ins[1] + " -> " +
                                    (cond ? "taken" : "skipped"));
                     if (cond)
                         apply_gate(ins[2], ins[3], ins[4]);
                 } else if (ins[0] == "IFNVAR" && ins.size() == 5) {
                     bool cond = !vars[ins[1]];
+                    branch_profile[cond ? "IFNVAR_T" : "IFNVAR_F"]++;
                     logs.push_back(name + ": branch IFNVAR " + ins[1] + " -> " +
                                    (cond ? "taken" : "skipped"));
                     if (cond)
@@ -196,6 +218,7 @@ int main(int argc, char** argv) {
                     int cid = cmap.at(ins[1]);
                     std::size_t idx = std::stoul(ins[2]);
                     bool cond = memory.creg(cid).bits[idx];
+                    branch_profile[cond ? "IFC_T" : "IFC_F"]++;
                     logs.push_back(name + ": branch IFC " + ins[1] + "[" + ins[2]
                                    + "] -> " + (cond ? "taken" : "skipped"));
                     if (cond)
@@ -204,6 +227,7 @@ int main(int argc, char** argv) {
                     int cid = cmap.at(ins[1]);
                     std::size_t idx = std::stoul(ins[2]);
                     bool cond = !memory.creg(cid).bits[idx];
+                    branch_profile[cond ? "IFNC_T" : "IFNC_F"]++;
                     logs.push_back(name + ": branch IFNC " + ins[1] + "[" + ins[2]
                                    + "] -> " + (cond ? "taken" : "skipped"));
                     if (cond)
@@ -213,8 +237,6 @@ int main(int argc, char** argv) {
             for (auto& [name, id] : qmap) memory.release_qregister(id);
             for (auto& [name, id] : cmap) memory.release_cregister(id);
         }});
-        ops.clear();
-        current_name.clear();
     };
 
     int line_no = 0;
@@ -236,6 +258,7 @@ int main(int argc, char** argv) {
             int v = 0;
             iss >> v;
             use_stabilizer = (v != 0);
+            clifford_specified = true;
         } else if (tok == "TASK") {
             add_current_task();
             iss >> current_name >> tok; // tok is target
@@ -269,16 +292,30 @@ int main(int argc, char** argv) {
             } else if (std::find(gate_ops.begin(), gate_ops.end(), tok) != gate_ops.end()) {
                 if (!(tok == "QALLOC" || tok == "CALLOC" || tok == "MEASURE" || tok == "VAR"))
                     calc_gates++;
+                if (tok == "T" || tok == "CCX") non_clifford = true;
             }
         } else if (!line.empty()) {
             std::cerr << "Unknown instruction on line " << line_no << ": " << line << "\n";
         }
     }
     add_current_task();
+    if (!clifford_specified)
+        use_stabilizer = !non_clifford;
+    for (auto& t : tasks) {
+        if (t.hint == ExecHint::NONE && use_stabilizer)
+            t.hint = ExecHint::CLIFFORD;
+        schedule_task(t);
+    }
     int q_est = header_qubits >= 0 ? header_qubits : calc_qubits;
     int g_est = header_gates >= 0 ? header_gates : calc_gates;
     std::cout << "Estimated qubits: " << q_est << ", gates: " << g_est << std::endl;
     scheduler.run();
+    std::cout << "Gate profile:\n";
+    for (const auto& kv : gate_profile)
+        std::cout << "  " << kv.first << ": " << kv.second << "\n";
+    std::cout << "Branch profile:\n";
+    for (const auto& kv : branch_profile)
+        std::cout << "  " << kv.first << ": " << kv.second << "\n";
     for (const auto& l : logs) std::cout << l << std::endl;
     std::cout << "Executed " << logs.size() << " measurements." << std::endl;
     return 0;
