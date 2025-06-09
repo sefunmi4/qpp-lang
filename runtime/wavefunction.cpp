@@ -457,9 +457,47 @@ bool Wavefunction<Real>::using_sparse() const {
     return is_sparse;
 }
 
+template<typename Real>
+std::size_t detect_periodicity_ripple(const Wavefunction<Real>& wf,
+                                      double threshold) {
+    std::size_t N = wf.using_sparse() ? (1ULL << wf.num_qubits) : wf.state.size();
+    if (N < 2)
+        return 0;
+
+    std::vector<Real> mags(N, Real(0));
+    for (std::size_t i = 0; i < N; ++i) {
+        mags[i] = std::abs(wf.amplitude(i));
+    }
+
+    std::size_t best_k = 0;
+    Real best_amp = Real(0);
+    for (std::size_t k = 1; k <= N / 2; ++k) {
+        std::complex<Real> sum{0.0, 0.0};
+        for (std::size_t n = 0; n < N; ++n) {
+            Real angle = -2.0 * M_PI * Real(k) * Real(n) / Real(N);
+            std::complex<Real> e{std::cos(angle), std::sin(angle)};
+            sum += mags[n] * e;
+        }
+        Real amp = std::abs(sum);
+        if (amp > best_amp) {
+            best_amp = amp;
+            best_k = k;
+        }
+    }
+    if (best_k == 0)
+        return 0;
+    Real norm = best_amp / Real(N);
+    if (norm < threshold)
+        return 0;
+    return N / best_k;
+}
+
 // TODO: implement full state collapse for multi-qubit measurements
 
 template class Wavefunction<double>;
 template class Wavefunction<float>;
+
+template std::size_t detect_periodicity_ripple<double>(const Wavefunction<double>&, double);
+template std::size_t detect_periodicity_ripple<float>(const Wavefunction<float>&, double);
 
 } // namespace qpp

@@ -1,6 +1,7 @@
 #include "../runtime/wavefunction.h"
 #include <cassert>
 #include <iostream>
+#include <cmath>
 
 int main() {
     using namespace qpp;

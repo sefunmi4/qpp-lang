@@ -57,6 +57,14 @@ public:
   std::size_t num_qubits;
 };
 
+// Analyze amplitude magnitudes using a naive discrete Fourier scan and return
+// the dominant repeating period. When no strong periodic component is found the
+// function returns 0. The threshold parameter specifies the minimum normalised
+// Fourier magnitude required for detection.
+template<typename Real = double>
+std::size_t detect_periodicity_ripple(const Wavefunction<Real>& wf,
+                                      double threshold = 0.05);
+
 using WavefunctionF = Wavefunction<float>;
 
 // TODO(good-first-issue): extend with parameterized rotations and register
