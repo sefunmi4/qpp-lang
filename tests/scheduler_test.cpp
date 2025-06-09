@@ -10,11 +10,11 @@ int main() {
     int result = -1;
 
     std::vector<std::string> order;
-    Task t1{"hadamard", Target::QPU, 5, [qid,&order]() {
+    Task t1{"hadamard", Target::QPU, ExecHint::NONE, 5, [qid,&order]() {
         order.push_back("h");
         memory.qreg(qid).h(0);
     }};
-    Task t2{"measure", Target::QPU, 10, [qid, &result,&order]() {
+    Task t2{"measure", Target::QPU, ExecHint::NONE, 10, [qid, &result,&order]() {
         order.push_back("m");
         result = memory.qreg(qid).measure(0);
     }};

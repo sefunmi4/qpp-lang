@@ -1,0 +1,17 @@
+// Demonstrate backend hints
+
+// Clifford-only circuit
+task<QPU> cliff_demo() @clifford {
+    qalloc qbit q[1];
+    H(q[0]);
+    Z(q[0]);
+}
+
+// Dense circuit requiring full state simulation
+task<QPU> dense_demo() @dense {
+    qalloc qbit q[2];
+    H(q[0]);
+    CX(q[0], q[1]);
+    T(q[0]);
+}
+

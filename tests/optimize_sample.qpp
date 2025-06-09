@@ -1,0 +1,13 @@
+task<QPU> opt() {
+    qalloc qbit q[1];
+    H(q[0]);
+    H(q[0]);
+    X(q[0]);
+    X(q[0]);
+    S(q[0]);
+    S(q[0]);
+    T(q[0]);
+    T(q[0]);
+}
+
+task<AUTO> main() { opt(); }
