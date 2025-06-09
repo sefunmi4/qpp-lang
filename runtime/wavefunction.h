@@ -21,6 +21,9 @@ public:
     void apply_x(std::size_t qubit);
     void apply_y(std::size_t qubit);
     void apply_z(std::size_t qubit);
+    void apply_rx(std::size_t qubit, Real theta);
+    void apply_ry(std::size_t qubit, Real theta);
+    void apply_rz(std::size_t qubit, Real theta);
     void apply_cnot(std::size_t control, std::size_t target);
     void apply_cz(std::size_t control, std::size_t target);
     void apply_ccnot(std::size_t c1, std::size_t c2, std::size_t target);

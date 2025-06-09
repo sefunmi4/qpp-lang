@@ -6,6 +6,7 @@
 #include <unordered_map>
 #include <chrono>
 #include <string>
+#include <fstream>
 #include "wavefunction.h"
 
 namespace qpp {
@@ -23,6 +24,9 @@ struct QRegister {
     void x(std::size_t q) { ++op_count; wf.apply_x(q); }
     void y(std::size_t q) { ++op_count; wf.apply_y(q); }
     void z(std::size_t q) { ++op_count; wf.apply_z(q); }
+    void rx(std::size_t q, double theta) { ++op_count; wf.apply_rx(q, theta); }
+    void ry(std::size_t q, double theta) { ++op_count; wf.apply_ry(q, theta); }
+    void rz(std::size_t q, double theta) { ++op_count; wf.apply_rz(q, theta); }
     void cnot(std::size_t c, std::size_t t) { ++op_count; wf.apply_cnot(c, t); }
     void cz(std::size_t c, std::size_t t) { ++op_count; wf.apply_cz(c, t); }
     void ccnot(std::size_t c1, std::size_t c2, std::size_t t) { ++op_count; wf.apply_ccnot(c1, c2, t); }
@@ -40,6 +44,30 @@ struct QRegister {
     std::size_t nnz() const { return wf.nnz(); }
     bool using_sparse() const { return wf.using_sparse(); }
     std::size_t ops() const { return op_count; }
+
+    bool save_to_file(const std::string& path) {
+        wf.decompress();
+        std::ofstream ofs(path, std::ios::binary);
+        if (!ofs) return false;
+        size_t n = wf.state.size();
+        ofs.write(reinterpret_cast<const char*>(&n), sizeof(size_t));
+        ofs.write(reinterpret_cast<const char*>(wf.state.data()),
+                  n * sizeof(std::complex<double>));
+        return true;
+    }
+
+    bool load_from_file(const std::string& path) {
+        std::ifstream ifs(path, std::ios::binary);
+        if (!ifs) return false;
+        size_t n;
+        ifs.read(reinterpret_cast<char*>(&n), sizeof(size_t));
+        std::vector<std::complex<double>> st(n);
+        ifs.read(reinterpret_cast<char*>(st.data()), n * sizeof(std::complex<double>));
+        wf.decompress();
+        if (st.size() != wf.state.size()) return false;
+        wf.state = std::move(st);
+        return true;
+    }
 
     std::chrono::steady_clock::time_point start_time;
     std::size_t op_count{0};
