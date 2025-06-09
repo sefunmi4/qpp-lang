@@ -14,6 +14,7 @@ Q++ defines three runtime task contexts:
 - `task<CPU>` → Runs directly on CPU
 - `task<QPU>` → Delegated to quantum processing unit
 - `task<AUTO>` → Evaluated and dispatched based on scope and data
+- `task<MIXED>` → Runs CPU and QPU logic sequentially in the same task
 
 Runtime determines target execution via scope analysis, bit type resolution, and probabilistic annotations.
 
@@ -32,11 +33,19 @@ Scopes with quantum conditionals (e.g., `if (q[0])`) are tagged as probabilistic
 
 ## 🔄 Simulation Layer
 
-### Wavefunction Simulator 
+### Wavefunction Simulator
 Used when real QPU is not available or during testing:
 - Tracks all quantum states
 - Resolves conditionals using amplitude sampling
 - Emits measurement collapse when required
+- Supports optional sparse storage via `compress()`/`decompress()` to keep only
+  non-zero amplitudes in memory
+
+### Ripple-Based Periodicity Analysis
+The simulator includes `detect_periodicity_ripple(wf)` which performs a simple
+Fourier scan of amplitude magnitudes. When a repeating interference pattern is
+detected above a threshold, the function returns the dominant period. Higher
+level passes can leverage this to compress redundant state segments.
 
 ### Collapse API
 ```cpp
@@ -97,6 +106,9 @@ Defines available QPUs, simulators, and constraints like:
 - Support backend-agnostic dispatch APIs
 - Emit IR with `@collapse_marker` or similar tags for QPU vendors
 - Final hardware support via IBM Q / Google Cirq APIs
+- Resonance zone caching via `memory.save_resonance_zone` and
+  `memory.load_resonance_zone` allows entangled subsystems to be stored and
+  restored across task steps.
 
 ---
 

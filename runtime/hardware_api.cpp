@@ -72,6 +72,10 @@ std::string emit_qir(const std::vector<std::vector<std::string>>& ops) {
             out << "  call void @__quantum__qis__cz(i64 " << ins[2] << ", i64 " << ins[4] << ") ;\n";
         } else if (op == "CCX") {
             out << "  call void @__quantum__qis__ccx(i64 " << ins[2] << ", i64 " << ins[4] << ", i64 " << ins[6] << ") ;\n";
+        } else if (op == "QFT2") {
+            out << "  ; QFT2 optimized stub\n";
+        } else if (op == "GROVER2") {
+            out << "  ; GROVER2 optimized stub\n";
         } else if (op == "MEASURE") {
             out << "  %tmp" << ins[2] << " = call i1 @__quantum__qis__measure(i64 " << ins[2] << ") ;\n";
         }
