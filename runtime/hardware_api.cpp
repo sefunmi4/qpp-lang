@@ -1,5 +1,5 @@
 #include "hardware_api.h"
-#include <iostream>
+#include "logger.h"
 #include <sstream>
 #include <cstdio>
 #include <unistd.h>
@@ -14,12 +14,12 @@ static void invoke_python_backend(const std::string& script,
     char qir_path[] = "/tmp/qpp_qirXXXXXX";
     int fd = mkstemp(qir_path);
     if (fd == -1) {
-        std::cerr << "Failed to create temp file for QIR\n";
+        LOG_ERROR("Failed to create temp file for QIR");
         return;
     }
     FILE* f = fdopen(fd, "w");
     if (!f) {
-        std::cerr << "fdopen failed\n";
+        LOG_ERROR("fdopen failed");
         close(fd);
         return;
     }
@@ -28,7 +28,7 @@ static void invoke_python_backend(const std::string& script,
     std::string cmd = std::string("python3 ") + script + " " + qir_path;
     int rc = std::system(cmd.c_str());
     if (rc != 0)
-        std::cerr << name << " backend execution failed\n";
+        LOG_ERROR(name, " backend execution failed");
     std::remove(qir_path);
 }
 

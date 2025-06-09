@@ -1,8 +1,8 @@
 #include "runtime.h"
-#include <iostream>
+#include "logger.h"
 
 namespace qpp {
 void initialize_runtime() {
-    std::cout << "Q++ runtime initialized" << std::endl;
+    LOG_INFO("Q++ runtime initialized");
 }
 }

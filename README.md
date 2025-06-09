@@ -128,6 +128,13 @@ deterministic behavior. The runtime relies on `global_rng()` when collapsing
 qubits during measurement. The unit tests in `/tests` demonstrate seeding the
 generator with a fixed value before running simulations.
 
+### Runtime Logging
+
+The runtime now exposes simple logging helpers in `logger.h`. Messages are
+written to stderr and include a severity level. Use `set_log_level()` to adjust
+verbosity and the `LOG_INFO`, `LOG_WARN`, or `LOG_ERROR` macros to emit output
+from your code.
+
 ### Quick Start Example
 
 `qppc` now parses a small but useful subset of Q++ including simple
