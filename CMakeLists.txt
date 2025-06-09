@@ -74,6 +74,10 @@ if(BUILD_TESTING)
     target_link_libraries(memory_reuse_test PRIVATE qpp_runtime)
     add_test(NAME memory_reuse_test COMMAND memory_reuse_test)
 
+    add_executable(low_rank_factorization_test tests/low_rank_factorization_test.cpp)
+    target_link_libraries(low_rank_factorization_test PRIVATE qpp_runtime)
+    add_test(NAME low_rank_factorization_test COMMAND low_rank_factorization_test)
+
     add_executable(quidd_conversion_test tests/quidd_conversion_test.cpp)
     target_link_libraries(quidd_conversion_test PRIVATE qpp_runtime)
     add_test(NAME quidd_conversion_test COMMAND quidd_conversion_test)

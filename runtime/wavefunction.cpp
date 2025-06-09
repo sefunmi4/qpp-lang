@@ -1,6 +1,7 @@
 #include "wavefunction.h"
 #include <cmath>
 #include <random>
+#include <array>
 #ifdef _OPENMP
 #include <omp.h>
 #endif
@@ -217,6 +218,65 @@ template<typename Real>
 std::complex<Real> Wavefunction<Real>::amplitude(std::size_t index) const {
     if (index >= state.size()) return {0.0,0.0};
     return state[index];
+}
+
+bool Wavefunction::schmidt_low_rank(std::size_t qubit, double threshold) {
+    if (qubit >= num_qubits) return false;
+    std::size_t mask = 1ULL << qubit;
+    std::size_t dim_rest = 1ULL << (num_qubits - 1);
+    std::vector<std::complex<double>> row0(dim_rest), row1(dim_rest);
+    std::size_t lowmask = mask - 1;
+    std::size_t highmask = (~0ULL) << (qubit + 1);
+    for (std::size_t idx = 0; idx < state.size(); ++idx) {
+        std::size_t rest = (idx & lowmask) | ((idx & highmask) >> 1);
+        if (idx & mask)
+            row1[rest] = state[idx];
+        else
+            row0[rest] = state[idx];
+    }
+    double n00 = 0.0, n11 = 0.0;
+    std::complex<double> n01{0.0, 0.0};
+    for (std::size_t j = 0; j < dim_rest; ++j) {
+        n00 += std::norm(row0[j]);
+        n11 += std::norm(row1[j]);
+        n01 += row0[j] * std::conj(row1[j]);
+    }
+    double tr = n00 + n11;
+    double diff = n00 - n11;
+    double root = std::sqrt(diff * diff + 4.0 * std::norm(n01));
+    double lambda1 = 0.5 * (tr + root);
+    if (lambda1 < 1.0 - threshold)
+        return false;
+
+    std::array<std::complex<double>, 2> u;
+    std::complex<double> x1 = n01;
+    std::complex<double> x2 = lambda1 - n00;
+    double norm = std::sqrt(std::norm(x1) + std::norm(x2));
+    if (norm < 1e-12) {
+        if (n00 >= n11) {
+            u = {1.0, 0.0};
+        } else {
+            u = {0.0, 1.0};
+        }
+    } else {
+        u = {x1 / norm, x2 / norm};
+    }
+
+    std::vector<std::complex<double>> right(dim_rest);
+    for (std::size_t j = 0; j < dim_rest; ++j) {
+        right[j] = std::conj(u[0]) * row0[j] + std::conj(u[1]) * row1[j];
+    }
+    double s0 = std::sqrt(lambda1);
+    for (auto& v : right) v /= s0;
+
+    for (std::size_t idx = 0; idx < state.size(); ++idx) {
+        std::size_t idx_rest = (idx & lowmask) | ((idx & highmask) >> 1);
+        if (idx & mask)
+            state[idx] = u[1] * right[idx_rest];
+        else
+            state[idx] = u[0] * right[idx_rest];
+    }
+    return true;
 }
 
 void Wavefunction::compress() {

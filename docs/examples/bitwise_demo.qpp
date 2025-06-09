@@ -11,3 +11,10 @@ task<QPU> main() {
     int m0 = measure(q[0]);
     int m1 = measure(q[1]);
 }
+
+task<AUTO> main() {
+    qalloc qbit q[2];
+    q[0] ^= q[1];
+    int m0 = measure(q[0]);
+    int m1 = measure(q[1]);
+}
