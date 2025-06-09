@@ -1,7 +1,7 @@
 #include "scheduler.h"
 #include "memory.h"
 #include "hardware_api.h"
-#include <iostream>
+#include "logger.h"
 #include <mutex>
 
 namespace qpp {
@@ -25,31 +25,31 @@ void Scheduler::run() {
             t = tasks.top();
             tasks.pop();
         }
-        std::cout << "Running task '" << t.name << "' on ";
+        std::string msg = "Running task '" + t.name + "' on ";
         switch (t.target) {
         case Target::CPU:
-            std::cout << "CPU";
+            msg += "CPU";
             break;
         case Target::QPU:
-            std::cout << "QPU";
+            msg += "QPU";
             break;
         case Target::AUTO:
-            std::cout << "AUTO";
+            msg += "AUTO";
             break;
         case Target::MIXED:
-            std::cout << "MIXED";
+            msg += "MIXED";
             break;
         }
         if (t.hint == ExecHint::CLIFFORD)
-            std::cout << " [CLIFFORD]";
+            msg += " [CLIFFORD]";
         else if (t.hint == ExecHint::DENSE)
-            std::cout << " [DENSE]";
-        std::cout << std::endl;
+            msg += " [DENSE]";
+        LOG_INFO(msg);
         if (t.handler)
             t.handler();
         if (t.target == Target::QPU && qpu_backend())
             qpu_backend()->execute_qir("; scheduler dispatch\n");
-        std::cout << "Memory in use: " << memory.memory_usage() << " bytes" << std::endl;
+        LOG_DEBUG("Memory in use: ", memory.memory_usage(), " bytes");
     }
     running = false;
 }
@@ -72,31 +72,31 @@ void Scheduler::run_async() {
                 t = tasks.top();
                 tasks.pop();
             }
-            std::cout << "Running task '" << t.name << "' on ";
+            std::string msg = "Running task '" + t.name + "' on ";
             switch (t.target) {
             case Target::CPU:
-                std::cout << "CPU";
+                msg += "CPU";
                 break;
             case Target::QPU:
-                std::cout << "QPU";
+                msg += "QPU";
                 break;
             case Target::AUTO:
-                std::cout << "AUTO";
+                msg += "AUTO";
                 break;
             case Target::MIXED:
-                std::cout << "MIXED";
+                msg += "MIXED";
                 break;
             }
             if (t.hint == ExecHint::CLIFFORD)
-                std::cout << " [CLIFFORD]";
+                msg += " [CLIFFORD]";
             else if (t.hint == ExecHint::DENSE)
-                std::cout << " [DENSE]";
-            std::cout << std::endl;
+                msg += " [DENSE]";
+            LOG_INFO(msg);
             if (t.handler)
                 t.handler();
             if (t.target == Target::QPU && qpu_backend())
                 qpu_backend()->execute_qir("; scheduler dispatch\n");
-            std::cout << "Memory in use: " << memory.memory_usage() << " bytes" << std::endl;
+            LOG_DEBUG("Memory in use: ", memory.memory_usage(), " bytes");
         }
     });
 }
