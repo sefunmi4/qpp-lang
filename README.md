@@ -119,6 +119,15 @@ pip install -r requirements.txt
 
 For contribution guidelines see [CONTRIBUTING.md](CONTRIBUTING.md).
 
+### Random Number Generation
+
+Utilities in `runtime/random.h` manage pseudo-random sequences used by the
+wavefunction simulator. `global_rng()` returns a thread-local `std::mt19937`
+engine seeded from an atomic value. Use `seed_rng()` to set this seed for
+deterministic behavior. The runtime relies on `global_rng()` when collapsing
+qubits during measurement. The unit tests in `/tests` demonstrate seeding the
+generator with a fixed value before running simulations.
+
 ### Quick Start Example
 
 `qppc` now parses a small but useful subset of Q++ including simple

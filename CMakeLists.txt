@@ -153,6 +153,10 @@ if(BUILD_TESTING)
     target_link_libraries(qregister_serialization_test PRIVATE qpp_runtime)
     add_test(NAME qregister_serialization_test COMMAND qregister_serialization_test)
 
+    add_executable(random_concurrency_test tests/random_concurrency_test.cpp)
+    target_link_libraries(random_concurrency_test PRIVATE qpp_runtime)
+    add_test(NAME random_concurrency_test COMMAND random_concurrency_test)
+
     add_test(NAME demo_integration
         COMMAND ${CMAKE_SOURCE_DIR}/tests/demo_integration.sh)
     add_test(NAME examples_compile_test

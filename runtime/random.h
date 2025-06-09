@@ -16,6 +16,11 @@ using rng_engine = std::mt19937_64;
 
 inline rng_engine& global_rng() {
     thread_local rng_engine gen(detail::rng_seed().load(std::memory_order_relaxed));
+    uint64_t current = detail::rng_seed().load(std::memory_order_relaxed);
+    if (current != last_seed) {
+        gen.seed(current);
+        last_seed = current;
+    }
     return gen;
 }
 
