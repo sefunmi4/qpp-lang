@@ -17,7 +17,7 @@ bool load_hardware_profile(const std::string& path, HardwareProfile& profile) {
         profile.max_depth = std::stoi(m[1]);
     if (std::regex_search(text, m, std::regex("\"coherence_time_us\"\\s*:\\s*(\\d+)")))
         profile.coherence_time_us = std::stoi(m[1]);
-    std::regex gates_rgx("\"supported_gates\"\\s*:\\s*\[(.*?)\]");
+    std::regex gates_rgx("\"supported_gates\"\\s*:\\s*\\[(.*?)\\]");
     if (std::regex_search(text, m, gates_rgx)) {
         std::string list = m[1];
         std::regex item_rgx("\"([^\"]+)\"");
