@@ -4,6 +4,7 @@
 #include <string>
 #include "peglib.h"
 #include "hardware_profile.h"
+#include <sstream>
 #include <vector>
 
 // Very small parser generating a trivial IR used by qpp-run.
@@ -25,7 +26,7 @@ int main(int argc, char** argv) {
         std::cerr << "Failed to create " << argv[2] << "\n";
         return 1;
     }
-    out << "ENGINE STABILIZER\n";
+    std::ostringstream header;
 
     qpp::HardwareProfile profile;
     bool have_profile = false;
@@ -78,20 +79,45 @@ int main(int argc, char** argv) {
                         gate_buffer.pop_back();
                         gate_buffer.pop_back();
                         changed = true;
+                        continue;
                     } else if (a.op == "S") {
                         gate_buffer.pop_back();
                         a.op = "Z";
                         changed = true;
+                        continue;
                     } else if (a.op == "T") {
                         gate_buffer.pop_back();
                         a.op = "S";
                         changed = true;
+                        continue;
                     }
                 }
                 if (a.op == "Z" && b.op == "Z") {
                     gate_buffer.pop_back();
                     gate_buffer.pop_back();
                     changed = true;
+                    continue;
+                }
+            }
+            if (gate_buffer.size() >= 3) {
+                auto c = gate_buffer[gate_buffer.size()-3];
+                if (c.op == "H" && b.op == "X" && a.op == "H" &&
+                    c.args == a.args && c.args == b.args) {
+                    gate_buffer.pop_back();
+                    gate_buffer.pop_back();
+                    gate_buffer.pop_back();
+                    gate_buffer.push_back({"Z", {c.args[0], c.args[1]}});
+                    changed = true;
+                    continue;
+                }
+                if (c.op == "H" && b.op == "Z" && a.op == "H" &&
+                    c.args == a.args && c.args == b.args) {
+                    gate_buffer.pop_back();
+                    gate_buffer.pop_back();
+                    gate_buffer.pop_back();
+                    gate_buffer.push_back({"X", {c.args[0], c.args[1]}});
+                    changed = true;
+                    continue;
                 }
             }
         }
@@ -303,19 +329,46 @@ int main(int argc, char** argv) {
             optimize_push(m[1], m[2], m[3]);
         } else if (std::regex_search(line, m, swap_regex)) {
             flush_gates();
-            ir.push_back({"SWAP", {m[1], m[2], m[3], m[4]}});
-            gate_count++;
-            used_gates.push_back("SWAP");
+            if (!ir.empty() && ir.back().op == "SWAP" &&
+                ir.back().args.size() == 4 &&
+                ir.back().args[0] == m[1] && ir.back().args[1] == m[2] &&
+                ir.back().args[2] == m[3] && ir.back().args[3] == m[4]) {
+                ir.pop_back();
+                gate_count--;
+                used_gates.pop_back();
+            } else {
+                ir.push_back({"SWAP", {m[1], m[2], m[3], m[4]}});
+                gate_count++;
+                used_gates.push_back("SWAP");
+            }
         } else if (std::regex_search(line, m, cnot_regex)) {
             flush_gates();
-            ir.push_back({"CNOT", {m[1], m[2], m[3], m[4]}});
-            gate_count++;
-            used_gates.push_back("CX");
+            if (!ir.empty() && ir.back().op == "CNOT" &&
+                ir.back().args.size() == 4 &&
+                ir.back().args[0] == m[1] && ir.back().args[1] == m[2] &&
+                ir.back().args[2] == m[3] && ir.back().args[3] == m[4]) {
+                ir.pop_back();
+                gate_count--;
+                used_gates.pop_back();
+            } else {
+                ir.push_back({"CNOT", {m[1], m[2], m[3], m[4]}});
+                gate_count++;
+                used_gates.push_back("CX");
+            }
         } else if (std::regex_search(line, m, cz_regex)) {
             flush_gates();
-            ir.push_back({"CZ", {m[1], m[2], m[3], m[4]}});
-            gate_count++;
-            used_gates.push_back("CZ");
+            if (!ir.empty() && ir.back().op == "CZ" &&
+                ir.back().args.size() == 4 &&
+                ir.back().args[0] == m[1] && ir.back().args[1] == m[2] &&
+                ir.back().args[2] == m[3] && ir.back().args[3] == m[4]) {
+                ir.pop_back();
+                gate_count--;
+                used_gates.pop_back();
+            } else {
+                ir.push_back({"CZ", {m[1], m[2], m[3], m[4]}});
+                gate_count++;
+                used_gates.push_back("CZ");
+            }
         } else if (std::regex_search(line, m, ccx_regex)) {
             flush_gates();
             ir.push_back({"CCX", {m[1], m[2], m[3], m[4], m[5], m[6]}});
@@ -349,6 +402,12 @@ int main(int argc, char** argv) {
                                    used_gates, std::cerr)) {
         return 1;
     }
+    header << "ENGINE " << (non_clifford ? "DENSE" : "STABILIZER") << "\n";
+    header << "#QUBITS " << qubit_count << "\n";
+    header << "#GATES " << gate_count << "\n";
+    header << "CLIFFORD " << (non_clifford ? 0 : 1) << "\n";
+    out << header.str();
+
     for (const auto& ins : ir) {
         out << ins.op;
         for (const auto& a : ins.args) out << " " << a;
