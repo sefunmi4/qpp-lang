@@ -38,6 +38,7 @@ target_include_directories(qpp_runtime PUBLIC include PRIVATE runtime)
 
 add_executable(qppc tools/qppc.cpp)
 target_link_libraries(qppc PRIVATE qpp_runtime)
+target_include_directories(qppc PRIVATE include)
 
 add_executable(qpp-run tools/qpp-run.cpp)
 target_link_libraries(qpp-run PRIVATE qpp_runtime)

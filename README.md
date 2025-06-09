@@ -121,9 +121,10 @@ For contribution guidelines see [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ### Quick Start Example
 
-`qppc` currently supports a restricted subset of the language focused on
-applying gates and performing measurements. Control-flow constructs and
-other features are not yet implemented.
+`qppc` now parses a small but useful subset of Q++ including simple
+`if`/`else` conditionals and backend hint annotations such as `@clifford`
+and `@dense`. Gate application and measurement remain the primary focus
+while the frontend evolves.
 
 Compile and run the sample program in `docs/examples/demo.qpp` with:
 

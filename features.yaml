@@ -114,7 +114,7 @@ compiler:
       priority: could-have
       description: Allow user annotations like @dense or @clifford.
       tasks:
-        - Parse backend hint annotations.
+        - Parse backend hint annotations with a small PEG parser.
         - Use hints to select optimized runtime paths.
 
 research_inspired:
