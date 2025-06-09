@@ -11,6 +11,7 @@
 #include <string>
 #include <algorithm>
 #include <string>
+#include <complex>
 
 // Simple interpreter for the toy IR emitted by qppc.
 
@@ -42,6 +43,7 @@ int main(int argc, char** argv) {
     int header_gates = -1;
     int calc_qubits = 0;
     int calc_gates = 0;
+    std::size_t header_bytes = 0;
     if (opt.rfind("--use-",0)==0) {
         if (opt == "--use-qiskit") set_qpu_backend(std::make_unique<QiskitBackend>());
         else if (opt == "--use-cirq") set_qpu_backend(std::make_unique<CirqBackend>());
@@ -253,6 +255,9 @@ int main(int argc, char** argv) {
         } else if (tok == "#GATES") {
             iss >> header_gates;
             continue;
+        } else if (tok == "#BYTES") {
+            iss >> header_bytes;
+            continue;
         }
         if (tok == "CLIFFORD") {
             int v = 0;
@@ -308,7 +313,11 @@ int main(int argc, char** argv) {
     }
     int q_est = header_qubits >= 0 ? header_qubits : calc_qubits;
     int g_est = header_gates >= 0 ? header_gates : calc_gates;
-    std::cout << "Estimated qubits: " << q_est << ", gates: " << g_est << std::endl;
+    std::size_t mem_est = header_bytes > 0 ? header_bytes :
+                         (std::size_t(1) << q_est) * sizeof(std::complex<double>);
+    std::cout << "Estimated qubits: " << q_est
+              << ", gates: " << g_est
+              << ", memory: " << mem_est << " bytes" << std::endl;
     scheduler.run();
     std::cout << "Gate profile:\n";
     for (const auto& kv : gate_profile)
