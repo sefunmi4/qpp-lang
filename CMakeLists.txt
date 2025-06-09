@@ -15,6 +15,7 @@ add_library(qpp_runtime
     runtime/patterns.cpp
     runtime/hardware_profile.cpp
     runtime/wavefunction.cpp
+    runtime/partitioner.cpp
     runtime/sparse_wavefunction.cpp
     runtime/disk_pager.cpp
     runtime/runtime_config.cpp]
@@ -114,6 +115,10 @@ if(BUILD_TESTING)
     add_executable(hardware_api_test tests/hardware_api_test.cpp)
     target_link_libraries(hardware_api_test PRIVATE qpp_runtime)
     add_test(NAME hardware_api_test COMMAND hardware_api_test)
+
+    add_executable(partitioner_test tests/partitioner_test.cpp)
+    target_link_libraries(partitioner_test PRIVATE qpp_runtime)
+    add_test(NAME partitioner_test COMMAND partitioner_test)
 
     add_executable(sparse_wavefunction_test tests/sparse_wavefunction_test.cpp)
     target_link_libraries(sparse_wavefunction_test PRIVATE qpp_runtime)
