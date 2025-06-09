@@ -15,6 +15,9 @@ inline std::atomic<uint64_t>& rng_seed() {
 using rng_engine = std::mt19937_64;
 
 inline rng_engine& global_rng() {
+    // Thread-local cache of the current seed used to initialize the engine.
+    // This avoids reinitializing the engine every time we access it while still
+    // allowing `seed_rng` to update the seed across all threads.
     thread_local uint64_t last_seed = detail::rng_seed().load(std::memory_order_relaxed);
     thread_local rng_engine gen(last_seed);
     uint64_t current = detail::rng_seed().load(std::memory_order_relaxed);
