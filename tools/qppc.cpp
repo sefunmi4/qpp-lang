@@ -24,6 +24,7 @@ int main(int argc, char** argv) {
         std::cerr << "Failed to create " << argv[2] << "\n";
         return 1;
     }
+    out << "ENGINE STABILIZER\n";
 
     qpp::HardwareProfile profile;
     bool have_profile = false;
@@ -103,18 +104,15 @@ int main(int argc, char** argv) {
     std::regex meas_assign_regex(R"((\w+)\[(\d+)\]\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex meas_var_regex(R"(int\s+(\w+)\s*=\s*measure\((\w+)\[(\d+)\]\);)");
     std::regex measure_regex(R"(measure\((\w+)\[(\d+)\]\);)");
-    std::regex call_regex(R"(\b\w+\s*\([^)]*\);)");
     std::regex xor_assign_regex(R"((\w+)\[(\d+)\]\s*\^=\s*(\w+)\[(\d+)\];)");
     std::regex simple_call_regex(R"(\w+\s*\(\s*\)\s*;)");
     std::regex any_call_regex(R"(\w+\s*\([^)]*\)\s*;)");
     std::regex if_var_regex(R"(if\s*\(\s*(\w+)\s*\)\s*\{)");
     std::regex if_creg_regex(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{)");
-    std::regex call_regex(R"(\w+\(.*\);)");
+    std::regex call_any_args(R"(\w+\(.*\);)");
     std::regex if_var_gate_single(R"(if\s*\(\s*(\w+)\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
     std::regex if_creg_gate_single(R"(if\s*\(\s*(\w+)\[(\d+)\]\s*\)\s*\{\s*(H|X|Y|Z|S|T)\((\w+)\[(\d+)\]\);\s*\})");
-    std::regex call_regex(R"(\w+\s*\(.*\);)" );
     std::regex else_regex(R"(\}\s*else\s*\{)");
-    std::regex call_regex(R"((\w+)\s*\([^)]*\)\s*;)");
 
 
     std::string line;

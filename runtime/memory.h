@@ -14,6 +14,11 @@ struct QRegister {
     explicit QRegister(size_t n)
         : wf(n), start_time(std::chrono::steady_clock::now()) {}
 
+    void reset_metrics() { op_count = 0; start_time = std::chrono::steady_clock::now(); }
+    double elapsed_seconds() const {
+        return std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
+    }
+
     void h(std::size_t q) { ++op_count; wf.apply_h(q); }
     void x(std::size_t q) { ++op_count; wf.apply_x(q); }
     void y(std::size_t q) { ++op_count; wf.apply_y(q); }
@@ -34,6 +39,10 @@ struct QRegister {
     void decompress() { wf.decompress(); }
     std::size_t nnz() const { return wf.nnz(); }
     bool using_sparse() const { return wf.using_sparse(); }
+    std::size_t ops() const { return op_count; }
+
+    std::chrono::steady_clock::time_point start_time;
+    std::size_t op_count{0};
 };
 
 // TODO(good-first-issue): enhance QRegister with save/load helpers and

@@ -72,10 +72,10 @@ std::vector<Partition> analyze_separable_regions(const std::vector<std::vector<s
     return out;
 }
 
-Wavefunction execute_partitions(const std::vector<std::vector<std::string>>& ops) {
+Wavefunction<> execute_partitions(const std::vector<std::vector<std::string>>& ops) {
     auto parts = analyze_separable_regions(ops);
     std::unordered_map<QubitRef,std::pair<int,std::size_t>,QubitRefHash> loc;
-    std::vector<Wavefunction> wfs;
+    std::vector<Wavefunction<>> wfs;
     for(std::size_t p=0;p<parts.size();++p){
         wfs.emplace_back(parts[p].size());
         for(std::size_t i=0;i<parts[p].size();++i){
@@ -113,7 +113,7 @@ Wavefunction execute_partitions(const std::vector<std::vector<std::string>>& ops
         }
     }
 
-    Wavefunction result(0);
+    Wavefunction<> result(0);
     result.state = {1.0};
     for(const auto& wf : wfs){
         result.state = tensor_product(result.state,wf.state);

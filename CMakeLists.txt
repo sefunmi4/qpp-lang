@@ -20,7 +20,7 @@ add_library(qpp_runtime
     runtime/partitioner.cpp
     runtime/sparse_wavefunction.cpp
     runtime/disk_pager.cpp
-    runtime/runtime_config.cpp]
+    runtime/runtime_config.cpp
     runtime/quidd.cpp
 )
 
