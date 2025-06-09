@@ -1,5 +1,6 @@
 #include "scheduler.h"
 #include "memory.h"
+#include "memory_tracker.h"
 #include "hardware_api.h"
 #include "logger.h"
 #include <mutex>
@@ -49,7 +50,9 @@ void Scheduler::run() {
             t.handler();
         if (t.target == Target::QPU && qpu_backend())
             qpu_backend()->execute_qir("; scheduler dispatch\n");
-        LOG_DEBUG("Memory in use: ", memory.memory_usage(), " bytes");
+        auto mem = memory.memory_usage();
+        LOG_DEBUG("Memory in use: ", mem, " bytes");
+        memory_tracker.record(mem);
     }
     running = false;
 }
@@ -96,7 +99,9 @@ void Scheduler::run_async() {
                 t.handler();
             if (t.target == Target::QPU && qpu_backend())
                 qpu_backend()->execute_qir("; scheduler dispatch\n");
-            LOG_DEBUG("Memory in use: ", memory.memory_usage(), " bytes");
+            auto mem = memory.memory_usage();
+            LOG_DEBUG("Memory in use: ", mem, " bytes");
+            memory_tracker.record(mem);
         }
     });
 }

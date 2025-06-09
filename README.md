@@ -135,6 +135,19 @@ written to stderr and include a severity level. Use `set_log_level()` to adjust
 verbosity and the `LOG_INFO`, `LOG_WARN`, or `LOG_ERROR` macros to emit output
 from your code.
 
+### Memory Tracker
+
+`memory_tracker` records live memory usage as the scheduler executes tasks.
+Call `memory_tracker.start()` before running tasks and
+`memory_tracker.save_csv("mem.csv")` afterwards to write a CSV log of
+timestamped usage samples.
+
+### Amplitude Heatmap
+
+Use `tools/amplitude_heatmap.py` to visualize amplitude magnitudes and phases
+from a saved state vector. Run the script with a `.npy` file or text list of
+complex numbers to see a 2D or 3D heatmap.
+
 ### Quick Start Example
 
 `qppc` now parses a small but useful subset of Q++ including simple
