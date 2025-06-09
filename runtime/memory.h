@@ -10,43 +10,52 @@
 
 namespace qpp {
 struct QRegister {
-    Wavefunction<> wf;
     explicit QRegister(size_t n)
-        : wf(n), start_time(std::chrono::steady_clock::now()) {}
+        : num_qubits(n), start_time(std::chrono::steady_clock::now()) {}
+
+    void ensure_allocated() const {
+        if (!wf) wf = std::make_unique<Wavefunction<>>(num_qubits);
+    }
+
+    Wavefunction<> &wave() const {
+        ensure_allocated();
+        return *wf;
+    }
 
     void reset_metrics() { op_count = 0; start_time = std::chrono::steady_clock::now(); }
     double elapsed_seconds() const {
         return std::chrono::duration<double>(std::chrono::steady_clock::now() - start_time).count();
     }
 
-    void h(std::size_t q) { ++op_count; wf.apply_h(q); }
-    void x(std::size_t q) { ++op_count; wf.apply_x(q); }
-    void y(std::size_t q) { ++op_count; wf.apply_y(q); }
-    void z(std::size_t q) { ++op_count; wf.apply_z(q); }
-    void cnot(std::size_t c, std::size_t t) { ++op_count; wf.apply_cnot(c, t); }
-    void cz(std::size_t c, std::size_t t) { ++op_count; wf.apply_cz(c, t); }
-    void ccnot(std::size_t c1, std::size_t c2, std::size_t t) { ++op_count; wf.apply_ccnot(c1, c2, t); }
-    void s(std::size_t q) { ++op_count; wf.apply_s(q); }
-    void t(std::size_t q) { ++op_count; wf.apply_t(q); }
-    void swap(std::size_t a, std::size_t b) { ++op_count; wf.apply_swap(a, b); }
-    int measure(std::size_t q) { ++op_count; return wf.measure(q); }
-    std::size_t measure(const std::vector<std::size_t>& qs) { op_count += qs.size(); return wf.measure(qs); }
-    void reset() { wf.reset(); reset_metrics(); }
-  
-    std::complex<double> amp(std::size_t idx) const { return wf.amplitude(idx); }
-    void resize(std::size_t n) { wf = Wavefunction(n); }
-    void compress() { wf.compress(); }
-    void decompress() { wf.decompress(); }
-    std::size_t nnz() const { return wf.nnz(); }
-    bool using_sparse() const { return wf.using_sparse(); }
+    void h(std::size_t q) { ++op_count; wave().apply_h(q); }
+    void x(std::size_t q) { ++op_count; wave().apply_x(q); }
+    void y(std::size_t q) { ++op_count; wave().apply_y(q); }
+    void z(std::size_t q) { ++op_count; wave().apply_z(q); }
+    void cnot(std::size_t c, std::size_t t) { ++op_count; wave().apply_cnot(c, t); }
+    void cz(std::size_t c, std::size_t t) { ++op_count; wave().apply_cz(c, t); }
+    void ccnot(std::size_t c1, std::size_t c2, std::size_t t) { ++op_count; wave().apply_ccnot(c1, c2, t); }
+    void s(std::size_t q) { ++op_count; wave().apply_s(q); }
+    void t(std::size_t q) { ++op_count; wave().apply_t(q); }
+    void swap(std::size_t a, std::size_t b) { ++op_count; wave().apply_swap(a, b); }
+    int measure(std::size_t q) { ++op_count; return wave().measure(q); }
+    std::size_t measure(const std::vector<std::size_t>& qs) { op_count += qs.size(); return wave().measure(qs); }
+    void reset() { if (wf) wf->reset(); reset_metrics(); }
+
+    std::complex<double> amp(std::size_t idx) const { return wave().amplitude(idx); }
+    void resize(std::size_t n) { wf = std::make_unique<Wavefunction<>>(n); num_qubits = n; }
+    void compress() { if (wf) wf->compress(); }
+    void decompress() { if (wf) wf->decompress(); }
+    std::size_t nnz() const { return wf ? wf->nnz() : 0; }
+    bool using_sparse() const { return wf ? wf->using_sparse() : false; }
     std::size_t ops() const { return op_count; }
 
+    mutable std::unique_ptr<Wavefunction<>> wf;
+    std::size_t num_qubits;
     std::chrono::steady_clock::time_point start_time;
     std::size_t op_count{0};
 };
 
-// TODO(good-first-issue): enhance QRegister with save/load helpers and
-// optional lazy allocation of the underlying Wavefunction
+// TODO(good-first-issue): enhance QRegister with save/load helpers
 
 struct CRegister {
     std::vector<int> bits;
@@ -59,6 +68,10 @@ public:
     bool release_qregister(int id);
     int create_cregister(size_t n);
     bool release_cregister(int id);
+    std::vector<int> create_qregisters(const std::vector<size_t>& sizes);
+    void release_qregisters(const std::vector<int>& ids);
+    std::vector<int> create_cregisters(const std::vector<size_t>& sizes);
+    void release_cregisters(const std::vector<int>& ids);
     QRegister& qreg(int id);
     CRegister& creg(int id);
     // statistics helpers
@@ -93,7 +106,7 @@ private:
     std::mutex mtx;
 };
 
-// TODO(good-first-issue): implement register reuse and bulk operations
+
 
 extern MemoryManager memory;
 }
