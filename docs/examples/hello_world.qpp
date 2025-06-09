@@ -1,4 +1,14 @@
-task<AUTO> main() {
+task<CPU> say_hello() {
+    // classical print
+    // printf("Hello, classical world!\n");
+}
+
+task<QPU> quantum_demo() {
     qalloc qbit q[1];
-    int m = measure(q[0]);
+    // placeholder for quantum operations
+}
+
+task<AUTO> main() {
+    // say_hello();
+    // quantum_demo();
 }

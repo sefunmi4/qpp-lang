@@ -12,6 +12,7 @@ add_library(qpp_runtime
     runtime/memory.cpp
     runtime/scheduler.cpp
     runtime/hardware_api.cpp
+    runtime/patterns.cpp
     runtime/hardware_profile.cpp
     runtime/wavefunction.cpp
     runtime/sparse_wavefunction.cpp
@@ -78,6 +79,10 @@ if(BUILD_TESTING)
     target_link_libraries(memory_reuse_test PRIVATE qpp_runtime)
     add_test(NAME memory_reuse_test COMMAND memory_reuse_test)
 
+    add_executable(pattern_detection_test tests/pattern_detection_test.cpp)
+    target_link_libraries(pattern_detection_test PRIVATE qpp_runtime)
+    add_test(NAME pattern_detection_test COMMAND pattern_detection_test)
+    
     add_executable(low_rank_factorization_test tests/low_rank_factorization_test.cpp)
     target_link_libraries(low_rank_factorization_test PRIVATE qpp_runtime)
     add_test(NAME low_rank_factorization_test COMMAND low_rank_factorization_test)
@@ -97,7 +102,6 @@ if(BUILD_TESTING)
     add_executable(memory_usage_test tests/memory_usage_test.cpp)
     target_link_libraries(memory_usage_test PRIVATE qpp_runtime)
     add_test(NAME memory_usage_test COMMAND memory_usage_test)
-
 
     add_executable(scheduler_pause_test tests/scheduler_pause_test.cpp)
     target_link_libraries(scheduler_pause_test PRIVATE qpp_runtime)
