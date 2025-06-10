@@ -172,8 +172,9 @@ if(BUILD_TESTING)
         COMMAND ${CMAKE_SOURCE_DIR}/tests/engine_dispatch_test.sh)
     add_test(NAME hardware_profile_enforcement_test
         COMMAND ${CMAKE_SOURCE_DIR}/tests/hardware_profile_enforcement_test.sh)
-
     add_test(NAME resource_header_test
         COMMAND ${CMAKE_SOURCE_DIR}/tests/resource_header_test.sh)
+    add_test(NAME auto_device_test
+        COMMAND ${CMAKE_SOURCE_DIR}/tests/auto_device_test.sh)
 
 endif()

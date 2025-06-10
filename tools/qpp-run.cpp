@@ -11,6 +11,7 @@
 #include <string>
 #include <algorithm>
 #include <string>
+#include <complex>
 
 // Simple interpreter for the toy IR emitted by qppc.
 
@@ -18,30 +19,40 @@ using namespace qpp;
 
 int main(int argc, char** argv) {
     if (argc < 2) {
-        std::cerr << "Usage: qpp-run [--device CPU|GPU] [--use-qiskit|--use-cirq|--use-braket|--use-qsharp|--use-nvidia|--use-psi] <compiled.ir>\n";
+        std::cerr << "Usage: qpp-run [--device CPU|GPU] [--auto-device]"
+                  << " [--use-qiskit|--use-cirq|--use-braket|--use-qsharp|--use-nvidia|--use-psi]"
+                  << " <compiled.ir>\n";
         return 1;
     }
     int argi = 1;
     DeviceType device = DeviceType::CPU;
+    bool device_explicit = false;
+    bool auto_device = false;
     while (argi < argc) {
         std::string opt = argv[argi];
         if (opt == "--device" && argi + 1 < argc) {
             std::string val = argv[++argi];
             if (val == "GPU" || val == "gpu") device = DeviceType::GPU;
+            device_explicit = true;
             ++argi;
         } else if (opt.rfind("--device=",0)==0) {
             std::string val = opt.substr(9);
             if (val == "GPU" || val == "gpu") device = DeviceType::GPU;
+            device_explicit = true;
+            ++argi;
+        } else if (opt == "--auto-device") {
+            auto_device = true;
             ++argi;
         } else {
             break;
         }
     }
-    std::string opt = argv[1];
+    std::string opt = argi < argc ? argv[argi] : "";
     int header_qubits = -1;
     int header_gates = -1;
     int calc_qubits = 0;
     int calc_gates = 0;
+    std::size_t header_bytes = 0;
     if (opt.rfind("--use-",0)==0) {
         if (opt == "--use-qiskit") set_qpu_backend(std::make_unique<QiskitBackend>());
         else if (opt == "--use-cirq") set_qpu_backend(std::make_unique<CirqBackend>());
@@ -253,6 +264,9 @@ int main(int argc, char** argv) {
         } else if (tok == "#GATES") {
             iss >> header_gates;
             continue;
+        } else if (tok == "#BYTES") {
+            iss >> header_bytes;
+            continue;
         }
         if (tok == "CLIFFORD") {
             int v = 0;
@@ -308,7 +322,23 @@ int main(int argc, char** argv) {
     }
     int q_est = header_qubits >= 0 ? header_qubits : calc_qubits;
     int g_est = header_gates >= 0 ? header_gates : calc_gates;
-    std::cout << "Estimated qubits: " << q_est << ", gates: " << g_est << std::endl;
+    std::size_t mem_est = header_bytes > 0 ? header_bytes :
+                         (std::size_t(1) << q_est) * sizeof(std::complex<double>);
+
+    if (!device_explicit && auto_device && gpu_supported() &&
+        mem_est >= (64ULL << 20)) {
+        std::cout << "[runtime] auto-device selecting GPU" << std::endl;
+        set_device(DeviceType::GPU);
+    }
+
+    for (auto& t : tasks) {
+        if (t.hint == ExecHint::NONE && use_stabilizer)
+            t.hint = ExecHint::CLIFFORD;
+        schedule_task(t);
+    }
+    std::cout << "Estimated qubits: " << q_est
+              << ", gates: " << g_est
+              << ", memory: " << mem_est << " bytes" << std::endl;
     scheduler.run();
     std::cout << "Gate profile:\n";
     for (const auto& kv : gate_profile)

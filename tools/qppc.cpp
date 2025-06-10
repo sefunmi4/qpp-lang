@@ -6,6 +6,7 @@
 #include "hardware_profile.h"
 #include <sstream>
 #include <vector>
+#include <complex>
 
 // Very small parser generating a trivial IR used by qpp-run.
 // TODO(good-first-issue): replace with a proper frontend when the language
@@ -402,9 +403,13 @@ int main(int argc, char** argv) {
                                    used_gates, std::cerr)) {
         return 1;
     }
+    std::size_t bytes = std::size_t(1) << qubit_count;
+    bytes *= sizeof(std::complex<double>);
+
     header << "ENGINE " << (non_clifford ? "DENSE" : "STABILIZER") << "\n";
     header << "#QUBITS " << qubit_count << "\n";
     header << "#GATES " << gate_count << "\n";
+    header << "#BYTES " << bytes << "\n";
     header << "CLIFFORD " << (non_clifford ? 0 : 1) << "\n";
     out << header.str();
 
@@ -414,6 +419,7 @@ int main(int argc, char** argv) {
         out << "\n";
     }
 
-    std::cout << "Compilation complete." << std::endl;
+    std::cout << "Compilation complete. Estimated memory: "
+              << bytes << " bytes" << std::endl;
     return 0;
 }
