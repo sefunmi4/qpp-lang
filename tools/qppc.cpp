@@ -4,7 +4,9 @@
 #include <string>
 #include "peglib.h"
 #include "hardware_profile.h"
+#include <sstream>
 #include <vector>
+#include <complex>
 
 // Very small parser generating a trivial IR used by qpp-run.
 // TODO(good-first-issue): replace with a proper frontend when the language
@@ -25,7 +27,7 @@ int main(int argc, char** argv) {
         std::cerr << "Failed to create " << argv[2] << "\n";
         return 1;
     }
-    out << "ENGINE STABILIZER\n";
+    std::ostringstream header;
 
     qpp::HardwareProfile profile;
     bool have_profile = false;
@@ -48,9 +50,17 @@ int main(int argc, char** argv) {
 
     std::vector<Instr> ir;
     std::vector<Instr> gate_buffer;
+    int gate_count = 0;
+    int qubit_count = 0;
+    bool non_clifford = false;
+    std::vector<std::string> used_gates;
 
     auto flush_gates = [&]() {
-        ir.insert(ir.end(), gate_buffer.begin(), gate_buffer.end());
+        for (const auto& g : gate_buffer) {
+            ir.push_back(g);
+            gate_count++;
+            used_gates.push_back(g.op);
+        }
         gate_buffer.clear();
     };
 
@@ -70,20 +80,45 @@ int main(int argc, char** argv) {
                         gate_buffer.pop_back();
                         gate_buffer.pop_back();
                         changed = true;
+                        continue;
                     } else if (a.op == "S") {
                         gate_buffer.pop_back();
                         a.op = "Z";
                         changed = true;
+                        continue;
                     } else if (a.op == "T") {
                         gate_buffer.pop_back();
                         a.op = "S";
                         changed = true;
+                        continue;
                     }
                 }
                 if (a.op == "Z" && b.op == "Z") {
                     gate_buffer.pop_back();
                     gate_buffer.pop_back();
                     changed = true;
+                    continue;
+                }
+            }
+            if (gate_buffer.size() >= 3) {
+                auto c = gate_buffer[gate_buffer.size()-3];
+                if (c.op == "H" && b.op == "X" && a.op == "H" &&
+                    c.args == a.args && c.args == b.args) {
+                    gate_buffer.pop_back();
+                    gate_buffer.pop_back();
+                    gate_buffer.pop_back();
+                    gate_buffer.push_back({"Z", {c.args[0], c.args[1]}});
+                    changed = true;
+                    continue;
+                }
+                if (c.op == "H" && b.op == "Z" && a.op == "H" &&
+                    c.args == a.args && c.args == b.args) {
+                    gate_buffer.pop_back();
+                    gate_buffer.pop_back();
+                    gate_buffer.pop_back();
+                    gate_buffer.push_back({"X", {c.args[0], c.args[1]}});
+                    changed = true;
+                    continue;
                 }
             }
         }
@@ -148,9 +183,6 @@ int main(int argc, char** argv) {
     std::string cond_index;
 
     std::string current_task_name;
-    int gate_count = 0;
-    int qubit_count = 0;
-    bool non_clifford = false;
 
     while (std::getline(input, line)) {
         ++line_no;
@@ -223,6 +255,7 @@ int main(int argc, char** argv) {
                                    {cond_name, cond_index, m[1], m[2], m[3]}});
                 }
                 gate_count++;
+                used_gates.push_back(m[1]);
                 if (std::string(m[1]) == "T") non_clifford = true;
                 continue;
             }
@@ -255,11 +288,15 @@ int main(int argc, char** argv) {
         if (std::regex_search(line, m, if_var_gate_single)) {
             flush_gates();
             ir.push_back({"IFVAR", {m[1], m[2], m[3], m[4]}});
+            gate_count++;
+            used_gates.push_back(m[2]);
             continue;
         }
         if (std::regex_search(line, m, if_creg_gate_single)) {
             flush_gates();
             ir.push_back({"IFC", {m[1], m[2], m[3], m[4], m[5]}});
+            gate_count++;
+            used_gates.push_back(m[3]);
             continue;
         }
 
@@ -281,6 +318,7 @@ int main(int argc, char** argv) {
         if (std::regex_search(line, m, qalloc_regex)) {
             flush_gates();
             ir.push_back({"QALLOC", {m[1], m[2]}});
+            qubit_count += std::stoi(m[2]);
         } else if (std::regex_search(line, m, creg_regex)) {
             flush_gates();
             ir.push_back({"CALLOC", {m[1], m[2]}});
@@ -292,25 +330,66 @@ int main(int argc, char** argv) {
             optimize_push(m[1], m[2], m[3]);
         } else if (std::regex_search(line, m, swap_regex)) {
             flush_gates();
-            ir.push_back({"SWAP", {m[1], m[2], m[3], m[4]}});
+            if (!ir.empty() && ir.back().op == "SWAP" &&
+                ir.back().args.size() == 4 &&
+                ir.back().args[0] == m[1] && ir.back().args[1] == m[2] &&
+                ir.back().args[2] == m[3] && ir.back().args[3] == m[4]) {
+                ir.pop_back();
+                gate_count--;
+                used_gates.pop_back();
+            } else {
+                ir.push_back({"SWAP", {m[1], m[2], m[3], m[4]}});
+                gate_count++;
+                used_gates.push_back("SWAP");
+            }
         } else if (std::regex_search(line, m, cnot_regex)) {
             flush_gates();
-            ir.push_back({"CNOT", {m[1], m[2], m[3], m[4]}});
+            if (!ir.empty() && ir.back().op == "CNOT" &&
+                ir.back().args.size() == 4 &&
+                ir.back().args[0] == m[1] && ir.back().args[1] == m[2] &&
+                ir.back().args[2] == m[3] && ir.back().args[3] == m[4]) {
+                ir.pop_back();
+                gate_count--;
+                used_gates.pop_back();
+            } else {
+                ir.push_back({"CNOT", {m[1], m[2], m[3], m[4]}});
+                gate_count++;
+                used_gates.push_back("CX");
+            }
         } else if (std::regex_search(line, m, cz_regex)) {
             flush_gates();
-            ir.push_back({"CZ", {m[1], m[2], m[3], m[4]}});
+            if (!ir.empty() && ir.back().op == "CZ" &&
+                ir.back().args.size() == 4 &&
+                ir.back().args[0] == m[1] && ir.back().args[1] == m[2] &&
+                ir.back().args[2] == m[3] && ir.back().args[3] == m[4]) {
+                ir.pop_back();
+                gate_count--;
+                used_gates.pop_back();
+            } else {
+                ir.push_back({"CZ", {m[1], m[2], m[3], m[4]}});
+                gate_count++;
+                used_gates.push_back("CZ");
+            }
         } else if (std::regex_search(line, m, ccx_regex)) {
             flush_gates();
             ir.push_back({"CCX", {m[1], m[2], m[3], m[4], m[5], m[6]}});
+            gate_count++;
+            used_gates.push_back("CCX");
         } else if (std::regex_search(line, m, xor_assign_regex)) {
             flush_gates();
             ir.push_back({"CNOT", {m[3], m[4], m[1], m[2]}});
+            gate_count++;
+            used_gates.push_back("CX");
         } else if (std::regex_search(line, m, meas_assign_regex)) {
             flush_gates();
             ir.push_back({"MEASURE", {m[3], m[4], "->", m[1], m[2]}});
+            gate_count++;
+            used_gates.push_back("MEASURE");
         } else if (std::regex_search(line, m, measure_regex)) {
             flush_gates();
             ir.push_back({"MEASURE", {m[1], m[2]}});
+            gate_count++;
+            used_gates.push_back("MEASURE");
         } else if (std::regex_search(trimmed, call_regex)) {
             // ignore simple function calls
         } else if (trimmed.size() > 0) {
@@ -319,12 +398,28 @@ int main(int argc, char** argv) {
     }
 
     flush_gates();
+    if (have_profile &&
+        !qpp::check_profile_limits(profile, qubit_count, gate_count,
+                                   used_gates, std::cerr)) {
+        return 1;
+    }
+    std::size_t bytes = std::size_t(1) << qubit_count;
+    bytes *= sizeof(std::complex<double>);
+
+    header << "ENGINE " << (non_clifford ? "DENSE" : "STABILIZER") << "\n";
+    header << "#QUBITS " << qubit_count << "\n";
+    header << "#GATES " << gate_count << "\n";
+    header << "#BYTES " << bytes << "\n";
+    header << "CLIFFORD " << (non_clifford ? 0 : 1) << "\n";
+    out << header.str();
+
     for (const auto& ins : ir) {
         out << ins.op;
         for (const auto& a : ins.args) out << " " << a;
         out << "\n";
     }
 
-    std::cout << "Compilation complete." << std::endl;
+    std::cout << "Compilation complete. Estimated memory: "
+              << bytes << " bytes" << std::endl;
     return 0;
 }

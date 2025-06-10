@@ -165,6 +165,15 @@ You can optionally supply a hardware profile file to enforce device limits:
 ```bash
 qppc docs/examples/demo.qpp demo.ir --profile ibmq.json
 ```
+If the compiled program exceeds the specified qubit count, depth, or uses
+unsupported gates the compiler now emits an error and aborts.
+
+The compiler also writes `#QUBITS`, `#GATES`, `#BYTES`, and `CLIFFORD` headers to the
+generated IR summarizing resource usage and memory estimates. `qpp-run` uses these hints to
+automatically select a stabilizer engine when the circuit contains only
+Clifford operations.
+`qpp-run` now prints the estimated memory required for the wavefunction
+based on the same header.
 
 This demonstrates the toy toolchain using the runtime scheduler and wavefunction simulator.
 
@@ -212,6 +221,8 @@ qpp-run --use-psi demo.ir       # PsiQuantum
 By default the runtime executes on the CPU. Pass `--device GPU` to `qpp-run`
 to request GPU kernels when built with CUDA support. If CUDA is unavailable the
 tool falls back to the CPU implementation automatically.
+Use `--auto-device` to let `qpp-run` choose the GPU automatically when the
+estimated memory usage exceeds 64&nbsp;MB and CUDA is available.
 
 ### Open Tasks
 
