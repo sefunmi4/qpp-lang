@@ -315,6 +315,11 @@ int main(int argc, char** argv) {
     add_current_task();
     if (!clifford_specified)
         use_stabilizer = !non_clifford;
+    for (auto& t : tasks) {
+        if (t.hint == ExecHint::NONE && use_stabilizer)
+            t.hint = ExecHint::CLIFFORD;
+        schedule_task(t);
+    }
     int q_est = header_qubits >= 0 ? header_qubits : calc_qubits;
     int g_est = header_gates >= 0 ? header_gates : calc_gates;
     std::size_t mem_est = header_bytes > 0 ? header_bytes :

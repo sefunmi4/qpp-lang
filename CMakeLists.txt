@@ -176,4 +176,5 @@ if(BUILD_TESTING)
         COMMAND ${CMAKE_SOURCE_DIR}/tests/resource_header_test.sh)
     add_test(NAME auto_device_test
         COMMAND ${CMAKE_SOURCE_DIR}/tests/auto_device_test.sh)
+
 endif()
