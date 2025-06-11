@@ -165,3 +165,11 @@ debugging_tools:
     description: Display branching after each measurement.
     tasks:
       - Show measurement branches for debugging or storytelling.
+
+developer_experience:
+  inline_explainability:
+    priority: could-have
+    description: Provide `#explain` directive for runtime tips.
+    tasks:
+      - Emit EXPLAIN instructions from compiler.
+      - Print explanations during simulation or hardware runs.

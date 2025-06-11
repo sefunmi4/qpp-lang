@@ -196,6 +196,8 @@ int main(int argc, char** argv) {
                     (void)ins[1];
                 } else if (ins[0] == "PRINT" && ins.size() == 2) {
                     std::cout << ins[1] << std::endl;
+                } else if (ins[0] == "EXPLAIN" && ins.size() == 2) {
+                    std::cout << "[explain] " << ins[1] << std::endl;
                 } else if (ins[0] == "MEASURE") {
                     int qid = qmap.at(ins[1]);
                     std::size_t qidx = std::stoul(ins[2]);

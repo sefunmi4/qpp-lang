@@ -27,6 +27,7 @@ Inspired by how C++ evolved from C, Q++ introduces just enough new logic to supp
 | Import/Export | Save and restore `qregister` state for external simulators |
 | Scheduler | Priorities, async run, pause and stop controls |
 | Hardware API | Emits QIR strings and plugs into vendor backends. Stubs for Qiskit, Cirq, Braket, Q#, NVIDIA, and PsiQuantum are included; real SDK integration is still required. |
+| `#explain` | Emits runtime explanations for upcoming quantum instructions |
 
 ---
 
@@ -199,6 +200,13 @@ To see how bitwise operators map to quantum gates, compile `docs/examples/bitwis
 ```bash
 qppc docs/examples/bitwise_demo.qpp bitwise.ir
 qpp-run bitwise.ir
+```
+
+Use the new `#explain` directive to emit human-readable comments during execution:
+
+```bash
+qppc docs/examples/explain_demo.qpp explain.ir
+qpp-run explain.ir
 ```
 
 If `qiskit` is installed you can run the same IR on the Qiskit simulator by registering the backend:
