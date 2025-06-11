@@ -54,6 +54,17 @@ int main(int argc, char** argv) {
     int qubit_count = 0;
     bool non_clifford = false;
     std::vector<std::string> used_gates;
+    bool explain_next = false;
+    std::string explain_override;
+
+    auto emit_explain = [&](const std::string& msg) {
+        if (explain_next) {
+            std::string text = explain_override.empty() ? msg : explain_override;
+            ir.push_back({"EXPLAIN", {text}});
+            explain_next = false;
+            explain_override.clear();
+        }
+    };
 
     auto flush_gates = [&]() {
         for (const auto& g : gate_buffer) {
@@ -194,6 +205,14 @@ int main(int argc, char** argv) {
         trimmed.erase(0, trimmed.find_first_not_of(" \t"));
         trimmed.erase(trimmed.find_last_not_of(" \t") + 1);
 
+        if (trimmed.rfind("#explain", 0) == 0) {
+            explain_next = true;
+            explain_override = trimmed.substr(8);
+            if (!explain_override.empty() && explain_override[0]==' ')
+                explain_override.erase(0,1);
+            continue;
+        }
+
         if (trimmed.rfind("task<", 0) == 0 && !task_parser.parse(trimmed)) {
             std::cerr << "Syntax error on line " << line_no << ": " << trimmed << "\n";
             continue;
@@ -247,6 +266,7 @@ int main(int argc, char** argv) {
         if (cond_active) {
             if (std::regex_search(line, m, gate_regex)) {
                 flush_gates();
+                emit_explain("Conditional " + std::string(m[1]) + " based on " + cond_name + (cond_type=="creg"?"["+cond_index+"]":""));
                 if (cond_type == "var") {
                     ir.push_back({cond_else ? "IFNVAR" : "IFVAR",
                                    {cond_name, m[1], m[2], m[3]}});
@@ -287,6 +307,7 @@ int main(int argc, char** argv) {
 
         if (std::regex_search(line, m, if_var_gate_single)) {
             flush_gates();
+            emit_explain("Conditional " + std::string(m[2]) + " on " + std::string(m[1]));
             ir.push_back({"IFVAR", {m[1], m[2], m[3], m[4]}});
             gate_count++;
             used_gates.push_back(m[2]);
@@ -294,6 +315,7 @@ int main(int argc, char** argv) {
         }
         if (std::regex_search(line, m, if_creg_gate_single)) {
             flush_gates();
+            emit_explain("Conditional " + std::string(m[3]) + " on " + std::string(m[1]) + "[" + std::string(m[2]) + "]");
             ir.push_back({"IFC", {m[1], m[2], m[3], m[4], m[5]}});
             gate_count++;
             used_gates.push_back(m[3]);
@@ -301,6 +323,7 @@ int main(int argc, char** argv) {
         }
 
         if (std::regex_search(line, m, if_var_regex)) {
+            emit_explain("Branch on variable " + std::string(m[1]));
             cond_active = true;
             cond_else = false;
             cond_type = "var";
@@ -308,6 +331,7 @@ int main(int argc, char** argv) {
             continue;
         }
         if (std::regex_search(line, m, if_creg_regex)) {
+            emit_explain("Branch on classical bit " + std::string(m[1]) + "[" + std::string(m[2]) + "]");
             cond_active = true;
             cond_else = false;
             cond_type = "creg";
@@ -317,19 +341,24 @@ int main(int argc, char** argv) {
         }
         if (std::regex_search(line, m, qalloc_regex)) {
             flush_gates();
+            emit_explain("Allocate " + std::string(m[2]) + " qubits in " + std::string(m[1]));
             ir.push_back({"QALLOC", {m[1], m[2]}});
             qubit_count += std::stoi(m[2]);
         } else if (std::regex_search(line, m, creg_regex)) {
             flush_gates();
+            emit_explain("Create classical register " + std::string(m[1]) + " of size " + std::string(m[2]));
             ir.push_back({"CALLOC", {m[1], m[2]}});
         } else if (std::regex_search(line, m, meas_var_regex)) {
             flush_gates();
+            emit_explain("Measure " + std::string(m[2]) + "[" + std::string(m[3]) + "] and store in variable " + std::string(m[1]));
             ir.push_back({"VAR", {m[1]}});
             ir.push_back({"MEASURE", {m[2], m[3], "->", "VAR", m[1]}});
         } else if (std::regex_search(line, m, gate_regex)) {
+            emit_explain("Apply " + std::string(m[1]) + " gate on " + std::string(m[2]) + "[" + std::string(m[3]) + "]");
             optimize_push(m[1], m[2], m[3]);
         } else if (std::regex_search(line, m, swap_regex)) {
             flush_gates();
+            emit_explain("Swap " + std::string(m[1]) + "[" + std::string(m[2]) + "] with " + std::string(m[3]) + "[" + std::string(m[4]) + "]");
             if (!ir.empty() && ir.back().op == "SWAP" &&
                 ir.back().args.size() == 4 &&
                 ir.back().args[0] == m[1] && ir.back().args[1] == m[2] &&
@@ -344,6 +373,7 @@ int main(int argc, char** argv) {
             }
         } else if (std::regex_search(line, m, cnot_regex)) {
             flush_gates();
+            emit_explain("Controlled NOT from " + std::string(m[1]) + "[" + std::string(m[2]) + "] to " + std::string(m[3]) + "[" + std::string(m[4]) + "]");
             if (!ir.empty() && ir.back().op == "CNOT" &&
                 ir.back().args.size() == 4 &&
                 ir.back().args[0] == m[1] && ir.back().args[1] == m[2] &&
@@ -358,6 +388,7 @@ int main(int argc, char** argv) {
             }
         } else if (std::regex_search(line, m, cz_regex)) {
             flush_gates();
+            emit_explain("Controlled Z between " + std::string(m[1]) + "[" + std::string(m[2]) + "] and " + std::string(m[3]) + "[" + std::string(m[4]) + "]");
             if (!ir.empty() && ir.back().op == "CZ" &&
                 ir.back().args.size() == 4 &&
                 ir.back().args[0] == m[1] && ir.back().args[1] == m[2] &&
@@ -372,21 +403,25 @@ int main(int argc, char** argv) {
             }
         } else if (std::regex_search(line, m, ccx_regex)) {
             flush_gates();
+            emit_explain("Toffoli on " + std::string(m[1]) + "[" + std::string(m[2]) + "], " + std::string(m[3]) + "[" + std::string(m[4]) + "] -> " + std::string(m[5]) + "[" + std::string(m[6]) + "]");
             ir.push_back({"CCX", {m[1], m[2], m[3], m[4], m[5], m[6]}});
             gate_count++;
             used_gates.push_back("CCX");
         } else if (std::regex_search(line, m, xor_assign_regex)) {
             flush_gates();
+            emit_explain("Bitwise XOR expands to CNOT from " + std::string(m[3]) + "[" + std::string(m[4]) + "] to " + std::string(m[1]) + "[" + std::string(m[2]) + "]");
             ir.push_back({"CNOT", {m[3], m[4], m[1], m[2]}});
             gate_count++;
             used_gates.push_back("CX");
         } else if (std::regex_search(line, m, meas_assign_regex)) {
             flush_gates();
+            emit_explain("Measure " + std::string(m[3]) + "[" + std::string(m[4]) + "] into " + std::string(m[1]) + "[" + std::string(m[2]) + "]");
             ir.push_back({"MEASURE", {m[3], m[4], "->", m[1], m[2]}});
             gate_count++;
             used_gates.push_back("MEASURE");
         } else if (std::regex_search(line, m, measure_regex)) {
             flush_gates();
+            emit_explain("Measure " + std::string(m[1]) + "[" + std::string(m[2]) + "]");
             ir.push_back({"MEASURE", {m[1], m[2]}});
             gate_count++;
             used_gates.push_back("MEASURE");

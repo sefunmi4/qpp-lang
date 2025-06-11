@@ -1,0 +1,9 @@
+task<AUTO> explain_demo() {
+    qalloc qbit q[2];
+    #explain Preparing superposition on q[0]
+    H(q[0]);
+    #explain Entangling q[0] with q[1]
+    CX(q[0], q[1]);
+    #explain Measure collapses q[0] to classical bit
+    int m = measure(q[0]);
+}
