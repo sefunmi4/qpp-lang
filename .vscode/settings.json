@@ -1,6 +1,6 @@
 {
     "files.associations": {
-        "*.qpp": "cpp",
+        "*.qpp": "qpp",
         "__bit_reference": "cpp",
         "__split_buffer": "cpp",
         "cmath": "cpp",
