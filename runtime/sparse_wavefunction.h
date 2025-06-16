@@ -13,6 +13,9 @@ public:
     void apply_h(std::size_t qubit);
     void apply_x(std::size_t qubit);
     void apply_z(std::size_t qubit);
+    void apply_y(std::size_t qubit);
+    void apply_s(std::size_t qubit);
+    void apply_t(std::size_t qubit);
     void apply_cnot(std::size_t control, std::size_t target);
     int measure(std::size_t qubit);
     void reset();
