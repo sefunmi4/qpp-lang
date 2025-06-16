@@ -74,6 +74,26 @@ void SparseWavefunction::apply_y(std::size_t qubit) {
 	state.swap(out);
 }
 
+void SparseWavefunction::apply_s(std::size_t qubit) {
+    std::size_t bit = 1ULL << qubit;
+    const auto I = std::complex<double>{0, 1};
+    for (auto& kv : state) {
+        if (kv.first & bit) {
+            kv.second *= I;
+        }
+    }
+}
+
+void SparseWavefunction::apply_t(std::size_t qubit) {
+    std::size_t bit = 1ULL << qubit;
+    const auto phase = std::exp(std::complex<double>{0, M_PI / 4});
+    for (auto& kv : state) {
+        if (kv.first & bit) {
+            kv.second *= phase;
+        }
+    }
+}
+
 void SparseWavefunction::apply_cnot(std::size_t control, std::size_t target) {
     std::unordered_map<std::size_t, std::complex<double>> out;
     std::size_t cbit = 1ULL << control;

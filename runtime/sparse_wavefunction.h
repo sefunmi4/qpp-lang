@@ -17,6 +17,7 @@ public:
     void apply_s(std::size_t qubit);
     void apply_t(std::size_t qubit);
     void apply_cnot(std::size_t control, std::size_t target);
+    
     int measure(std::size_t qubit);
     void reset();
     std::complex<double> amplitude(std::size_t index) const;
