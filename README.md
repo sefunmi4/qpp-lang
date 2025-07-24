@@ -256,3 +256,7 @@ code --extensionDevelopmentPath=vscode .
 This registers the `.qpp` extension with basic grammar definitions so Q++
 files render cleanly without C++ template errors.
 
+
+### Troubleshooting API Calls
+
+For guidance on resolving failed `api/auth/register` requests, see [docs/troubleshooting/api-auth-register.md](docs/troubleshooting/api-auth-register.md).
